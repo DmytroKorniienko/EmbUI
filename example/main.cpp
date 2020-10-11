@@ -14,6 +14,53 @@
 #include <Arduino.h>
 #include "EmbUI.h"
 
+void block_effects_main(Interface *interf, JsonObject *data, bool fast=true){
+    if (!interf) return;
+    interf->json_section_main(F("Tab1"), F("Демонстрация"));
+
+    interf->json_section_line(F("Контролы"));
+    interf->checkbox(F("chk"), 1==1 ? F("true") : F("false"), F("Переключатель"), true);
+    interf->button(F("btn"), F("Кнопка"));
+    interf->json_section_end();
+
+    interf->json_section_end();
+}
+
+void block_menu(Interface *interf, JsonObject *data){
+    if (!interf) return;
+    // создаем меню
+    embui.autoSaveReset(); // автосохранение конфига будет отсчитываться от этого момента
+    interf->json_section_menu();
+    interf->option(F("Tab1"), F("Вкладка"));
+    interf->json_section_end();
+}
+
+void section_main_frame(Interface *interf, JsonObject *data){
+    if (!interf) return;
+
+    interf->json_frame_interface(F("EmbUI Demo"));
+
+    block_menu(interf, data);
+    block_effects_main(interf, data);
+
+    interf->json_frame_flush();
+}
+
+void pubCallback(Interface *interf){
+    if (!interf) return;
+    //return; // Временно для увеличения стабильности. Пока разбираюсь с падениями.
+    interf->json_frame_value();
+    interf->value(F("pTime"), F("00:00:01"), true);
+    interf->value(F("pMem"), String(ESP.getFreeHeap()), true);
+    interf->value(F("pUptime"), String(millis()/1000), true);
+    interf->json_frame_flush();
+}
+
+void httpCallback(const String &param, const String &value){
+    LOG(printf_P, PSTR("HTTP: %s - %s\n"), param.c_str(), value.c_str());
+    embui.publish(String(F("embui/pub/")) + param,value,false); // отправляем обратно в MQTT в топик embui/pub/
+}
+
 void setup() {
   Serial.begin(115200);
 

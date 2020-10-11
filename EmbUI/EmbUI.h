@@ -371,4 +371,5 @@ class EmbUI
 
 // Глобальный объект фреймворка
 extern EmbUI embui;
+#include "ui.h"
 #endif
