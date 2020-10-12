@@ -173,7 +173,7 @@ class EmbUI
     void section_handle_add(const String &btn, buttonCallback response);
     const char* param(const char* key);
     String param(const String &key);
-    void led(uint8_t pin, bool invert);
+    void led(int8_t pin, bool invert);
     String deb();
     void init();
     void begin();

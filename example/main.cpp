@@ -14,14 +14,37 @@
 #include <Arduino.h>
 #include "EmbUI.h"
 
+int val = 5;
+
+void set_chk(Interface *interf, JsonObject *data){
+    if(!data) return;
+    SETPARAM("chk"); // отображен на конфиг
+}
+
+void set_by_btn(Interface *interf, JsonObject *data){
+    if(!data) return;
+    val = (*data)[F("rng")].as<int>();
+}
+
+void create_parameters(){
+    LOG(println, F("Создание дефолтных параметров"));
+    // создаем дефолтные параметры для нашего проекта, то что создано через var_create сохраняется в конфиг
+    embui.var_create(F("chk"), "false");
+
+    // обработчики
+    embui.section_handle_add(F("chk"), set_chk);
+    embui.section_handle_add(F("btn"), set_by_btn);
+}
+
 void block_effects_main(Interface *interf, JsonObject *data, bool fast=true){
     if (!interf) return;
     interf->json_section_main(F("Tab1"), F("Демонстрация"));
 
     interf->json_section_line(F("Контролы"));
-    interf->checkbox(F("chk"), 1==1 ? F("true") : F("false"), F("Переключатель"), true);
+    interf->checkbox(F("chk"), F("Переключатель"), true);
     interf->button(F("btn"), F("Кнопка"));
     interf->json_section_end();
+    interf->range(F("rng"), val, 1, 10, 2, F("Ползунок"), true);
 
     interf->json_section_end();
 }
@@ -74,6 +97,8 @@ void setup() {
 
   embui.init();
   //embui.mqtt(jee.param(F("m_host")), jee.param(F("m_port")).toInt(), jee.param(F("m_user")), jee.param(F("m_pass")), mqttCallback, true); // false - никакой автоподписки!!!
+  
+  create_parameters(); // создать параметры, после init(), перед begin()
   embui.begin();
 }
 

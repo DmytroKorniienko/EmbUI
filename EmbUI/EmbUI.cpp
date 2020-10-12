@@ -370,7 +370,7 @@ void EmbUI::begin(){
     server.begin();
 }
 
-void EmbUI::led(uint8_t pin, bool invert){
+void EmbUI::led(int8_t pin, bool invert){
     if (pin == -1) return;
     LED_PIN = pin;
     LED_INVERT = invert;
