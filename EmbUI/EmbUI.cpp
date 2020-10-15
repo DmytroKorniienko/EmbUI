@@ -218,12 +218,9 @@ void EmbUI::begin(){
     ws.onEvent(onWsEvent);
     server.addHandler(&ws);
 
+#ifdef USE_SSDP
     ssdp_begin(); Serial.println(F("Start SSDP"));
-    
-    // server.on("/description.xml", HTTP_GET, [](AsyncWebServerRequest * request)
-    // {
-    //     request->send(200, "text/xml", SSDP.schema());
-    // });
+#endif
 
 #ifdef ESP32
   server.addHandler(new SPIFFSEditor(LittleFS, http_username,http_password));
@@ -370,7 +367,7 @@ void EmbUI::begin(){
     server.begin();
 }
 
-void EmbUI::led(int8_t pin, bool invert){
+void EmbUI::led(uint8_t pin, bool invert){
     if (pin == -1) return;
     LED_PIN = pin;
     LED_INVERT = invert;

@@ -25,12 +25,16 @@
 #include <ESP8266WiFi.h>
 //#include <ESP8266WiFiMulti.h>   // Include the Wi-Fi-Multi library
 #include <ESP8266mDNS.h>        // Include the mDNS library
+#ifdef USE_SSDP
 #include <ESP8266SSDP.h>
+#endif
 #else
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <Update.h>
+#ifdef USE_SSDP
 #include <ESP32SSDP.h>
+#endif
 #endif
 
 #include <Ticker.h>   // esp планировщик
@@ -122,6 +126,7 @@ static const char PGhdrcachec[] PROGMEM = "Cache-Control";
 static const char PGgzip[] PROGMEM = "gzip";
 static const char PGnocache[] PROGMEM = "no-cache, no-store, must-revalidate";    // 10 days cache
 
+#ifdef USE_SSDP
 #ifndef EXTERNAL_SSDP
 #define __SSDPNAME ("EmbUI (kDn)")
 #define __SSDPURLMODEL ("https://github.com/DmytroKorniienko/")
@@ -135,6 +140,7 @@ static const char PGurlModel[] PROGMEM = __SSDPURLMODEL;
 static const char PGversion[] PROGMEM = VERSION;
 static const char PGurlManuf[] PROGMEM = __SSDPURLMANUF;
 static const char PGnameManuf[] PROGMEM = __SSDPMANUF;
+#endif
 
 class EmbUI
 {
@@ -173,7 +179,7 @@ class EmbUI
     void section_handle_add(const String &btn, buttonCallback response);
     const char* param(const char* key);
     String param(const String &key);
-    void led(int8_t pin, bool invert);
+    void led(uint8_t pin, bool invert);
     String deb();
     void init();
     void begin();
@@ -259,7 +265,7 @@ class EmbUI
     void onSTAGotIP(WiFiEventStationModeGotIP ipInfo);
     void onSTADisconnected(WiFiEventStationModeDisconnected event_info);
     void setup_mDns();
-
+#ifdef USE_SSDP
     void ssdp_begin() {
           String hn = param(F("hostname"));
           if (!hn.length())
@@ -283,15 +289,12 @@ class EmbUI
           SSDP.setManufacturer(FPSTR(PGnameManuf));
           SSDP.setManufacturerURL(FPSTR(PGurlManuf));
           SSDP.begin();
-          setHTTPAnswer();
+
+          (&server)->on(PSTR("/description.xml"), HTTP_GET, [&](AsyncWebServerRequest *request){
+            request->send(200, FPSTR(PGmimexml), getSSDPSchema());
+          });
     }
     
-    void setHTTPAnswer() {
-        (&server)->on(PSTR("/description.xml"), HTTP_GET, [&](AsyncWebServerRequest *request){
-          request->send(200, FPSTR(PGmimexml), getSSDPSchema());
-        });
-    }
-
     String getSSDPSchema() {
         uint32_t chipId;
         #ifdef ESP32
@@ -343,7 +346,7 @@ class EmbUI
         s +=F("</root>\r\n\r\n");
       return s;
     }
-
+#endif
     /**
       * устанавлием режим WiFi
       */
