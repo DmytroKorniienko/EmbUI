@@ -235,11 +235,11 @@ void EmbUI::begin(){
     });
 
     server.on(PSTR("/version"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        String buf;
-        buf = F("VERSION: "); buf+=F(VERSION);
-        buf += F("\nGIT: "); buf+=F(PIO_SRC_REV);
-        buf += F("\nOK\n");
-        request->send(200, FPSTR(PGmimetxt), buf.c_str());
+        //String buf;
+        //buf = F("EmbUI ver: "); buf+=F(VERSION);
+        //buf += F("\nGIT: "); buf+=F(PIO_SRC_REV);
+        //buf += F("\nOK\n");
+        request->send(200, FPSTR(PGmimetxt), F("EmbUI ver: " TOSTRING(EMBUIVER)));
     });
 
     server.on(PSTR("/cmd"), HTTP_ANY, [this](AsyncWebServerRequest *request) {

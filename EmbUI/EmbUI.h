@@ -42,6 +42,10 @@
 #include <AsyncMqttClient.h>
 #include "LList.h"
 
+// STRING Macro
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 class Interface;
 
 #ifndef DELAY_AFTER_FS_WRITING
@@ -135,11 +139,11 @@ static const char PGnocache[] PROGMEM = "no-cache, no-store, must-revalidate";  
 #define __SSDPMANUF ("obliterator")
 #endif
 
-static const char PGnameModel[] PROGMEM = __SSDPNAME;
-static const char PGurlModel[] PROGMEM = __SSDPURLMODEL;
-static const char PGversion[] PROGMEM = VERSION;
-static const char PGurlManuf[] PROGMEM = __SSDPURLMANUF;
-static const char PGnameManuf[] PROGMEM = __SSDPMANUF;
+static const char PGnameModel[] PROGMEM = TOSTRING(__SSDPNAME);
+static const char PGurlModel[] PROGMEM = TOSTRING(__SSDPURLMODEL);
+static const char PGversion[] PROGMEM = TOSTRING(EMBUIVER);
+static const char PGurlManuf[] PROGMEM = TOSTRING(__SSDPURLMANUF);
+static const char PGnameManuf[] PROGMEM = TOSTRING(__SSDPMANUF);
 #endif
 
 class EmbUI
