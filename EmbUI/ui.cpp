@@ -379,7 +379,7 @@ void Interface::json_frame_interface(const String &name){
     if (name != "") {
         json[F("app")] = name;
         json[F("mc")] = embui->mc;
-        json[F("ver")] = F(VERSION);
+        json[F("ver")] = F(TOSTRING(EMBUIVER));
     }
     json[F("final")] = false;
 

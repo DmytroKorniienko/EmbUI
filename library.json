@@ -1,0 +1,41 @@
+{
+    "name": "EmbUI",
+    "frameworks": "arduino",
+    "keywords": "embui, arduino",
+    "description": "Embeded Web UI framework for esp8266/esp32 IoT prototyping",
+    "url": "https://github.com/DmytroKorniienko/EmbUI",
+    "authors": [
+        {
+            "name": "Anton Zolotarev",
+            "url": "https://github.com/anton-zolotarev"
+        },
+        {
+            "name": "Dmytro Korniienko",
+            "url": "https://github.com/DmytroKorniienko",
+            "maintainer": true
+        },
+        {
+            "name": "Emil Muratov",
+            "url": "https://github.com/vortigont",
+            "email": "gpm@hotplug.ru"
+        }
+    ],
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DmytroKorniienko/EmbUI.git"
+    },
+    "platforms": ["espressif8266"],
+    "version": "2.0.1",
+    "dependencies": {
+        "bblanchon/ArduinoJson": "*",
+        "AsyncWebServer-mod": "https://github.com/DmytroKorniienko/ESPAsyncWebServer",
+        "AsyncMqttClient": "*"
+    },
+    "build": {
+        "flags": [
+            "-DEMBUIVER=2.0.1"
+        ],
+        "srcDir": "EmbUI"
+    }
+}

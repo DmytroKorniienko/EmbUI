@@ -7,9 +7,9 @@
 
 void EmbUI::led_handle(){
     if (LED_PIN == -1) return;
-    if (wifi_mode == 1)
+    if (wifi_mode == WIFI_STA)
         digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-    if (wifi_mode == 2)
+    if (wifi_mode == WIFI_AP)
         digitalWrite(LED_PIN, LOW + LED_INVERT);
 }
 
@@ -32,10 +32,10 @@ void EmbUI::btn(){
                 led_inv();
                 i = true;
             }
-            if (old_wifi_mode == 1)
-                wifi_mode = 2;
-            if (old_wifi_mode == 2)
-                wifi_mode = 1;
+            if (old_wifi_mode == WIFI_STA)
+                wifi_mode = WIFI_AP;
+            if (old_wifi_mode == WIFI_AP)
+                wifi_mode = WIFI_STA;
         }
         if (t + 15000 < millis()) // Нажатие 10 секунд
         {
@@ -46,9 +46,9 @@ void EmbUI::btn(){
     }
     if (wifi_mode != old_wifi_mode) // событие после отпуска кнопки от 5 секунд
     {
-        if (wifi_mode == 1)
+        if (wifi_mode == WIFI_STA)
             var(F("wifi"), F("AP"));
-        if (wifi_mode == 2)
+        if (wifi_mode == WIFI_AP)
             var(F("wifi"), F("STA"));
             // тут сохранить настройки
         wifi_connect();
