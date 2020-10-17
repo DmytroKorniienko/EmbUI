@@ -183,6 +183,8 @@ class EmbUI
     void section_handle_add(const String &btn, buttonCallback response);
     const char* param(const char* key);
     String param(const String &key);
+    bool isparamexists(const char* key){ return cfg.containsKey(key);}
+    bool isparamexists(const String &key){ return cfg.containsKey(key);}
     void led(uint8_t pin, bool invert);
     String deb();
     void init();
