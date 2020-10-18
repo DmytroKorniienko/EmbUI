@@ -115,7 +115,7 @@ class Interface;
 
 void __attribute__((weak)) section_main_frame(Interface *interf, JsonObject *data);
 void __attribute__((weak)) pubCallback(Interface *interf);
-void __attribute__((weak)) httpCallback(const String &param, const String &value, bool isset);
+String __attribute__((weak)) httpCallback(const String &param, const String &value, bool isset);
 void __attribute__((weak)) uploadProgress(size_t len, size_t total);
 
 //----------------------
@@ -254,7 +254,7 @@ class EmbUI
     void mqtt_handle();
     bool mqtt_enable = false;
 
-    void subscribeAll();
+    void subscribeAll(bool isOnlyGetSet=true);
 
     char udpRemoteIP[16];
     unsigned int localUdpPort = 4243;

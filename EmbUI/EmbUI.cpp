@@ -15,7 +15,7 @@ EmbUI embui;
 
 void section_main_frame(Interface *interf, JsonObject *data) {}
 void pubCallback(Interface *interf){}
-void httpCallback(const String &param, const String &value, bool isSet) {}
+String httpCallback(const String &param, const String &value, bool isSet) { return String(); }
 void uploadProgress(size_t len, size_t total){
     static int prev = 0;
     float part = total / 50.0;
@@ -243,6 +243,7 @@ void EmbUI::begin(){
     });
 
     server.on(PSTR("/cmd"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
+        String result; 
         int params = request->params();
         for(int i=0;i<params;i++){
             AsyncWebParameter* p = request->getParam(i);
@@ -252,10 +253,10 @@ void EmbUI::begin(){
                 //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
             } else {
                 //Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-                httpCallback(p->name(), p->value(), !p->value().isEmpty());
+                result = httpCallback(p->name(), p->value(), !p->value().isEmpty());
             }
         }
-        request->send(200, FPSTR(PGmimetxt), F("Ok"));
+        request->send(200, FPSTR(PGmimetxt), result);
     });
 
     server.on(PSTR("/config"), HTTP_ANY, [this](AsyncWebServerRequest *request) {

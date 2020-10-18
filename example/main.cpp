@@ -79,9 +79,10 @@ void pubCallback(Interface *interf){
     interf->json_frame_flush();
 }
 
-void httpCallback(const String &param, const String &value, bool isset){
+String httpCallback(const String &param, const String &value, bool isset){
     LOG(printf_P, PSTR("HTTP: %s - %s\n"), param.c_str(), value.c_str());
     embui.publish(String(F("embui/pub/")) + param,value,false); // отправляем обратно в MQTT в топик embui/pub/
+    return String();
 }
 
 void setup() {

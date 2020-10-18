@@ -197,9 +197,15 @@ void EmbUI::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProp
     }
 }
 
-void EmbUI::subscribeAll(){
-    mqttClient.subscribe(id(F("embui/#")).c_str(), 0);
-    LOG(println, F("Subscribe All"));
+void EmbUI::subscribeAll(bool isOnlyGetSet){
+    if(isOnlyGetSet){
+        mqttClient.subscribe(id(F("embui/set/#")).c_str(), 0);
+        mqttClient.subscribe(id(F("embui/get/#")).c_str(), 0);
+        LOG(println, F("Subscribe embui/get/# & embui/set/#"));
+    } else {
+        mqttClient.subscribe(id(F("embui/#")).c_str(), 0);
+        LOG(println, F("Subscribe All (embui/#)"));
+    }
 }
 
 void EmbUI::publish(const String &topic, const String &payload, bool retained){
