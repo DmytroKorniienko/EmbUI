@@ -15,7 +15,7 @@ EmbUI embui;
 
 void section_main_frame(Interface *interf, JsonObject *data) {}
 void pubCallback(Interface *interf){}
-void httpCallback(const String &param, const String &value) {}
+void httpCallback(const String &param, const String &value, bool isSet) {}
 void uploadProgress(size_t len, size_t total){
     static int prev = 0;
     float part = total / 50.0;
@@ -245,7 +245,7 @@ void EmbUI::begin(){
     server.on(PSTR("/cmd"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
         AsyncWebParameter *prm = request->getParam(0);
         if (prm) {
-            httpCallback(prm->name(), prm->value());
+            httpCallback(prm->name(), prm->value(), !prm->value().isEmpty());
         }
         request->send(200, FPSTR(PGmimetxt), F("Ok"));
     });

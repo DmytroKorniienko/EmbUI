@@ -178,14 +178,16 @@ void EmbUI::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProp
     if (tpc.equals(F("embui/get/config"))) {
         embui.publish(F("embui/pub/config"), embui.deb(), false);    
     } else if (tpc.startsWith(F("embui/get/"))) {
-        String param = tpc.substring(8);
+        String param = tpc.substring(10); // sizeof embui/set/
         if(embui.isparamexists(param))
             embui.publish(String(F("embui/pub/")) + param, embui.param(param), false);
-        else
+        else {
+            httpCallback(param, String(buffer), false); // нельзя напрямую передавать payload, это не ASCIIZ
             mqt(tpc, String(buffer)); // отправим во внешний обработчик
+        }
     } else if (mqtt_remotecontrol && tpc.startsWith(F("embui/set/"))) {
-       String cmd = tpc.substring(8);
-       httpCallback(cmd, String(buffer)); // нельзя напрямую передавать payload, это не ASCIIZ
+       String cmd = tpc.substring(10); // sizeof embui/set/
+       httpCallback(cmd, String(buffer), true); // нельзя напрямую передавать payload, это не ASCIIZ
     } else if (mqtt_remotecontrol && tpc.startsWith(F("embui/jsset/"))) {
         DynamicJsonDocument doc(1024);
         deserializeJson(doc, payload, len);
