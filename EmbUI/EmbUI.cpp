@@ -243,9 +243,17 @@ void EmbUI::begin(){
     });
 
     server.on(PSTR("/cmd"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        AsyncWebParameter *prm = request->getParam(0);
-        if (prm) {
-            httpCallback(prm->name(), prm->value(), !prm->value().isEmpty());
+        int params = request->params();
+        for(int i=0;i<params;i++){
+            AsyncWebParameter* p = request->getParam(i);
+            if(p->isFile()){ //p->isPost() is also true
+                //Serial.printf("FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
+            } else if(p->isPost()){
+                //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+            } else {
+                //Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
+                httpCallback(p->name(), p->value(), !p->value().isEmpty());
+            }
         }
         request->send(200, FPSTR(PGmimetxt), F("Ok"));
     });
