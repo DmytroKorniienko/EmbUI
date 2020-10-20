@@ -30,7 +30,7 @@
     "dependencies": {
         "bblanchon/ArduinoJson": "*",
         "AsyncWebServer-mod": "https://github.com/DmytroKorniienko/ESPAsyncWebServer",
-        "AsyncMqttClient": "*"
+        "marvinroger/AsyncMqttClient": "*"
     },
     "build": {
         "flags": [

@@ -3,20 +3,20 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#ifndef wi_fi_h
-#define wi_fi_h
+#pragma once
 
-// уже есть в EmbUI.h
-/*
+//#ifndef wi_fi_h
+#define __EMBUI_WIFI_H
+
 #ifdef ESP8266
-#include <ESP8266WiFi.h>
+ #include <ESP8266WiFi.h>
+ //#include <ESP8266WiFiMulti.h>   // Include the Wi-Fi-Multi library
 #else
-#include <WiFi.h>
+ #include <WiFi.h>
 #endif
-*/
 
 #define WIFI_CONNECT_TIMEOUT    5
 #define WIFI_RECONNECT_TIMER    25
 #define WIFI_PSK_MIN_LENGTH     8
 
-#endif
+//#endif

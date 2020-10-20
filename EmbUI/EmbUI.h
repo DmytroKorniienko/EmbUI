@@ -6,35 +6,34 @@
 #ifndef EmbUI_h
 #define EmbUI_h
 
-#include "Arduino.h"
+#include "globals.h"
+
+//#include <Arduino.h>
 
 #ifdef ESP8266
 #include <ESPAsyncTCP.h>
-#include <FS.h>
-#include "LittleFS.h"
+ #include <FS.h>
+ #include <LittleFS.h>
 #else
-#include <AsyncTCP.h>
-#include "LittleFS.h"
+ #include <AsyncTCP.h>
+ #include <LittleFS.h>
 #endif
 
 #include <ESPAsyncWebServer.h>
 #include <SPIFFSEditor.h>
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>
 
 #ifdef ESP8266
-#include <ESP8266WiFi.h>
-//#include <ESP8266WiFiMulti.h>   // Include the Wi-Fi-Multi library
-#include <ESP8266mDNS.h>        // Include the mDNS library
-#ifdef USE_SSDP
-#include <ESP8266SSDP.h>
-#endif
+ #include <ESP8266mDNS.h>        // Include the mDNS library
+ #ifdef USE_SSDP
+  #include <ESP8266SSDP.h>
+ #endif
 #else
-#include <WiFi.h>
-#include <ESPmDNS.h>
-#include <Update.h>
-#ifdef USE_SSDP
-#include <ESP32SSDP.h>
-#endif
+ #include <ESPmDNS.h>
+ #include <Update.h>
+ #ifdef USE_SSDP
+  #include <ESP32SSDP.h>
+ #endif
 #endif
 
 #include <Ticker.h>   // esp планировщик
@@ -42,9 +41,7 @@
 #include <AsyncMqttClient.h>
 #include "LList.h"
 
-// STRING Macro
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+#include "timeProcessor.h"
 
 class Interface;
 
@@ -102,16 +99,6 @@ class Interface;
         delete interf; \
     } \
 }
-
-#if defined(EMBUI_DEBUG) && DEBUG_TELNET_OUTPUT
-	//#define LOG                   telnet
-	#define LOG(func, ...) telnet.func(__VA_ARGS__)
-#elif defined(EMBUI_DEBUG)
-	//#define LOG                   Serial
-	#define LOG(func, ...) Serial.func(__VA_ARGS__)
-#else
-	#define LOG(func, ...) ;
-#endif
 
 void __attribute__((weak)) section_main_frame(Interface *interf, JsonObject *data);
 void __attribute__((weak)) pubCallback(Interface *interf);
@@ -177,6 +164,7 @@ class EmbUI
 
     AsyncWebServer server;
     AsyncWebSocket ws;
+    TimeProcessor timeProcessor;
 
     void var(const String &key, const String &value, bool force = false);
     void var_create(const String &key, const String &value);
@@ -271,6 +259,7 @@ class EmbUI
     void onSTAGotIP(WiFiEventStationModeGotIP ipInfo);
     void onSTADisconnected(WiFiEventStationModeDisconnected event_info);
     void setup_mDns();
+
 #ifdef USE_SSDP
     void ssdp_begin() {
           String hn = param(F("hostname"));

@@ -7,6 +7,7 @@
 #include "EmbUI.h"
 #include "user_interface.h"
 #include "wi-fi.h"
+#include "timeProcessor.h"
 
 #ifdef ESP8266
 void EmbUI::onSTAConnected(WiFiEventStationModeConnected ipInfo)
@@ -21,6 +22,7 @@ void EmbUI::onSTAGotIP(WiFiEventStationModeGotIP ipInfo)
     embuischedw.detach();
     LOG(printf_P, PSTR("WiFi: Got IP: %s\r\n"), ipInfo.ip.toString().c_str());
     setup_mDns();
+    timeProcessor.onSTAGotIP(ipInfo);
 }
 
 void EmbUI::setup_mDns(){
@@ -56,6 +58,8 @@ void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
         wifi_setmode(WIFI_AP);  // Enable internal AP if station connection is lost
         embuischedw.once_scheduled(WIFI_RECONNECT_TIMER, [this](){wifi_setmode(WIFI_AP_STA); WiFi.begin(); setup_mDns();} );
     } );
+
+    timeProcessor.onSTADisconnected(event_info);
 }
 #else
 // need to test it under ESP32 (might not need any scheduler to handle both Client and AP at the same time)
