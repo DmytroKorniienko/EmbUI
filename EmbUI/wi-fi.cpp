@@ -17,7 +17,7 @@ void EmbUI::onSTAConnected(WiFiEventStationModeConnected ipInfo)
 void EmbUI::onSTAGotIP(WiFiEventStationModeGotIP ipInfo)
 {
     wifi_setmode(WIFI_STA);            // Shutdown internal Access Point
-    wifi_sta = true;
+    sysData.wifi_sta = true;
     embuischedw.detach();
     LOG(printf_P, PSTR("WiFi: Got IP: %s\r\n"), ipInfo.ip.toString().c_str());
     setup_mDns();
@@ -44,14 +44,14 @@ void EmbUI::setup_mDns(){
 
 void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
 {
-    if (embuischedw.active() && (WiFi.getMode()==WIFI_AP || WiFi.getMode()==WIFI_AP_STA || !wifi_sta))
+    if (embuischedw.active() && (WiFi.getMode()==WIFI_AP || WiFi.getMode()==WIFI_AP_STA || !sysData.wifi_sta))
         return;
     
     LOG(printf_P, PSTR("WiFi: Disconnected from SSID: %s, reason: %d\n"), event_info.ssid.c_str(), event_info.reason);
-    wifi_sta = false;
+    sysData.wifi_sta = false;
 
     embuischedw.once_scheduled(WIFI_CONNECT_TIMEOUT, [this](){
-        wifi_sta = false;
+        sysData.wifi_sta = false;
         LOG(println, F("WiFi: enabling internal AP"));
         wifi_setmode(WIFI_AP);  // Enable internal AP if station connection is lost
         embuischedw.once_scheduled(WIFI_RECONNECT_TIMER, [this](){wifi_setmode(WIFI_AP_STA); WiFi.begin(); setup_mDns();} );

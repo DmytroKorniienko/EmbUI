@@ -4,12 +4,6 @@
 // and others people
 
 #include "EmbUI.h"
-
-bool EmbUI::mqtt_connected = false;
-bool EmbUI::mqtt_connect = false;
-bool EmbUI::mqtt_remotecontrol = false;
-char EmbUI::m_pref[16];
-
 extern EmbUI embui;
 
 void EmbUI::connectToMqtt() {
@@ -18,9 +12,10 @@ void EmbUI::connectToMqtt() {
 }
 
 String EmbUI::id(const String &topic){
-    if (!*m_pref) return topic;
+    String ret = param(F("m_pref"));
+    if (ret.isEmpty()) return topic;
 
-    String ret = m_pref; ret += '/'; ret += topic;
+    ret += '/'; ret += topic;
     return ret;
 }
 
@@ -43,27 +38,28 @@ void fake(){}
 void emptyFunction(const String &, const String &){}
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
-
-
     if (host.length()==0){
       Serial.println(F("MQTT host is empty - disabled!"));
       return;   // выходим если host не задан
     }
+    String m_pref=param(F("m_pref"));
+    String m_host=param(F("m_host"));
+    String m_port=param(F("m_port"));
+    String m_user=param(F("m_user"));
+    String m_pass=param(F("m_pass"));
+    IPAddress ip; 
+    bool isIP = ip.fromString(m_host);
 
-    if(param(F("m_pref")) == F("null")) var(F("m_pref"), pref);
-    if(param(F("m_host")) == F("null")) var(F("m_host"), host);
-    if(param(F("m_port")) == F("null")) var(F("m_port"), String(port));
-    if(param(F("m_user")) == F("null")) var(F("m_user"), user);
-    if(param(F("m_pass")) == F("null")) var(F("m_pass"), pass);
+    if(m_pref == F("null")) var(F("m_pref"), pref);
+    if(m_host == F("null")) var(F("m_host"), host);
+    if(m_port == F("null")) var(F("m_port"), String(port));
+    if(m_user == F("null")) var(F("m_user"), user);
+    if(m_pass == F("null")) var(F("m_pass"), pass);
 
-    if (remotecontrol) mqtt_remotecontrol = true;
+    //Serial.println(F("MQTT Init completed"));
+
+    if (remotecontrol) embui.sysData.mqtt_remotecontrol = true;
     mqt = mqttFunction;
-
-    strncpy(m_pref, param(F("m_pref")).c_str(), sizeof(m_pref)-1);
-    strncpy(m_host, param(F("m_host")).c_str(), sizeof(m_host)-1);
-    strncpy(m_user, param(F("m_user")).c_str(), sizeof(m_user)-1);
-    strncpy(m_pass, param(F("m_pass")).c_str(), sizeof(m_pass)-1);
-    m_port = param(F("m_port")).toInt();
 
     mqttClient.onConnect(_onMqttConnect);
     mqttClient.onDisconnect(onMqttDisconnect);
@@ -71,11 +67,13 @@ void EmbUI::mqtt(const String &pref, const String &host, int port, const String 
     mqttClient.onUnsubscribe(onMqttUnsubscribe);
     mqttClient.onMessage(onMqttMessage);
     mqttClient.onPublish(onMqttPublish);
-    mqttClient.setCredentials(m_user, m_pass);
-    mqttClient.setServer(m_host, m_port);
-    //mqttClient.setMaxTopicLength(48);
-
-    mqtt_enable = true;
+    mqttClient.setCredentials(m_user.c_str(), m_pass.c_str());
+    if(isIP)
+        mqttClient.setServer(ip, m_port.toInt());
+    else
+        mqttClient.setServer(m_host.c_str(), m_port.toInt());
+    
+    sysData.mqtt_enable = true;
 }
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload)){
@@ -130,8 +128,9 @@ void EmbUI::mqtt(const String &host, int port, const String &user, const String 
 }
 
 void EmbUI::mqtt_handle(){
-    if (!wifi_sta || !*m_host) return;
-    if (mqtt_connect) onMqttConnect();
+    String host = cfg[F("m_host")];
+    if (!sysData.wifi_sta || host.isEmpty()) return;
+    if (sysData.mqtt_connect) onMqttConnect();
     mqtt_reconnect();
 }
 
@@ -142,24 +141,24 @@ void EmbUI::mqtt_reconnect(){
     static unsigned long tmout = 0;
     if (tmout + 15000 > millis()) return;
     tmout = millis();
-    if ( wifi_sta && !mqtt_connected) connectToMqtt();
+    if ( sysData.wifi_sta && !sysData.mqtt_connected) connectToMqtt();
 }
 
 void EmbUI::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
   Serial.println(F("Disconnected from MQTT."));
-  mqtt_connect = false;
-  mqtt_connected = false;
+  embui.sysData.mqtt_connect = false;
+  embui.sysData.mqtt_connected = false;
 }
 
 void EmbUI::_onMqttConnect(bool sessionPresent) {
-    mqtt_connect = true;
+    embui.sysData.mqtt_connect = true;
 }
 
 void EmbUI::onMqttConnect(){
-    mqtt_connect = false;
-    mqtt_connected = true;
+    sysData.mqtt_connect = false;
+    sysData.mqtt_connected = true;
     Serial.println(F("Connected to MQTT."));
-    if(mqtt_remotecontrol){
+    if(sysData.mqtt_remotecontrol){
         subscribeAll();
     }
 }
@@ -173,7 +172,8 @@ void EmbUI::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProp
     strncpy(buffer, payload, len);
 
     String tpc = String(topic);
-    if (*m_pref) tpc = tpc.substring(strlen(m_pref) + 1, tpc.length());
+    String m_pref = embui.param(F("m_pref")); 
+    if (!m_pref.isEmpty()) tpc = tpc.substring(m_pref.length() + 1, tpc.length());
 
     if (tpc.equals(F("embui/get/config"))) {
         embui.publish(F("embui/pub/config"), embui.deb(), false);    
@@ -185,10 +185,10 @@ void EmbUI::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProp
             httpCallback(param, String(buffer), false); // нельзя напрямую передавать payload, это не ASCIIZ
             mqt(tpc, String(buffer)); // отправим во внешний обработчик
         }
-    } else if (mqtt_remotecontrol && tpc.startsWith(F("embui/set/"))) {
+    } else if (embui.sysData.mqtt_remotecontrol && tpc.startsWith(F("embui/set/"))) {
        String cmd = tpc.substring(10); // sizeof embui/set/
        httpCallback(cmd, String(buffer), true); // нельзя напрямую передавать payload, это не ASCIIZ
-    } else if (mqtt_remotecontrol && tpc.startsWith(F("embui/jsset/"))) {
+    } else if (embui.sysData.mqtt_remotecontrol && tpc.startsWith(F("embui/jsset/"))) {
         DynamicJsonDocument doc(1024);
         deserializeJson(doc, payload, len);
         embui.post(doc.as<JsonObject>());
@@ -209,17 +209,17 @@ void EmbUI::subscribeAll(bool isOnlyGetSet){
 }
 
 void EmbUI::publish(const String &topic, const String &payload, bool retained){
-    if (!wifi_sta || !mqtt_enable) return;
+    if (!sysData.wifi_sta || !sysData.mqtt_enable) return;
     mqttClient.publish(id(topic).c_str(), 0, retained, payload.c_str());
 }
 
 void EmbUI::publish(const String &topic, const String &payload){
-    if (!wifi_sta || !mqtt_enable) return;
+    if (!sysData.wifi_sta || !sysData.mqtt_enable) return;
     mqttClient.publish(id(topic).c_str(), 0, false, payload.c_str());
 }
 
 void EmbUI::pub_mqtt(const String &key, const String &value){
-    if(!mqtt_remotecontrol) return;
+    if(!sysData.mqtt_remotecontrol) return;
     publish(key, value, true);
 }
 

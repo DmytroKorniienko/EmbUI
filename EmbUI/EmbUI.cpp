@@ -10,7 +10,6 @@
 #include "MemoryInfo.h"
 #endif
 
-bool __shouldReboot; // OTA update reboot flag
 EmbUI embui;
 
 void section_main_frame(Interface *interf, JsonObject *data) {}
@@ -130,7 +129,7 @@ void EmbUI::var(const String &key, const String &value, bool force)
     }
 
     cfg[key] = value;
-    isNeedSave = true;
+    sysData.isNeedSave = true;
 
     LOG(printf_P, PSTR("FREE: %u\n"), cap - cfg.memoryUsage());
 
@@ -280,7 +279,7 @@ void EmbUI::begin(){
     });
 
     server.on(PSTR("/restart"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        __shouldReboot = true;
+        sysData.shouldReboot = true;
         request->send(200, FPSTR(PGmimetxt), F("Ok"));
     });
 
@@ -298,9 +297,9 @@ void EmbUI::begin(){
         request->send(200, FPSTR(PGmimehtml), F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>"));
     });
 
-    server.on(PSTR("/update"), HTTP_POST, [](AsyncWebServerRequest *request){
-        __shouldReboot = !Update.hasError();
-        if (__shouldReboot) {
+    server.on(PSTR("/update"), HTTP_POST, [this](AsyncWebServerRequest *request){
+        sysData.shouldReboot = !Update.hasError();
+        if (sysData.shouldReboot) {
             request->redirect(F("/"));
         } else {
             AsyncWebServerResponse *response = request->beginResponse(200, FPSTR(PGmimetxt), F("FAIL"));
@@ -377,14 +376,14 @@ void EmbUI::begin(){
 }
 
 void EmbUI::led(uint8_t pin, bool invert){
-    if (pin == -1) return;
-    LED_PIN = pin;
-    LED_INVERT = invert;
-    pinMode(LED_PIN, OUTPUT);
+    if (pin == 31) return;
+    sysData.LED_PIN = pin;
+    sysData.LED_INVERT = invert;
+    pinMode(sysData.LED_PIN, OUTPUT);
 }
 
 void EmbUI::handle(){
-    if (__shouldReboot) {
+    if (sysData.shouldReboot) {
         Serial.println(F("Rebooting..."));
         delay(100);
         ESP.restart();

@@ -11,16 +11,16 @@ bool udpApply = false;
 
 void EmbUI::udp(){
     getAPmac();
-    strncpy(udpMessage,mc,sizeof(udpMessage)-1); // udpMessage = mc;
+    udpMessage = mc;
 }
 
 void EmbUI::udp(const String &message){
-    strncpy(udpMessage,message.c_str(),sizeof(udpMessage)-1); //udpMessage = message;
+    udpMessage = message;
 }
 
 void EmbUI::udpBegin(){
     Udp.begin(localUdpPort);
-    if(*udpMessage) udpApply = true;
+    if(!udpMessage.isEmpty()) udpApply = true;
 }
 
 void EmbUI::udpLoop(){
@@ -35,14 +35,15 @@ void EmbUI::udpLoop(){
     int packetSize = Udp.parsePacket();
     if (packetSize)
     {
-        strncpy(udpRemoteIP,Udp.remoteIP().toString().c_str(),sizeof(udpRemoteIP)-1); // udpRemoteIP = Udp.remoteIP().toString();
-        LOG(printf, PSTR("Received %d bytes from %s, port %d\n"), packetSize, udpRemoteIP, Udp.remotePort());
-        int len = Udp.read(incomingPacket, 64);
+        char *data = new char[packetSize+1];
+        
+        LOG(printf, PSTR("Received %d bytes from %s, port %d\n"), packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
+        uint32_t len = Udp.read(data, packetSize);
         if (len > 0)
         {
-        incomingPacket[len] = 0;
+            data[len] = 0;
         }
-        LOG(printf, PSTR("UDP packet contents: %s\n"), incomingPacket);
+        LOG(printf, PSTR("UDP packet contents: %s\n"), data);
 
         // send back a reply, to the IP address and port we got the packet from
         Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
@@ -50,5 +51,7 @@ void EmbUI::udpLoop(){
         LOG(println, String(F("Send UDP: ")) + udpMessage);
         Udp.print(udpMessage);
         Udp.endPacket();
+
+        delete[] data;
     }
 }

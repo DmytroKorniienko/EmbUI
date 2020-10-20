@@ -6,11 +6,11 @@
 #include "EmbUI.h"
 
 void EmbUI::led_handle(){
-    if (LED_PIN == -1) return;
+    if (sysData.LED_PIN == 31) return;
     if (wifi_mode == WIFI_STA)
-        digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+        digitalWrite(sysData.LED_PIN, !digitalRead(sysData.LED_PIN));
     if (wifi_mode == WIFI_AP)
-        digitalWrite(LED_PIN, LOW + LED_INVERT);
+        digitalWrite(sysData.LED_PIN, LOW + sysData.LED_INVERT);
 }
 
 void EmbUI::btn(){
@@ -58,16 +58,16 @@ void EmbUI::btn(){
 }
 
 void EmbUI::led_on(){
-    if (LED_PIN == -1) return;
-    digitalWrite(LED_PIN, false);
+    if (sysData.LED_PIN == 31) return;
+    digitalWrite(sysData.LED_PIN, false);
 }
 
 void EmbUI::led_off(){
-    if (LED_PIN == -1) return;
-    digitalWrite(LED_PIN, true);
+    if (sysData.LED_PIN == 31) return;
+    digitalWrite(sysData.LED_PIN, true);
 }
 
 void EmbUI::led_inv(){
-    if (LED_PIN == -1) return;
-    digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+    if (sysData.LED_PIN == 31) return;
+    digitalWrite(sysData.LED_PIN, !digitalRead(sysData.LED_PIN));
 }

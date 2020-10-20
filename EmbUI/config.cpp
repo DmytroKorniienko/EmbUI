@@ -6,7 +6,7 @@
 #include "EmbUI.h"
 
 void EmbUI::save(const char *_cfg, bool force){
-    if ((isNeedSave || force) && LittleFS.begin()) {
+    if ((sysData.isNeedSave || force) && LittleFS.begin()) {
         File configFile;
         if (_cfg == nullptr) {
             LOG(println, F("Save default main config file"));
@@ -24,13 +24,13 @@ void EmbUI::save(const char *_cfg, bool force){
 
         //cfg.garbageCollect(); // несколько раз ловил Exception (3) предположительно тут, возвращаю пока проверенный способ
         deserializeJson(cfg, cfg_str);
-        isNeedSave = false;
+        sysData.isNeedSave = false;
     }
     delay(DELAY_AFTER_FS_WRITING); // задержка после записи
 }
 
 void EmbUI::autosave(){
-    if (isNeedSave && millis() > astimer + asave){
+    if (sysData.isNeedSave && millis() > astimer + sysData.asave*1000){
         save();
         LOG(println, F("AutoSave"));
         astimer = millis();
