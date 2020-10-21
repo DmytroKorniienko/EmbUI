@@ -142,8 +142,7 @@ void EmbUI::var_create(const String &key, const String &value)
 {
     if(cfg[key].isNull()){
         cfg[key] = value;
-        LOG(print, F("CREATE: "));
-        LOG(printf_P, PSTR("key (%s) value (%s) RAM: %d\n"), key.c_str(), value.substring(0, 15).c_str(), ESP.getFreeHeap());
+        LOG(printf_P, PSTR("CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), value.substring(0, 15).c_str(), ESP.getFreeHeap());
     }
 }
 
@@ -193,14 +192,8 @@ void notFound(AsyncWebServerRequest *request) {
 }
 
 void EmbUI::init(){
-//#ifdef EMBUI_DEBUG
-//    nonWifiVar();
     load();
     LOG(println, String(F("CONFIG: ")) + embui.deb());
-//#endif
-    //ap(20000); // если в течении 20 секунд не удастся подключиться к Точке доступа - запускаем свою (параметр "wifi" сменится с AP на STA)
-
-    //WiFi.persistent(false);     // не сохраняем креды от WiFi во флеш, т.к. они у нас уже лежат в конфиге
     #ifdef ESP8266
         e1 = WiFi.onStationModeGotIP(std::bind(&EmbUI::onSTAGotIP, this, std::placeholders::_1));
         e2 = WiFi.onStationModeDisconnected(std::bind(&EmbUI::onSTADisconnected, this, std::placeholders::_1));
@@ -209,8 +202,9 @@ void EmbUI::init(){
         WiFi.onEvent(std::bind(&EmbUI::WiFiEvent, this, std::placeholders::_1));
     #endif
 
-    //wifi_connect();
-    //LOG(println, String(F("MAC: ")) + embui.mac);
+    // восстанавливаем настройки времени
+    timeProcessor.tzsetup(param(F("TZSET")).c_str());
+    timeProcessor.setcustomntp(param(F("userntp")).c_str());
 }
 
 void EmbUI::begin(){
@@ -410,14 +404,3 @@ void EmbUI::handle(){
     timer_pub = millis();
     send_pub();
 }
-
-/*
-void EmbUI::nonWifiVar(){
-    getAPmac();
-    if(param(F("wifi")) == F("null")) var(F("wifi"), F("AP"), true);
-    if(param(F("ssid")) == F("null")) var(F("ssid"), F("EmbUI"), true);
-    if(param(F("pass")) == F("null")) var(F("pass"), "", true);
-    if(param(F("ap_ssid")) == F("null")) var(F("ap_ssid"), String(__IDPREFIX) + mc, true);
-    if(param(F("ap_pass")) == F("null")) var(F("ap_pass"), "", true);
-}
-*/

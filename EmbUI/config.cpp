@@ -52,7 +52,7 @@ void EmbUI::load(const char *_cfg){
         configFile.close();
         if (cfg_str == F("")){
             LOG(println, F("Failed to open config file"));
-            save();
+            //save(); // this does nothing on a first run
             return;
         }
         DeserializationError error = deserializeJson(cfg, cfg_str);
@@ -61,5 +61,7 @@ void EmbUI::load(const char *_cfg){
             LOG(println, error.code());
             return;
         }
+    } else {
+            LOG(println, F("Can't initialize LittleFS"));
     }
 }
