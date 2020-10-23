@@ -8,8 +8,6 @@
 
 #include "globals.h"
 
-//#include <Arduino.h>
-
 #ifdef ESP8266
 #include <ESPAsyncTCP.h>
  #include <FS.h>
@@ -43,7 +41,8 @@
 
 #include "timeProcessor.h"
 
-class Interface;
+#define AUTOSAVE_TIMEOUT    15      // configuration autosave timer, sec    (4 bit value)
+#define UDP_PORT            4243    // UDP server port
 
 #ifndef DELAY_AFTER_FS_WRITING
 #define DELAY_AFTER_FS_WRITING       (50U)                        // 50мс, меньшие значения могут повлиять на стабильность
@@ -61,8 +60,11 @@ class Interface;
 #define __CFGSIZE (2048)
 #endif
 
+
+class Interface;
+
 //-----------------------
-#define TOGLE_STATE(val, curr) (val == F("true"))? true : (val == F("false"))? false : !curr;
+#define TOGLE_STATE(val, curr) (val == FPSTR(P_true))? true : (val == FPSTR(P_false))? false : !curr;
 
 #define SETPARAM(key, call...) if (data->containsKey(key)) { \
     embui.var(key, (*data)[key]); \
@@ -107,30 +109,20 @@ void __attribute__((weak)) uploadProgress(size_t len, size_t total);
 
 //----------------------
 
-static const char PGmimetxt[] PROGMEM  = "text/plain";
-static const char PGmimecss[] PROGMEM  = "text/css";
-static const char PGmimexml[] PROGMEM  = "text/css";
-static const char PGmimehtml[] PROGMEM = "text/html; charset=utf-8";
-static const char PGmimejson[] PROGMEM = "application/json";
-static const char PGhdrcontentenc[] PROGMEM = "Content-Encoding";
-static const char PGhdrcachec[] PROGMEM = "Cache-Control";
-static const char PGgzip[] PROGMEM = "gzip";
-static const char PGnocache[] PROGMEM = "no-cache, no-store, must-revalidate";    // 10 days cache
-
 #ifdef USE_SSDP
-#ifndef EXTERNAL_SSDP
-#define __SSDPNAME ("EmbUI (kDn)")
-#define __SSDPURLMODEL ("https://github.com/DmytroKorniienko/")
-#define __SSDPMODEL ("https://github.com/DmytroKorniienko/")
-#define __SSDPURLMANUF ("https://github.com/anton-zolotarev")
-#define __SSDPMANUF ("obliterator")
-#endif
+  #ifndef EXTERNAL_SSDP
+    #define __SSDPNAME ("EmbUI (kDn)")
+    #define __SSDPURLMODEL ("https://github.com/DmytroKorniienko/")
+    #define __SSDPMODEL ("https://github.com/DmytroKorniienko/")
+    #define __SSDPURLMANUF ("https://github.com/anton-zolotarev")
+    #define __SSDPMANUF ("obliterator")
+  #endif
 
-static const char PGnameModel[] PROGMEM = TOSTRING(__SSDPNAME);
-static const char PGurlModel[] PROGMEM = TOSTRING(__SSDPURLMODEL);
-static const char PGversion[] PROGMEM = TOSTRING(EMBUIVER);
-static const char PGurlManuf[] PROGMEM = TOSTRING(__SSDPURLMANUF);
-static const char PGnameManuf[] PROGMEM = TOSTRING(__SSDPMANUF);
+  static const char PGnameModel[] PROGMEM = TOSTRING(__SSDPNAME);
+  static const char PGurlModel[] PROGMEM = TOSTRING(__SSDPURLMODEL);
+  static const char PGversion[] PROGMEM = TOSTRING(EMBUIVER);
+  static const char PGurlManuf[] PROGMEM = TOSTRING(__SSDPURLMANUF);
+  static const char PGnameManuf[] PROGMEM = TOSTRING(__SSDPMANUF);
 #endif
 
 class EmbUI
@@ -162,7 +154,7 @@ class EmbUI
         LED_INVERT = false;
         shouldReboot = false; // OTA update reboot flag
         LED_PIN = 31; // [0...30]
-        asave = 13; // зачем так часто записывать конфиг? Ставлю раз в 13 секунд, вместо раза в секунду [0...15]
+        asave = AUTOSAVE_TIMEOUT; // зачем так часто записывать конфиг? Ставлю раз в 13 секунд, вместо раза в секунду [0...15]
     }
     } BITFIELDS;
     #pragma pack(pop)
@@ -244,9 +236,12 @@ class EmbUI
     void pub_mqtt(const String &key, const String &value);
     void mqtt_handle();
     void subscribeAll(bool isOnlyGetSet=true);
+
     /**
       * устанавлием режим WiFi
       */
+    WiFiEventHandler e1, e2, e3;
+    WiFiMode wifi_mode;   // используется в gpio led_handle (to be removed)
     void wifi_setmode(WiFiMode mode);
     void connectToMqtt();
     void onMqttConnect();
@@ -254,6 +249,7 @@ class EmbUI
     void onSTAGotIP(WiFiEventStationModeGotIP ipInfo);
     void onSTADisconnected(WiFiEventStationModeDisconnected event_info);
     void setup_mDns();
+    Ticker embuischedw;        // планировщик WiFi
 
     static void onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
     static void onMqttSubscribe(uint16_t packetId, uint8_t qos);
@@ -262,21 +258,17 @@ class EmbUI
     static void onMqttPublish(uint16_t packetId);
     static void _onMqttConnect(bool sessionPresent);
 
-    unsigned int localUdpPort = 4243;
+    unsigned int localUdpPort = UDP_PORT;
     //char udpRemoteIP[16];
     String incomingPacket;
     String udpMessage; // буфер для сообщений Обмена по UDP
     unsigned long astimer;
-    // WiFi related
-    WiFiEventHandler e1, e2, e3;
-    WiFiMode wifi_mode;   // используется в gpio led_handle (to be removed)
-    Ticker embuischedw;        // планировщик WiFi
 
 #ifdef USE_SSDP
     void ssdp_begin() {
-          String hn = param(F("hostname"));
+          String hn = param(FPSTR(P_hostname));
           if (!hn.length())
-              var(F("hostname"), String(__IDPREFIX) + mc, true);
+              var(FPSTR(P_hostname), String(__IDPREFIX) + mc, true);
 
           uint32_t chipId;
           #ifdef ESP32
@@ -287,7 +279,7 @@ class EmbUI
           SSDP.setDeviceType(F("upnp:rootdevice"));
           SSDP.setSchemaURL(F("description.xml"));
           SSDP.setHTTPPort(80);
-          SSDP.setName(param(F("hostname")));
+          SSDP.setName(param(FPSTR(P_hostname)));
           SSDP.setSerialNumber(String(chipId));
           SSDP.setURL(F("/"));
           SSDP.setModelName(FPSTR(PGnameModel));

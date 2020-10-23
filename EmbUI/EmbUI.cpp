@@ -7,8 +7,12 @@
 #include "ui.h"
 
 #ifdef EMBUI_DEBUG
-#include "MemoryInfo.h"
+ #include "MemoryInfo.h"
 #endif
+
+#define MAX_WS_CLIENTS 4
+#define PUB_PERIOD 10000            // Publication period, ms
+#define SECONDARY_PERIOD 300U       // second handler timer, ms
 
 EmbUI embui;
 
@@ -21,14 +25,16 @@ void uploadProgress(size_t len, size_t total){
     int curr = len / part;
     if (curr != prev) {
         prev = curr;
-        for (int i = 0; i < curr; i++) Serial.print(F("="));
-        Serial.print(F("\n"));
+        for (int i = 0; i < curr; i++){
+            LOG(print, "=");
+        }
+        LOG(print, "\n");
     }
 }
 
 void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len){
     if(type == WS_EVT_CONNECT){
-        LOG(printf_P, PSTR("ws[%s][%u] connect MEM: %u\n"), server->url(), client->id(), ESP.getFreeHeap());
+        LOG(printf_P, PSTR("UI: ws[%s][%u] connect MEM: %u\n"), server->url(), client->id(), ESP.getFreeHeap());
 
         Interface *interf = new Interface(&embui, client);
         section_main_frame(interf, nullptr);
@@ -68,7 +74,7 @@ void EmbUI::post(JsonObject data){
 
     for (JsonPair kv : data) {
         String key = kv.key().c_str(), val = kv.value();
-        if (val != F("null")) {
+        if (val != FPSTR(P_null)) {
             interf->value(key, val);
             ++count;
         }
@@ -92,7 +98,7 @@ void EmbUI::post(JsonObject data){
     delete interf;
 
     if (section) {
-        LOG(printf_P, PSTR("\nPOST SECTION: %s\n\n"), section->name.c_str());
+        LOG(printf_P, PSTR("\nUI: POST SECTION: %s\n\n"), section->name.c_str());
         Interface *interf = new Interface(this, &ws);
         section->callback(interf, &data);
         delete interf;
@@ -112,26 +118,26 @@ void EmbUI::var(const String &key, const String &value, bool force)
     unsigned len = key.length() + value.length() + 16;
     size_t cap = cfg.capacity(), mem = cfg.memoryUsage();
 
-    LOG(printf_P, PSTR("WRITE: key (%s) value (%s) "), key.c_str(), value.substring(0, 15).c_str());
+    LOG(printf_P, PSTR("UI WRITE: key (%s) value (%s) "), key.c_str(), value.substring(0, 15).c_str());
     if (!force && !cfg.containsKey(key)) {
-        LOG(printf_P, PSTR("ERROR: KEY (%s) NOT INIT !!!!!!!!\n"), key.c_str());
+        LOG(printf_P, PSTR("UI ERROR: KEY (%s) is NOT initialized!\n"), key.c_str());
         return;
     }
 
     if (cap - mem < len) {
         cfg.garbageCollect();
-        LOG(printf_P, PSTR("garbage cfg %u(%u) of %u\n"), mem, cfg.memoryUsage(), cap);
+        LOG(printf_P, PSTR("UI: garbage cfg %u(%u) of %u\n"), mem, cfg.memoryUsage(), cap);
 
     }
     if (cap - mem < len) {
-        LOG(printf_P, PSTR("ERROR: KEY (%s) NOT WRITE !!!!!!!!\n"), key.c_str());
+        LOG(printf_P, PSTR("UI ERROR: KEY (%s) NOT WRITE !!!!!!!!\n"), key.c_str());
         return;
     }
 
     cfg[key] = value;
     sysData.isNeedSave = true;
 
-    LOG(printf_P, PSTR("FREE: %u\n"), cap - cfg.memoryUsage());
+    LOG(printf_P, PSTR("UI FREE: %u\n"), cap - cfg.memoryUsage());
 
     // if (mqtt_remotecontrol) {
     //     publish(String(F("embui/set/")) + key, value, true);
@@ -142,7 +148,7 @@ void EmbUI::var_create(const String &key, const String &value)
 {
     if(cfg[key].isNull()){
         cfg[key] = value;
-        LOG(printf_P, PSTR("CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), value.substring(0, 15).c_str(), ESP.getFreeHeap());
+        LOG(printf_P, PSTR("UI CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), value.substring(0, 15).c_str(), ESP.getFreeHeap());
     }
 }
 
@@ -153,7 +159,7 @@ void EmbUI::section_handle_add(const String &name, buttonCallback response)
     section->callback = response;
     section_handle.add(section);
 
-    LOG(printf_P, PSTR("REGISTER: %s\n"), name.c_str());
+    LOG(printf_P, PSTR("UI REGISTER: %s\n"), name.c_str());
 }
 
 /**
@@ -164,7 +170,7 @@ const char* EmbUI::param(const char* key)
 {
     const char* value = cfg[key];
     if (value){
-        LOG(printf_P, PSTR("READ key (%s) value (%s) MEM: %u\n"), key, value, ESP.getFreeHeap());
+        LOG(printf_P, PSTR("UI READ: key (%s) value (%s)\n"), key, value);
     }
 
     return value;
@@ -172,7 +178,7 @@ const char* EmbUI::param(const char* key)
 
 /**
  * обертка над param в виде String
- * В случае несуществующего ключа возвращает пустую строку
+ * В случае несуществующего ключа возвращает пустой String("")
  */
 String EmbUI::param(const String &key)
 {
@@ -188,12 +194,12 @@ String EmbUI::deb()
 }
 
 void notFound(AsyncWebServerRequest *request) {
-    request->send(404, FPSTR(PGmimetxt), F("Not found"));
+    request->send(404, FPSTR(PGmimetxt), FPSTR(PG404));
 }
 
 void EmbUI::init(){
     load();
-    LOG(println, String(F("CONFIG: ")) + embui.deb());
+    LOG(println, String(F("UI CONFIG: ")) + embui.deb());
     #ifdef ESP8266
         e1 = WiFi.onStationModeGotIP(std::bind(&EmbUI::onSTAGotIP, this, std::placeholders::_1));
         e2 = WiFi.onStationModeDisconnected(std::bind(&EmbUI::onSTADisconnected, this, std::placeholders::_1));
@@ -203,8 +209,8 @@ void EmbUI::init(){
     #endif
 
     // восстанавливаем настройки времени
-    timeProcessor.tzsetup(param(F("TZSET")).c_str());
-    timeProcessor.setcustomntp(param(F("userntp")).c_str());
+    timeProcessor.tzsetup(param(FPSTR(P_TZSET)).c_str());
+    timeProcessor.setcustomntp(param(FPSTR(P_userntp)).c_str());
 }
 
 void EmbUI::begin(){
@@ -212,7 +218,7 @@ void EmbUI::begin(){
     server.addHandler(&ws);
 
 #ifdef USE_SSDP
-    ssdp_begin(); Serial.println(F("Start SSDP"));
+    ssdp_begin(); LOG(println, F("Start SSDP"));
 #endif
 
 #ifdef ESP32
@@ -222,10 +228,12 @@ void EmbUI::begin(){
   server.addHandler(new SPIFFSEditor(F("esp8266"),F("esp8266"), LittleFS));
 #endif
 
+/*
     // Добавлено для отладки, т.е. возможности получить JSON интерфейса для анализа
     server.on(PSTR("/echo"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
         // embui.send(request);
     });
+*/
 
     server.on(PSTR("/version"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
         //String buf;
@@ -260,18 +268,17 @@ void EmbUI::begin(){
         request->send(response);
     });
 
-    server.on(PSTR("/eff_config.json"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        request->send(LittleFS, F("/eff_config.json"), String(), true);
-    });
+/*
+    // может пригодится позже, файлы отдаются как статика
 
     server.on(PSTR("/config.json"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        request->send(LittleFS, F("/config.json"), String(), true);
+        request->send(LittleFS, FPSTR(P_cfgfile), String(), true);
     });
 
     server.on(PSTR("/events_config.json"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
         request->send(LittleFS, F("/events_config.json"), String(), true);
     });
-
+*/
     server.on(PSTR("/restart"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
         sysData.shouldReboot = true;
         request->send(200, FPSTR(PGmimetxt), F("Ok"));
@@ -294,9 +301,9 @@ void EmbUI::begin(){
     server.on(PSTR("/update"), HTTP_POST, [this](AsyncWebServerRequest *request){
         sysData.shouldReboot = !Update.hasError();
         if (sysData.shouldReboot) {
-            request->redirect(F("/"));
+            request->redirect("/");
         } else {
-            AsyncWebServerResponse *response = request->beginResponse(200, FPSTR(PGmimetxt), F("FAIL"));
+            AsyncWebServerResponse *response = request->beginResponse(500, FPSTR(PGmimetxt), F("FAIL"));
             response->addHeader(F("Connection"), F("close"));
             request->send(response);
         }
@@ -307,7 +314,7 @@ void EmbUI::begin(){
 #endif
             int type = (data[0] == 0xe9 || data[0] == 0x1f)? U_FLASH : U_FS;
             size_t size = (type == U_FLASH)? ((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000) : (uintptr_t)&_FS_end - (uintptr_t)&_FS_start;
-            Serial.printf_P(PSTR("Update %s Start (%u)\n"), (type == U_FLASH)? F("FLASH") : F("FS"), request->contentLength());
+            LOG(printf_P, PSTR("Update %s Start (%u)\n"), (type == U_FLASH)? F("Firmware") : F("Filesystem"), request->contentLength());
 
             if (!Update.begin(size, type)) {
                 Update.printError(Serial);
@@ -320,7 +327,7 @@ void EmbUI::begin(){
         }
         if (final) {
             if(Update.end(true)){
-                Serial.printf_P(PSTR("Update Success: %uB\n"), index+len);
+                LOG(printf_P, PSTR("Update Success: %uB\n"), index+len);
             } else {
                 Update.printError(Serial);
             }
@@ -345,7 +352,7 @@ void EmbUI::begin(){
             json += String(F(",\"channel\":"))+String(WiFi.channel(i));
             json += String(F(",\"secure\":"))+String(WiFi.encryptionType(i));
 #ifdef ESP8266
-            json += String(F(",\"hidden\":"))+String(WiFi.isHidden(i)?F("true"):F("false")); // что-то сломали и в esp32 больше не работает...
+            json += String(F(",\"hidden\":"))+String(WiFi.isHidden(i)?FPSTR(P_true):FPSTR(P_false)); // что-то сломали и в esp32 больше не работает...
 #endif
             json += F("}");
             }
@@ -378,7 +385,7 @@ void EmbUI::led(uint8_t pin, bool invert){
 
 void EmbUI::handle(){
     if (sysData.shouldReboot) {
-        Serial.println(F("Rebooting..."));
+        LOG(println, F("Rebooting..."));
         delay(100);
         ESP.restart();
     }
@@ -390,17 +397,17 @@ void EmbUI::handle(){
     udpLoop();
 
     static unsigned long timer = 0;
-    if (timer + 300U > millis()) return;
+    if (timer + SECONDARY_PERIOD > millis()) return;
     timer = millis();
 
     btn();
     led_handle();
     autosave();
-    ws.cleanupClients(4);
+    ws.cleanupClients(MAX_WS_CLIENTS);
 
     //публикация изменяющихся значений
     static unsigned long timer_pub = 0;
-    if (timer_pub + 10*1000 > millis()) return;
+    if (timer_pub + PUB_PERIOD > millis()) return;
     timer_pub = millis();
     send_pub();
 }

@@ -9,10 +9,10 @@ void EmbUI::save(const char *_cfg, bool force){
     if ((sysData.isNeedSave || force) && LittleFS.begin()) {
         File configFile;
         if (_cfg == nullptr) {
-            LOG(println, F("Save default main config file"));
-            configFile = LittleFS.open(F("/config.json"), "w"); // PSTR("w") использовать нельзя, будет исключение!
+            LOG(println, F("UI: Save default main config file"));
+            configFile = LittleFS.open(FPSTR(P_cfgfile), "w"); // PSTR("w") использовать нельзя, будет исключение!
         } else {
-            LOG(printf_P, PSTR("Save %s main config file\n"), _cfg);
+            LOG(printf_P, PSTR("UI: Save %s main config file\n"), _cfg);
             configFile = LittleFS.open(_cfg, "w"); // PSTR("w") использовать нельзя, будет исключение!
         }
 
@@ -32,7 +32,7 @@ void EmbUI::save(const char *_cfg, bool force){
 void EmbUI::autosave(){
     if (sysData.isNeedSave && millis() > astimer + sysData.asave*1000){
         save();
-        LOG(println, F("AutoSave"));
+        LOG(println, F("UI: AutoSave"));
         astimer = millis();
     }
 }
@@ -42,7 +42,7 @@ void EmbUI::load(const char *_cfg){
         File configFile;
         if (_cfg == nullptr) {
             LOG(println, F("Load default main config file"));
-            configFile = LittleFS.open(F("/config.json"), "r"); // PSTR("r") использовать нельзя, будет исключение!
+            configFile = LittleFS.open(FPSTR(P_cfgfile), "r"); // PSTR("r") использовать нельзя, будет исключение!
         } else {
             LOG(printf_P, PSTR("Load %s main config file\n"), _cfg);
             configFile = LittleFS.open(_cfg, "r"); // PSTR("w") использовать нельзя, будет исключение!

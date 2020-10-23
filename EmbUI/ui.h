@@ -6,11 +6,10 @@
 #ifndef ui_h
 #define ui_h
 
-// #include "Arduino.h"
-#include <ESPAsyncWebServer.h>
-#include "ArduinoJson.h"
 #include "EmbUI.h"
-#include "LList.h"
+//#include <ESPAsyncWebServer.h>
+//#include "ArduinoJson.h"
+//#include "LList.h"
 
 class frameSend {
     public:
@@ -44,8 +43,8 @@ class frameSendHttp: public frameSend {
     public:
         frameSendHttp(AsyncWebServerRequest *request){
             req = request;
-            stream = req->beginResponseStream(FPSTR("application/json"));
-            stream->addHeader(FPSTR("Cache-Control"), FPSTR("no-cache, no-store, must-revalidate"));
+            stream = req->beginResponseStream(FPSTR(PGmimejson));
+            stream->addHeader(FPSTR(PGhdrcachec), FPSTR(PGnocache));
         }
         ~frameSendHttp() { /* delete stream; */ req = nullptr; }
         void send(const String &data){

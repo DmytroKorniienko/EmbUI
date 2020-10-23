@@ -37,5 +37,27 @@
             "-DEMBUIVER=2.0.1"
         ],
         "srcDir": "EmbUI"
-    }
+    },
+    "examples": [
+        {
+            "name": "Generic UI",
+            "base": "examples/ex_generic",
+            "files": [
+                "platformio.ini",
+                "src/globals.h",
+                "src/i18n.h",
+                "src/interface.cpp",
+                "src/interface.h",
+                "src/main.cpp",
+                "src/main.h",
+                "src/uistrings.h",
+                "README.md"
+            ]
+        },
+        {
+            "name": "Blink",
+            "base": "examples/blink",
+            "files": ["blink.cpp", "blink.h"]
+        }
+    ]
 }

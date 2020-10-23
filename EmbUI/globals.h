@@ -6,7 +6,8 @@
 #pragma once
 
 // Global macro's and framework libs
-#include "Arduino.h"
+#include <Arduino.h>
+#include "constants.h"
 
 // STRING Macro
 #define STRINGIFY(x) #x
@@ -14,10 +15,8 @@
 
 // LOG macro's
 #if defined(EMBUI_DEBUG) && DEBUG_TELNET_OUTPUT
-	//#define LOG                   telnet
 	#define LOG(func, ...) telnet.func(__VA_ARGS__)
 #elif defined(EMBUI_DEBUG)
-	//#define LOG                   Serial
 	#define LOG(func, ...) Serial.func(__VA_ARGS__)
 #else
 	#define LOG(func, ...) ;

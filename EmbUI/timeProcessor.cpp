@@ -178,7 +178,7 @@ void TimeProcessor::getTimeHTTP()
     LOG(printf_P, PSTR("HTTP TimeZone: %s, offset: %d, dst offset: %d\n"), tzone.c_str(), raw_offset, dst_offset);
 
     if (doc[F("dst_from")]!=nullptr){
-        Serial.println("Zone has DST, rescheduling refresh");
+        LOG(println, F("Zone has DST, rescheduling refresh"));
         httprefreshtimer();
     }
 }

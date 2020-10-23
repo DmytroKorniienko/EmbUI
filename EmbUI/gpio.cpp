@@ -47,9 +47,9 @@ void EmbUI::btn(){
     if (wifi_mode != old_wifi_mode) // событие после отпуска кнопки от 5 секунд
     {
         if (wifi_mode == WIFI_STA)
-            var(F("wifi"), F("AP"));
+            var(FPSTR(P_wifi), F("AP"));
         if (wifi_mode == WIFI_AP)
-            var(F("wifi"), F("STA"));
+            var(FPSTR(P_wifi), F("STA"));
             // тут сохранить настройки
         wifi_connect();
         //ESP.restart();

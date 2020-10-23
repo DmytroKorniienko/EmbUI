@@ -12,7 +12,7 @@
 #ifdef ESP8266
 void EmbUI::onSTAConnected(WiFiEventStationModeConnected ipInfo)
 {
-    LOG(printf_P, PSTR("WiFi: connected to %s\r\n"), ipInfo.ssid.c_str());
+    LOG(printf_P, PSTR("UI WiFi: connected to %s\r\n"), ipInfo.ssid.c_str());
 }
 
 void EmbUI::onSTAGotIP(WiFiEventStationModeGotIP ipInfo)
@@ -49,12 +49,12 @@ void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
     if (embuischedw.active() && (WiFi.getMode()==WIFI_AP || WiFi.getMode()==WIFI_AP_STA || !sysData.wifi_sta))
         return;
     
-    LOG(printf_P, PSTR("WiFi: Disconnected from SSID: %s, reason: %d\n"), event_info.ssid.c_str(), event_info.reason);
+    LOG(printf_P, PSTR("UI WiFi: Disconnected from SSID: %s, reason: %d\n"), event_info.ssid.c_str(), event_info.reason);
     sysData.wifi_sta = false;
 
     embuischedw.once_scheduled(WIFI_CONNECT_TIMEOUT, [this](){
         sysData.wifi_sta = false;
-        LOG(println, F("WiFi: enabling internal AP"));
+        LOG(println, F("UI WiFi: enabling internal AP"));
         wifi_setmode(WIFI_AP);  // Enable internal AP if station connection is lost
         embuischedw.once_scheduled(WIFI_RECONNECT_TIMER, [this](){wifi_setmode(WIFI_AP_STA); WiFi.begin(); setup_mDns();} );
     } );
@@ -89,11 +89,11 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 
 void EmbUI::wifi_connect(const char *ssid, const char *pwd)
 {
-    String hn = param(F("hostname"));
-    String appwd = param(F("APpwd"));
+    String hn = param(FPSTR(P_hostname));
+    String appwd = param(FPSTR(P_APpwd));
 
     if (!hn.length())
-        var(F("hostname"), String(__IDPREFIX) + mc, true);
+        var(FPSTR(P_hostname), String(__IDPREFIX) + mc, true);
     WiFi.hostname(hn);
 
     if (appwd.length()<WIFI_PSK_MIN_LENGTH)
@@ -102,10 +102,10 @@ void EmbUI::wifi_connect(const char *ssid, const char *pwd)
     LOG(printf_P, PSTR("WiFi: set AP params to SSID:%s, pwd:%s\n"), hn.c_str(), appwd.c_str());
     WiFi.softAP(hn.c_str(), appwd.c_str());
 
-    String apmode = param(F("APonly"));
+    String apmode = param(FPSTR(P_APonly));
 
     LOG(print, F("WiFi: start in "));
-    if (apmode == F("true")){
+    if (apmode == FPSTR(P_true)){
         LOG(println, F("AP-only mode"));
         wifi_setmode(WIFI_AP);
 
