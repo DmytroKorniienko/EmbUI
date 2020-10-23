@@ -14,7 +14,7 @@
 #define TOSTRING(x) STRINGIFY(x)
 
 // LOG macro's
-#if defined(EMBUI_DEBUG) && DEBUG_TELNET_OUTPUT
+#if defined(EMBUI_DEBUG) && 1==0 // DEBUG_TELNET_OUTPUT // Deprecated
 	#define LOG(func, ...) telnet.func(__VA_ARGS__)
 #elif defined(EMBUI_DEBUG)
 	#define LOG(func, ...) Serial.func(__VA_ARGS__)
