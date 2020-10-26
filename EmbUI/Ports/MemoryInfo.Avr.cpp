@@ -7,6 +7,7 @@
 
 // This code is freely inspired from https://github.com/McNeight/MemoryFree
 
+#ifdef ARDUINO_ARCH_AVR
 #include <stddef.h>
 
 // This heap allocator defines this structure to keep track of free blocks.
@@ -57,3 +58,4 @@ size_t getLargestAvailableBlock() {
   }
   return largest;
 }
+#endif

@@ -5,37 +5,52 @@
 
 #include "timeProcessor.h"
 
-#include <TZ.h>
-#include <coredecls.h>                  // settimeofday_cb()
-#include <sntp.h>
-
 #ifdef ESP8266
+ #include <coredecls.h>                 // settimeofday_cb()
+ #include <TZ.h>                        // TZ declarations https://github.com/esp8266/Arduino/blob/master/cores/esp8266/TZ.h
+ #include <sntp.h>
  #include <ESP8266HTTPClient.h>
 #endif
 
-//#ifdef ESP32
-// #include <HTTPClient.h>
-//#endif
+#ifdef ESP32
+ #include <time.h>
+ #include <lwip/apps/sntp.h>
+ #include <HTTPClient.h>
+ //extern "C" void setTimeZone(long offset, int daylight = 0);
+#endif
 
 #ifndef TZONE
-    #include <ArduinoJson.h>
+  #include <ArduinoJson.h>
 #endif
+
+#define TZ_DEFAULT PSTR("GMT0")         // default Time-Zone
 
 TimeProcessor::TimeProcessor()
 {
     // moved to the embui wifi management
     // eGotIPHandler = WiFi.onStationModeGotIP(std::bind(&TimeProcessor::onSTAGotIP, this, std::placeholders::_1));
     // eDisconnectHandler = WiFi.onStationModeDisconnected(std::bind(&TimeProcessor::onSTADisconnected, this, std::placeholders::_1));
+    //configTzTime(); for esp32 https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
 
+#ifdef ESP8266
     settimeofday_cb(std::bind(&TimeProcessor::timeavailable, this));
+#endif
 
     #ifdef TZONE
-      //setTZ(TZONE);
-      configTime(TZONE, NTP1ADDRESS, NTP2ADDRESS);
-      LOG(print, F("TIME: Time Zone set to: "));      LOG(print, TZONE);
+        #ifdef ESP8266
+          configTime(TZONE, NTP1ADDRESS, NTP2ADDRESS);
+        #elif defined ESP32
+          configTzTime(TZONE, NTP1ADDRESS, NTP2ADDRESS);
+        #endif
+        LOG(print, F("TIME: Time Zone set to: "));      LOG(print, TZONE);
     #else
-      configTime(TZ_Etc_GMT, NTP1ADDRESS, NTP2ADDRESS);
+        #ifdef ESP8266
+          configTime(TZ_DEFAULT, NTP1ADDRESS, NTP2ADDRESS);
+        #elif defined ESP32
+          configTzTime(TZ_DEFAULT, NTP1ADDRESS, NTP2ADDRESS);
+        #endif
     #endif
+
     sntp_stop();    // отключаем ntp пока нет подключения к AP
 }
 
@@ -51,7 +66,7 @@ String TimeProcessor::getFormattedShortTime()
  * влияет, на запрос через http-api за временем в конкретной зоне,
  * вместо автоопределения по ip
  */
-void TimeProcessor::setTimezone(const char *var){
+void TimeProcessor::httpTimezone(const char *var){
   if (!var)
     return;
   tzone = var;
@@ -204,10 +219,15 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
 
         timer = (mktime(tm) - getUnixTime())% DAYSECONDS;
 
-        LOG(printf_P, PSTR("Schedule TZ refresh in %d\n"), timer);
+        LOG(printf_P, PSTR("Schedule TZ refresh in %ld\n"), timer);
     }
 
-    _wrk.once_scheduled(timer, std::bind(&TimeProcessor::getTimeHTTP, this));
+    #ifdef ESP8266
+        _wrk.once_scheduled(timer, std::bind(&TimeProcessor::getTimeHTTP, this));
+    #elif defined ESP32
+        _wrk.once((float)timer, std::bind(&TimeProcessor::getTimeHTTP, this));
+    #endif
+
 }
 #endif
 
@@ -215,6 +235,7 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
  * обратный вызов при подключении к WiFi точке доступа
  * запускает синхронизацию времени
  */
+#ifdef ESP8266
 void TimeProcessor::onSTAGotIP(const WiFiEventStationModeGotIP ipInfo)
 {
     sntp_init();
@@ -231,8 +252,35 @@ void TimeProcessor::onSTADisconnected(const WiFiEventStationModeDisconnected eve
     _wrk.detach();
   #endif
 }
+#endif  //ESP8266
+
+#ifdef ESP32
+void TimeProcessor::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
+    switch (event)
+    {
+    case SYSTEM_EVENT_STA_GOT_IP:
+        sntp_init();
+        #ifndef TZONE
+            // отложенный запрос смещения зоны через http-сервис
+            httprefreshtimer(HTTPSYNC_DELAY);
+        #endif
+        LOG(println, F("UI TIME: Starting sntp sync"));
+        break;
+    case SYSTEM_EVENT_STA_DISCONNECTED:
+        sntp_stop();
+        #ifndef TZONE
+            _wrk.detach();
+        #endif
+        break;
+    default:
+        break;
+    }
+}
+#endif  //ESP32
+
+
 void TimeProcessor::timeavailable(){
-    LOG(println, F("TIME: Time adjusted"));
+    LOG(println, F("UI TIME: Time adjusted"));
     isSynced = true;
     if(_timecallback)
         _timecallback();
@@ -253,10 +301,17 @@ void TimeProcessor::getDateTimeString(String &buf, const time_t _tstamp){
  * установка текущего смещения от UTC в секундах
  */
 void TimeProcessor::setOffset(const int val){
-    LOG(printf_P, PSTR("Set time zone offset to: %d\n"), val);
-    sntp_set_timezone_in_seconds(val);
-    //sntp_set_timezone_in_seconds(-1*val);   // в правилах TZSET смещение имеет обратный знак (TZ-OffSet=UTC)
-                                              // возможно это нужно будет учесть если задавать смещение для tz из правил (на будущее)
+    LOG(printf_P, PSTR("UI Time: Set time zone offset to: %d\n"), val);
+
+    #ifdef ESP8266
+        sntp_set_timezone_in_seconds(val);
+    #elif defined ESP32
+        //setTimeZone((long)val, 0);    // this breaks linker in some weird way
+        configTime((long)val, 0, NTP1ADDRESS, NTP2ADDRESS, "");
+    #endif
+
+    // в правилах TZSET смещение имеет обратный знак (TZ-OffSet=UTC)
+    // возможно это нужно будет учесть если задавать смещение для tz из правил (на будущее)
 }
 
 /**

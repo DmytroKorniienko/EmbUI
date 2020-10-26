@@ -5,27 +5,41 @@
 
 #include "EmbUI.h"
 
+#ifdef ESP8266
+ #define FORMAT_LITTLEFS_IF_FAILED
+#endif
+
+#ifdef ESP32
+ #ifndef FORMAT_LITTLEFS_IF_FAILED
+  #define FORMAT_LITTLEFS_IF_FAILED true
+ #endif
+#endif
+
 void EmbUI::save(const char *_cfg, bool force){
-    if ((sysData.isNeedSave || force) && LittleFS.begin()) {
-        File configFile;
-        if (_cfg == nullptr) {
-            LOG(println, F("UI: Save default main config file"));
-            configFile = LittleFS.open(FPSTR(P_cfgfile), "w"); // PSTR("w") использовать нельзя, будет исключение!
-        } else {
-            LOG(printf_P, PSTR("UI: Save %s main config file\n"), _cfg);
-            configFile = LittleFS.open(_cfg, "w"); // PSTR("w") использовать нельзя, будет исключение!
-        }
 
-        String cfg_str;
-        serializeJson(cfg, cfg_str);
-        configFile.print(cfg_str);
-        configFile.flush();
-        configFile.close();
-
-        //cfg.garbageCollect(); // несколько раз ловил Exception (3) предположительно тут, возвращаю пока проверенный способ
-        deserializeJson(cfg, cfg_str);
-        sysData.isNeedSave = false;
+    if ((sysData.isNeedSave || force)){
+      LittleFS.begin();
+    } else {
+        return;
     }
+
+    File configFile;
+    if (_cfg == nullptr) {
+        LOG(println, F("UI: Save default main config file"));
+        configFile = LittleFS.open(FPSTR(P_cfgfile), "w"); // PSTR("w") использовать нельзя, будет исключение!
+    } else {
+        LOG(printf_P, PSTR("UI: Save %s main config file\n"), _cfg);
+        configFile = LittleFS.open(_cfg, "w"); // PSTR("w") использовать нельзя, будет исключение!
+    }
+
+    String cfg_str;
+    serializeJson(cfg, cfg_str);
+    configFile.print(cfg_str);
+    configFile.close();
+
+    //cfg.garbageCollect(); // несколько раз ловил Exception (3) предположительно тут, возвращаю пока проверенный способ
+    deserializeJson(cfg, cfg_str);
+    sysData.isNeedSave = false;
     delay(DELAY_AFTER_FS_WRITING); // задержка после записи
 }
 
@@ -38,7 +52,7 @@ void EmbUI::autosave(){
 }
 
 void EmbUI::load(const char *_cfg){
-    if (LittleFS.begin()) {
+    if (LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)) {
         File configFile;
         if (_cfg == nullptr) {
             LOG(println, F("Load default main config file"));
@@ -62,6 +76,6 @@ void EmbUI::load(const char *_cfg){
             return;
         }
     } else {
-            LOG(println, F("Can't initialize LittleFS"));
+        LOG(println, F("UI: Can't initialize LittleFS"));
     }
 }

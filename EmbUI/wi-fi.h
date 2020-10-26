@@ -11,7 +11,9 @@
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
  //#include <ESP8266WiFiMulti.h>   // Include the Wi-Fi-Multi library
-#else
+#endif
+
+#ifdef ESP32
  #include <WiFi.h>
 #endif
 

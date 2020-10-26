@@ -387,7 +387,7 @@ void Interface::json_frame_interface(const String &name){
 }
 
 bool Interface::json_frame_add(JsonObject obj) {
-    LOG(printf_P, PSTR("json_frame_add: %u = %u "), obj.memoryUsage(), json.capacity() - json.memoryUsage());
+    //LOG(printf_P, PSTR("json_frame_add: %u = %u "), obj.memoryUsage(), json.capacity() - json.memoryUsage());
     if (json.capacity() - json.memoryUsage() > obj.memoryUsage() + 40 && section_stack.end()->block.add(obj)) {
         section_stack.end()->idx++;
         LOG(printf_P, PSTR("UI: OK [%u]\tMEM: %u\n"), section_stack.end()->idx, ESP.getFreeHeap());

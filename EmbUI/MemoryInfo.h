@@ -4,6 +4,7 @@
 
 #pragma once
 
+#ifndef ESP32
 #include <stddef.h> // for size_t
 
 // Returns the number of free bytes in the RAM.
@@ -16,3 +17,4 @@ size_t getLargestAvailableBlock();
 inline float getFragmentation() {
   return 100 - getLargestAvailableBlock() * 100.0 / getTotalAvailableMemory();
 }
+#endif

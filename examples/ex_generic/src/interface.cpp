@@ -147,16 +147,7 @@ void block_settings_netw(Interface *interf, JsonObject *data){
     interf->spacer(FPSTR(T_DICT[lang][TD::D_WiFiClientOpts]));
     interf->text(FPSTR(P_hostname), FPSTR(T_DICT[lang][TD::D_Hostname]));
     interf->text(FPSTR(T_WCSSID), WiFi.SSID(), FPSTR(T_DICT[lang][TD::D_WiFiSSID]), false);
-
-/*
-    String a;
-    if (WiFi.getMode()==WIFI_AP_STA)
-        a="zzzz";
-*/
-
-    //WiFi.getMode()==WIFI_AP_STA ? "ZZZZ" : ""
-//    interf->text(FPSTR(T_WCSSID), "", FPSTR(T_DICT[lang][TD::D_WiFiSSID]), false);
-    interf->password(FPSTR(T_WCPASS), FPSTR(T_DICT[lang][TD::D_Password]));
+    interf->password(FPSTR(T_WCPASS), "", FPSTR(T_DICT[lang][TD::D_Password]));
     interf->button_submit(FPSTR(T_SET_WIFI), FPSTR(T_DICT[lang][TD::D_CONNECT]), FPSTR(T_GRAY));
     interf->json_section_end();
 

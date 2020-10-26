@@ -5,6 +5,10 @@
 
 #include "EmbUI.h"
 
+/*
+под esp32 статусы WiFi извлекаются по-другому,
+если нужно будет, позже вернусь. пока убираю
+
 void EmbUI::led_handle(){
     if (sysData.LED_PIN == 31) return;
     if (wifi_mode == WIFI_STA)
@@ -12,13 +16,14 @@ void EmbUI::led_handle(){
     if (wifi_mode == WIFI_AP)
         digitalWrite(sysData.LED_PIN, LOW + sysData.LED_INVERT);
 }
+*/
 
 void EmbUI::btn(){
 #ifdef __BUTTON
     if (digitalRead(__BUTTON))
         return;
 
-    uint8_t old_wifi_mode = wifi_mode;
+    //uint8_t old_wifi_mode = wifi_mode;
 
     led_inv();
     unsigned long t = millis();
@@ -32,10 +37,13 @@ void EmbUI::btn(){
                 led_inv();
                 i = true;
             }
+            /*
+            для чего тут меняется режим WiFi в обход методов из wi-fi.cpp не ясно
             if (old_wifi_mode == WIFI_STA)
                 wifi_mode = WIFI_AP;
             if (old_wifi_mode == WIFI_AP)
                 wifi_mode = WIFI_STA;
+            */
         }
         if (t + 15000 < millis()) // Нажатие 10 секунд
         {
@@ -44,6 +52,9 @@ void EmbUI::btn(){
             ESP.restart();
         }
     }
+/*
+для чего тут меняется режим WiFi в обход методов из wi-fi.cpp не ясно
+
     if (wifi_mode != old_wifi_mode) // событие после отпуска кнопки от 5 секунд
     {
         if (wifi_mode == WIFI_STA)
@@ -54,6 +65,7 @@ void EmbUI::btn(){
         wifi_connect();
         //ESP.restart();
     }
+*/
 #endif
 }
 
