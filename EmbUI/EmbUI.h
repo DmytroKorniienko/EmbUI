@@ -235,6 +235,11 @@ class EmbUI
     String id(const String &tpoic);
 
     /**
+     * Initialize WiFi using stored configuration
+     */
+    void wifi_init();
+
+    /**
      * Подключение к WiFi AP в клиентском режиме
      */
     void wifi_connect(const char *ssid=nullptr, const char *pwd=nullptr);

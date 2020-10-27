@@ -5,12 +5,10 @@
 
 #pragma once
 
-//#ifndef wi_fi_h
 #define __EMBUI_WIFI_H
 
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
- //#include <ESP8266WiFiMulti.h>   // Include the Wi-Fi-Multi library
 #endif
 
 #ifdef ESP32

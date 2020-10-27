@@ -36,6 +36,13 @@ TimeProcessor::TimeProcessor()
     settimeofday_cb(std::bind(&TimeProcessor::timeavailable, this));
 #endif
 
+/*
+для ESP32 функциональный коллбек не поддерживается :( 
+#ifdef ESP32
+    sntp_set_time_sync_notification_cb(timeavailable);
+#endif
+*/
+
     #ifdef TZONE
         #ifdef ESP8266
           configTime(TZONE, NTP1ADDRESS, NTP2ADDRESS);

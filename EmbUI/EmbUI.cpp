@@ -14,7 +14,6 @@
 #define PUB_PERIOD 10000            // Publication period, ms
 #define SECONDARY_PERIOD 300U       // second handler timer, ms
 
-
 EmbUI embui;
 
 void section_main_frame(Interface *interf, JsonObject *data) {}
@@ -214,10 +213,8 @@ void EmbUI::init(){
     timeProcessor.tzsetup(param(FPSTR(P_TZSET)).c_str());
     timeProcessor.setcustomntp(param(FPSTR(P_userntp)).c_str());
 
-#ifdef ESP32
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.begin();
-#endif
+    // запускаем WiFi
+    wifi_init();
 }
 
 void EmbUI::begin(){

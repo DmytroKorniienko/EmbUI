@@ -3,7 +3,6 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-//bool _wifi_connected = false;
 #include "EmbUI.h"
 #include "wi-fi.h"
 
@@ -48,24 +47,6 @@ void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
         _cb_STADisconnected();        // execule callback
 }
 
-void EmbUI::setup_mDns(){
-    /*use mdns for host name resolution*/
-    char tmpbuf[32]; // Используем ap_ssid если задан, иначе конструируем вручную
-    memset(tmpbuf,0,sizeof(tmpbuf));
-    if(param(F("ap_ssid")).length()>0){
-        strncpy_P(tmpbuf,param(F("ap_ssid")).c_str(),sizeof(tmpbuf)-1);
-    }
-    else
-        sprintf_P(tmpbuf,PSTR("%s%s"),(char*)__IDPREFIX, mc);
-    if (!MDNS.begin(tmpbuf, WiFi.softAPIP())) {
-        Serial.println(F("Error setting up MDNS responder!"));
-    } else {
-        MDNS.addService(F("http"), F("tcp"), 80);
-        MDNS.addService(F("ftp"), F("tcp"), 21);
-        MDNS.addService(F("txt"), F("udp"), 4243);
-        Serial.printf_P(PSTR("mDNS responder started: %s.local\n"),tmpbuf);
-    }
-}
 #endif  //ESP8266
 
 #ifdef ESP32
@@ -111,8 +92,7 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)   // , WiFiEventI
 }
 #endif  //ESP32
 
-void EmbUI::wifi_connect(const char *ssid, const char *pwd)
-{
+void EmbUI::wifi_init(){
     String hn = param(FPSTR(P_hostname));
     String appwd = param(FPSTR(P_APpwd));
 
@@ -129,7 +109,7 @@ void EmbUI::wifi_connect(const char *ssid, const char *pwd)
     if (appwd.length()<WIFI_PSK_MIN_LENGTH)
         appwd = "";
 
-    LOG(printf_P, PSTR("WiFi: set AP params to SSID:%s, pwd:%s\n"), hn.c_str(), appwd.c_str());
+    LOG(printf_P, PSTR("UI WiFi: set AP params to SSID:%s, pwd:%s\n"), hn.c_str(), appwd.c_str());
     WiFi.softAP(hn.c_str(), appwd.c_str());
 
     String apmode = param(FPSTR(P_APonly));
@@ -141,14 +121,18 @@ void EmbUI::wifi_connect(const char *ssid, const char *pwd)
     } else {
         LOG(println, F("AP/STA mode"));
         WiFi.mode(WIFI_AP_STA);
+        WiFi.begin();   // use internaly stored last known credentials for connection
+        LOG(println, F("UI WiFi reconecting..."));
+    }
+}
 
-        if (ssid) {
-            WiFi.begin(ssid, pwd);
-            LOG(printf_P, PSTR("UI WiFi: client connecting to SSID:%s, pwd:%s\n"), ssid, pwd ? pwd : "");
-        } else {
-            WiFi.begin();   // use internaly stored last known credentials for connection
-            LOG(println, F("UI WiFi reconecting..."));
-        }
+void EmbUI::wifi_connect(const char *ssid, const char *pwd)
+{
+    if (ssid) {
+        WiFi.begin(ssid, pwd);
+        LOG(printf_P, PSTR("UI WiFi: client connecting to SSID:%s, pwd:%s\n"), ssid, pwd ? pwd : "");
+    } else {
+        WiFi.begin();
     }
 }
 
@@ -157,6 +141,27 @@ void EmbUI::wifi_setmode(WiFiMode_t mode){
     WiFi.mode(mode);
 }
 
+// TODO: adopt esp32 lib
+#ifdef ESP8266
+void EmbUI::setup_mDns(){
+    /*use mdns for host name resolution*/
+    char tmpbuf[32]; // Используем ap_ssid если задан, иначе конструируем вручную
+    memset(tmpbuf,0,sizeof(tmpbuf));
+    if(param(F("ap_ssid")).length()>0){
+        strncpy_P(tmpbuf,param(F("ap_ssid")).c_str(),sizeof(tmpbuf)-1);
+    }
+    else
+        sprintf_P(tmpbuf,PSTR("%s%s"),(char*)__IDPREFIX, mc);
+    if (!MDNS.begin(tmpbuf, WiFi.softAPIP())) {
+        Serial.println(F("Error setting up MDNS responder!"));
+    } else {
+        MDNS.addService(F("http"), F("tcp"), 80);
+        MDNS.addService(F("ftp"), F("tcp"), 21);
+        MDNS.addService(F("txt"), F("udp"), 4243);
+        LOG(printf_P, PSTR("mDNS responder started: %s.local\n"),tmpbuf);
+    }
+}
+#endif
 
 /**
  * формирует chipid из MAC-адреса вида aabbccddeeff

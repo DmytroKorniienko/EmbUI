@@ -61,7 +61,6 @@ private:
 
 protected:
     callback_function_t _timecallback = nullptr;
-    //WiFiEventHandler eGotIPHandler, eDisconnectHandler;  // ручки для отслеживания состояния WiFi
 
     String tzone;            // строка зоны для http-сервиса как она задана в https://raw.githubusercontent.com/nayarsystems/posix_tz_db/master/zones.csv
 
@@ -74,7 +73,11 @@ protected:
         bool usehttpzone = true;
     #endif
 
+    /**
+     * Timesync callback
+     */
     virtual void timeavailable();       // колбэк установки времени
+
 
 public:
     TimeProcessor();
