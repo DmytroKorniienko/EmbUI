@@ -15,8 +15,8 @@
  #include <WiFi.h>
 #endif
 
-#define WIFI_CONNECT_TIMEOUT    5
-#define WIFI_RECONNECT_TIMER    25
+#define WIFI_CONNECT_TIMEOUT    7
+#define WIFI_RECONNECT_TIMER    30
 #define WIFI_PSK_MIN_LENGTH     8
 
 //#endif

@@ -212,12 +212,12 @@ void EmbUI::init(){
     // восстанавливаем настройки времени
     timeProcessor.tzsetup(param(FPSTR(P_TZSET)).c_str());
     timeProcessor.setcustomntp(param(FPSTR(P_userntp)).c_str());
-
-    // запускаем WiFi
-    wifi_init();
 }
 
 void EmbUI::begin(){
+    // запускаем WiFi
+    wifi_init();
+    
     ws.onEvent(onWsEvent);
     server.addHandler(&ws);
 
@@ -394,14 +394,14 @@ void EmbUI::handle(){
     MDNS.update();
 #endif
     //_connected();
-    mqtt_handle();
-    udpLoop();
+    //mqtt_handle();
+    //udpLoop();
 
     static unsigned long timer = 0;
     if (timer + SECONDARY_PERIOD > millis()) return;
     timer = millis();
 
-    btn();
+    //btn();
     //led_handle();
     autosave();
     ws.cleanupClients(MAX_WS_CLIENTS);

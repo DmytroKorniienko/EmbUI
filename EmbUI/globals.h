@@ -16,8 +16,6 @@
 #define TOSTRING(x) __STRINGIFY(x)
 
 // LOG macro's
-//#if defined(EMBUI_DEBUG) && DEBUG_TELNET_OUTPUT
-//	#define LOG(func, ...) telnet.func(__VA_ARGS__)
 #if defined(EMBUI_DEBUG)
 	#define LOG(func, ...) Serial.func(__VA_ARGS__)
 #else

@@ -17,10 +17,10 @@ void EmbUI::onSTAConnected(WiFiEventStationModeConnected ipInfo)
 
 void EmbUI::onSTAGotIP(WiFiEventStationModeGotIP ipInfo)
 {
-    wifi_setmode(WIFI_STA);            // Shutdown internal Access Point
     sysData.wifi_sta = true;
     embuischedw.detach();
     LOG(printf_P, PSTR("WiFi: Got IP: %s\r\n"), ipInfo.ip.toString().c_str());
+    wifi_setmode(WIFI_STA);            // Shutdown internal Access Point
     setup_mDns();
     timeProcessor.onSTAGotIP(ipInfo);
     if(_cb_STAGotIP)
@@ -29,22 +29,29 @@ void EmbUI::onSTAGotIP(WiFiEventStationModeGotIP ipInfo)
 
 void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
 {
-    if (embuischedw.active() && (WiFi.getMode()==WIFI_AP || WiFi.getMode()==WIFI_AP_STA || !sysData.wifi_sta))
-        return;
-    
     LOG(printf_P, PSTR("UI WiFi: Disconnected from SSID: %s, reason: %d\n"), event_info.ssid.c_str(), event_info.reason);
-    sysData.wifi_sta = false;
+    sysData.wifi_sta = false;       // to be removed and replaced with API-method
 
+    if (embuischedw.active()){
+        LOG(println, F("UI WiFi: embuischedw running, bailing out..."));
+        return;
+    }
+
+    /*
+      esp8266 сильно тормозит в комбинированном режиме AP-STA при постоянных попытках реконнекта, WEB-интерфейс становится
+      неотзывчивым, сложно изменять настройки.
+      В качестве решения переключаем контроллер в режим AP-only после WIFI_CONNECT_TIMEOUT таймаута на попытку переподключения.
+      Далее делаем периодические попытки переподключений каждые WIFI_RECONNECT_TIMER секунд
+    */
     embuischedw.once_scheduled(WIFI_CONNECT_TIMEOUT, [this](){
-        sysData.wifi_sta = false;
-        LOG(println, F("UI WiFi: enabling internal AP"));
-        wifi_setmode(WIFI_AP);  // Enable internal AP if station connection is lost
-        embuischedw.once_scheduled(WIFI_RECONNECT_TIMER, [this](){wifi_setmode(WIFI_AP_STA); WiFi.begin(); setup_mDns();} );
+        LOG(println, F("UI WiFi: switching to internal AP"));
+        wifi_setmode(WIFI_AP);
+        embuischedw.once_scheduled(WIFI_RECONNECT_TIMER, [this](){ embuischedw.detach(); wifi_setmode(WIFI_AP_STA); WiFi.begin();} );
     } );
 
     timeProcessor.onSTADisconnected(event_info);
     if(_cb_STADisconnected)
-        _cb_STADisconnected();        // execule callback
+        _cb_STADisconnected();        // execute callback
 }
 
 #endif  //ESP8266
@@ -79,10 +86,12 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)   // , WiFiEventI
         // https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/esp32/esp_wifi_types.h
         if(WiFi.getMode() != WIFI_MODE_APSTA){
             WiFi.mode(WIFI_MODE_APSTA);         // Enable internal AP if station connection is lost
-            LOG(println, F("UI WiFi: Enabling internal AP"));
+            LOG(println, F("UI WiFi: Switch to AP-Station mode"));
         }
         if(_cb_STADisconnected)
             _cb_STADisconnected();        // execule callback
+
+        embuischedw.once(WIFI_RECONNECT_TIMER, [this](){ WiFi.begin(); } ); // esp32 doesn't auto-reconnects, so reschedule it
         break;
     default:
         break;
@@ -137,7 +146,7 @@ void EmbUI::wifi_connect(const char *ssid, const char *pwd)
 }
 
 void EmbUI::wifi_setmode(WiFiMode_t mode){
-    LOG(printf_P, PSTR("WiFi: set mode: %d\n"), mode);
+    LOG(printf_P, PSTR("UI WiFi: set mode: %d\n"), mode);
     WiFi.mode(mode);
 }
 
