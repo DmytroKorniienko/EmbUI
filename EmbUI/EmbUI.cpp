@@ -197,13 +197,16 @@ void notFound(AsyncWebServerRequest *request) {
     request->send(404, FPSTR(PGmimetxt), FPSTR(PG404));
 }
 
-void EmbUI::init(){
-    load();
+void EmbUI::begin(){
+    load();     // try to load config from file
+    create_parameters();    // use defaults for params missing in config
+
     LOG(println, String(F("UI CONFIG: ")) + embui.deb());
     #ifdef ESP8266
         e1 = WiFi.onStationModeGotIP(std::bind(&EmbUI::onSTAGotIP, this, std::placeholders::_1));
         e2 = WiFi.onStationModeDisconnected(std::bind(&EmbUI::onSTADisconnected, this, std::placeholders::_1));
         e3 = WiFi.onStationModeConnected(std::bind(&EmbUI::onSTAConnected, this, std::placeholders::_1));
+        e4 = WiFi.onWiFiModeChange(std::bind(&EmbUI::onWiFiMode, this, std::placeholders::_1));
     #elif defined ESP32
         WiFi.onEvent(std::bind(&EmbUI::WiFiEvent, this, std::placeholders::_1, std::placeholders::_2));
         //WiFi.onEvent(std::bind(&TimeProcessor::WiFiEvent, &timeProcessor, std::placeholders::_1, std::placeholders::_2));
@@ -212,9 +215,7 @@ void EmbUI::init(){
     // восстанавливаем настройки времени
     timeProcessor.tzsetup(param(FPSTR(P_TZSET)).c_str());
     timeProcessor.setcustomntp(param(FPSTR(P_userntp)).c_str());
-}
 
-void EmbUI::begin(){
     // запускаем WiFi
     wifi_init();
     
@@ -235,10 +236,6 @@ void EmbUI::begin(){
 */
 
     server.on(PSTR("/version"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        //String buf;
-        //buf = F("EmbUI ver: "); buf+=F(VERSION);
-        //buf += F("\nGIT: "); buf+=F(PIO_SRC_REV);
-        //buf += F("\nOK\n");
         request->send(200, FPSTR(PGmimetxt), F("EmbUI ver: " TOSTRING(EMBUIVER)));
     });
 
@@ -390,6 +387,7 @@ void EmbUI::handle(){
         delay(100);
         ESP.restart();
     }
+
 #ifdef ESP8266
     MDNS.update();
 #endif

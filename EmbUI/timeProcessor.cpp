@@ -191,13 +191,15 @@ void TimeProcessor::getTimeHTTP()
                                         // слишком объемные для контроллера чтобы держать и обрабатывать их на лету.
                                         // Вероятно проще будет их запихать в js веб-интерфейса
     dst_offset=doc[F("dst_offset")];
-    setOffset(raw_offset+dst_offset);
 
+    // Save mnemonic time-zone (do not know why :) )
     if (!tzone.length()) {
         const char *tz = doc[F("timezone")];
         tzone+=tz;
     }
     LOG(printf_P, PSTR("HTTP TimeZone: %s, offset: %d, dst offset: %d\n"), tzone.c_str(), raw_offset, dst_offset);
+
+    setOffset(raw_offset+dst_offset);
 
     if (doc[F("dst_from")]!=nullptr){
         LOG(println, F("Zone has DST, rescheduling refresh"));

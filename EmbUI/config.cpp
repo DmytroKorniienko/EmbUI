@@ -52,30 +52,23 @@ void EmbUI::autosave(){
 }
 
 void EmbUI::load(const char *_cfg){
-    if (LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)) {
-        File configFile;
-        if (_cfg == nullptr) {
-            LOG(println, F("Load default main config file"));
-            configFile = LittleFS.open(FPSTR(P_cfgfile), "r"); // PSTR("r") использовать нельзя, будет исключение!
-        } else {
-            LOG(printf_P, PSTR("Load %s main config file\n"), _cfg);
-            configFile = LittleFS.open(_cfg, "r"); // PSTR("w") использовать нельзя, будет исключение!
-        }
-
-        String cfg_str = configFile.readString();
-        configFile.close();
-        if (cfg_str == F("")){
-            LOG(println, F("Failed to open config file"));
-            //save(); // this does nothing on a first run
-            return;
-        }
-        DeserializationError error = deserializeJson(cfg, cfg_str);
-        if (error) {
-            LOG(print, F("JSON config deserializeJson error: "));
-            LOG(println, error.code());
-            return;
-        }
-    } else {
+    if (!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
         LOG(println, F("UI: Can't initialize LittleFS"));
+        return;
+    }
+    
+    File configFile = _cfg ? LittleFS.open(_cfg, "r") : LittleFS.open(FPSTR(P_cfgfile), "r");
+
+    DeserializationError error;
+    if (configFile){
+        error = deserializeJson(cfg, configFile);
+        configFile.close();
+    } else {
+        return;
+    }
+
+    if (error) {
+        LOG(print, F("UI: JSON config deserializeJson error: "));
+        LOG(println, error.code());
     }
 }

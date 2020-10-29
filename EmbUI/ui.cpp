@@ -5,6 +5,16 @@
 
 #include "ui.h"
 
+void Interface::frame(const String &id, const String &value){
+    StaticJsonDocument<256> obj;
+    obj[FPSTR(P_id)] = id;
+    obj[FPSTR(P_value)] = value;
+
+    if (!json_frame_add(obj.as<JsonObject>())) {
+        frame(id, value);
+    }
+}
+
 void Interface::hidden(const String &id, const String &value){
     StaticJsonDocument<256> obj;
     obj[FPSTR(P_html)] = FPSTR(P_hidden);

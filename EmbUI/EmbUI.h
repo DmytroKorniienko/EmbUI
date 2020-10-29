@@ -111,6 +111,7 @@ void __attribute__((weak)) section_main_frame(Interface *interf, JsonObject *dat
 void __attribute__((weak)) pubCallback(Interface *interf);
 String __attribute__((weak)) httpCallback(const String &param, const String &value, bool isset);
 void __attribute__((weak)) uploadProgress(size_t len, size_t total);
+void __attribute__((weak)) create_parameters();
 
 //----------------------
 
@@ -196,7 +197,7 @@ class EmbUI
     mqttCallback onConnect;
     TimeProcessor timeProcessor;
 
-    char mc[13]; // id из mac-адреса "ffffffffffff"
+    char mc[7]; // id из последних 3 байт mac-адреса "ffffff"
 
     void var(const String &key, const String &value, bool force = false);
     void var_create(const String &key, const String &value);
@@ -269,11 +270,12 @@ class EmbUI
     void wifi_setmode(WiFiMode_t mode);
 
 #ifdef ESP8266
-    WiFiEventHandler e1, e2, e3;
+    WiFiEventHandler e1, e2, e3, e4;
     WiFiMode wifi_mode;           // используется в gpio led_handle (to be removed)
     void onSTAConnected(WiFiEventStationModeConnected ipInfo);
     void onSTAGotIP(WiFiEventStationModeGotIP ipInfo);
     void onSTADisconnected(WiFiEventStationModeDisconnected event_info);
+    void onWiFiMode(WiFiEventModeChange event_info);
 #endif
 
 #ifdef ESP32
