@@ -7,11 +7,25 @@
 
 void Interface::frame(const String &id, const String &value){
     StaticJsonDocument<256> obj;
+    obj[FPSTR(P_html)] = F("iframe");;
+    obj[FPSTR(P_type)] = F("frame");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
 
     if (!json_frame_add(obj.as<JsonObject>())) {
         frame(id, value);
+    }
+}
+
+void Interface::frame2(const String &id, const String &value){
+    StaticJsonDocument<256> obj;
+    obj[FPSTR(P_html)] = F("iframe2");;
+    obj[FPSTR(P_type)] = F("frame");
+    obj[FPSTR(P_id)] = id;
+    obj[FPSTR(P_value)] = value;
+
+    if (!json_frame_add(obj.as<JsonObject>())) {
+        frame2(id, value);
     }
 }
 

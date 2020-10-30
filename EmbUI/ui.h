@@ -105,6 +105,7 @@ class Interface {
         void json_section_end();
 
         void frame(const String &id, const String &value);
+        void frame2(const String &id, const String &value);
         void value(const String &id, bool html = false);
         void value(const String &id, const String &val, bool html = false);
         void hidden(const String &id);
