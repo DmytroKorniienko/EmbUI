@@ -189,7 +189,7 @@ class EmbUI
 
   public:
     EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws("/ws"){
-      *mc='\0';
+        memset(mc,0,sizeof(mc));
     }
     BITFIELDS sysData;
     AsyncWebServer server;
