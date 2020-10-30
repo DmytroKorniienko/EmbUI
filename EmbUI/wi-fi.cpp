@@ -198,6 +198,6 @@ void EmbUI::getAPmac(){
     #endif
     WiFi.softAPmacAddress(_mac);
 
-    printf_P(PSTR("UI MAC:%02X%02X%02X"), _mac[3], _mac[4], _mac[5]);
+    LOG(printf_P,PSTR("UI MAC:%02X%02X%02X\n"), _mac[3], _mac[4], _mac[5]);
     sprintf_P(mc, PSTR("%02X%02X%02X"), _mac[3], _mac[4], _mac[5]);
 }
