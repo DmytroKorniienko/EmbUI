@@ -5,9 +5,9 @@
 #include "MemoryInfo.h"
 
 #if defined(ARDUINO_ARCH_AVR)
-#include "Ports/MemoryInfo.Avr.cpp"
+ #include "Ports/MemoryInfo.Avr.cpp"
 #elif defined(ARDUINO_ARCH_ESP8266)
-#include "Ports/MemoryInfo.Esp8266.cpp"
+ #include "Ports/MemoryInfo.Esp8266.cpp"
 #else
-#error Your microcontroller architecture is not supported
+ #warning MemoryInfo: Your microcontroller architecture is not supported
 #endif

@@ -26,7 +26,7 @@
         "url": "https://github.com/DmytroKorniienko/EmbUI.git"
     },
     "platforms": ["espressif8266"],
-    "version": "2.0.1",
+    "version": "2.1.0",
     "dependencies": {
         "bblanchon/ArduinoJson": "*",
         "AsyncWebServer-mod": "https://github.com/DmytroKorniienko/ESPAsyncWebServer",
@@ -34,7 +34,8 @@
     },
     "build": {
         "flags": [
-            "-DEMBUIVER=2.0.1"
+            "-DEMBUIVER=2.1.0",
+            "-DCONFIG_LITTLEFS_FOR_IDF_3_2"
         ],
         "srcDir": "EmbUI"
     },
@@ -53,11 +54,6 @@
                 "src/uistrings.h",
                 "README.md"
             ]
-        },
-        {
-            "name": "Blink",
-            "base": "examples/blink",
-            "files": ["blink.cpp", "blink.h"]
         }
     ]
 }

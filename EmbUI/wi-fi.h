@@ -5,18 +5,18 @@
 
 #pragma once
 
-//#ifndef wi_fi_h
 #define __EMBUI_WIFI_H
 
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
- //#include <ESP8266WiFiMulti.h>   // Include the Wi-Fi-Multi library
-#else
+#endif
+
+#ifdef ESP32
  #include <WiFi.h>
 #endif
 
-#define WIFI_CONNECT_TIMEOUT    5
-#define WIFI_RECONNECT_TIMER    25
+#define WIFI_CONNECT_TIMEOUT    7
+#define WIFI_RECONNECT_TIMER    30
 #define WIFI_PSK_MIN_LENGTH     8
 
 //#endif

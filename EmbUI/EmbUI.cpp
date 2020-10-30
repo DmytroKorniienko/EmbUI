@@ -197,23 +197,28 @@ void notFound(AsyncWebServerRequest *request) {
     request->send(404, FPSTR(PGmimetxt), FPSTR(PG404));
 }
 
-void EmbUI::init(){
-    load();
+void EmbUI::begin(){
+    load();     // try to load config from file
+    create_parameters();    // use defaults for params missing in config
+
     LOG(println, String(F("UI CONFIG: ")) + embui.deb());
     #ifdef ESP8266
         e1 = WiFi.onStationModeGotIP(std::bind(&EmbUI::onSTAGotIP, this, std::placeholders::_1));
         e2 = WiFi.onStationModeDisconnected(std::bind(&EmbUI::onSTADisconnected, this, std::placeholders::_1));
         e3 = WiFi.onStationModeConnected(std::bind(&EmbUI::onSTAConnected, this, std::placeholders::_1));
-    #else
-        WiFi.onEvent(std::bind(&EmbUI::WiFiEvent, this, std::placeholders::_1));
+        e4 = WiFi.onWiFiModeChange(std::bind(&EmbUI::onWiFiMode, this, std::placeholders::_1));
+    #elif defined ESP32
+        WiFi.onEvent(std::bind(&EmbUI::WiFiEvent, this, std::placeholders::_1, std::placeholders::_2));
+        //WiFi.onEvent(std::bind(&TimeProcessor::WiFiEvent, &timeProcessor, std::placeholders::_1, std::placeholders::_2));
     #endif
 
     // восстанавливаем настройки времени
     timeProcessor.tzsetup(param(FPSTR(P_TZSET)).c_str());
     timeProcessor.setcustomntp(param(FPSTR(P_userntp)).c_str());
-}
 
-void EmbUI::begin(){
+    // запускаем WiFi
+    wifi_init();
+    
     ws.onEvent(onWsEvent);
     server.addHandler(&ws);
 
@@ -221,25 +226,16 @@ void EmbUI::begin(){
     ssdp_begin(); LOG(println, F("Start SSDP"));
 #endif
 
+/*
 #ifdef ESP32
   server.addHandler(new SPIFFSEditor(LittleFS, http_username,http_password));
 #elif defined(ESP8266)
   //server.addHandler(new SPIFFSEditor(http_username,http_password, LittleFS));
   server.addHandler(new SPIFFSEditor(F("esp8266"),F("esp8266"), LittleFS));
 #endif
-
-/*
-    // Добавлено для отладки, т.е. возможности получить JSON интерфейса для анализа
-    server.on(PSTR("/echo"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        // embui.send(request);
-    });
 */
 
     server.on(PSTR("/version"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        //String buf;
-        //buf = F("EmbUI ver: "); buf+=F(VERSION);
-        //buf += F("\nGIT: "); buf+=F(PIO_SRC_REV);
-        //buf += F("\nOK\n");
         request->send(200, FPSTR(PGmimetxt), F("EmbUI ver: " TOSTRING(EMBUIVER)));
     });
 
@@ -287,13 +283,16 @@ void EmbUI::begin(){
     server.on(PSTR("/heap"), HTTP_GET, [this](AsyncWebServerRequest *request){
         String out = "Heap: "+String(ESP.getFreeHeap());
 #ifdef EMBUI_DEBUG
+    #ifdef ESP8266
         out += "\nFrac: " + String(getFragmentation());
+    #endif
         out += "\nClient: " + String(ws.count());
 #endif
         request->send(200, FPSTR(PGmimetxt), out);
     });
 
-    // Simple Firmware Update Form
+#ifndef ESP32
+    // Simple Firmware Update Form (ESP32 ota broken)
     server.on(PSTR("/update"), HTTP_GET, [](AsyncWebServerRequest *request){
         request->send(200, FPSTR(PGmimehtml), F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>"));
     });
@@ -309,9 +308,7 @@ void EmbUI::begin(){
         }
     },[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         if (!index) {
-#ifndef ESP32
             Update.runAsync(true);
-#endif
             int type = (data[0] == 0xe9 || data[0] == 0x1f)? U_FLASH : U_FS;
             size_t size = (type == U_FLASH)? ((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000) : (uintptr_t)&_FS_end - (uintptr_t)&_FS_start;
             LOG(printf_P, PSTR("Update %s Start (%u)\n"), (type == U_FLASH)? F("Firmware") : F("Filesystem"), request->contentLength());
@@ -334,6 +331,7 @@ void EmbUI::begin(){
         }
         uploadProgress(index + len, request->contentLength());
     });
+#endif
 
     //First request will return 0 results unless you start scan from somewhere else (loop/setup)
     //Do not request more often than 3-5 seconds
@@ -389,19 +387,20 @@ void EmbUI::handle(){
         delay(100);
         ESP.restart();
     }
+
 #ifdef ESP8266
     MDNS.update();
 #endif
     //_connected();
-    mqtt_handle();
-    udpLoop();
+    //mqtt_handle();
+    //udpLoop();
 
     static unsigned long timer = 0;
     if (timer + SECONDARY_PERIOD > millis()) return;
     timer = millis();
 
-    btn();
-    led_handle();
+    //btn();
+    //led_handle();
     autosave();
     ws.cleanupClients(MAX_WS_CLIENTS);
 
@@ -411,3 +410,23 @@ void EmbUI::handle(){
     timer_pub = millis();
     send_pub();
 }
+
+void EmbUI::set_callback(CallBack set, CallBack action, callback_function_t callback){
+
+    switch (action){
+        case CallBack::STAConnected :
+            set ? _cb_STAConnected = std::move(callback) : _cb_STAConnected = nullptr;
+            break;
+        case CallBack::STADisconnected :
+            set ? _cb_STADisconnected = std::move(callback) : _cb_STADisconnected = nullptr;
+            break;
+        case CallBack::STAGotIP :
+            set ? _cb_STAGotIP = std::move(callback) : _cb_STAGotIP = nullptr;
+            break;
+        case CallBack::TimeSet :
+            set ? timeProcessor.attach_callback(callback) : timeProcessor.dettach_callback();
+            break;
+        default:
+            return;
+    }
+};

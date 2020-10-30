@@ -36,8 +36,6 @@
 static const char PG_timeapi_tz_url[] PROGMEM  = "http://worldtimeapi.org/api/timezone/";
 static const char PG_timeapi_ip_url[] PROGMEM  = "http://worldtimeapi.org/api/ip";
 
-typedef std::function<void(void)> callback_function_t;
-
 class TimeProcessor
 {
 private:
@@ -63,7 +61,6 @@ private:
 
 protected:
     callback_function_t _timecallback = nullptr;
-    //WiFiEventHandler eGotIPHandler, eDisconnectHandler;  // ручки для отслеживания состояния WiFi
 
     String tzone;            // строка зоны для http-сервиса как она задана в https://raw.githubusercontent.com/nayarsystems/posix_tz_db/master/zones.csv
 
@@ -76,7 +73,11 @@ protected:
         bool usehttpzone = true;
     #endif
 
+    /**
+     * Timesync callback
+     */
     virtual void timeavailable();       // колбэк установки времени
+
 
 public:
     TimeProcessor();
@@ -85,8 +86,15 @@ public:
      * обратный вызов при подключении к WiFi точке доступа
      * запускает синхронизацию времени
      */
+#ifdef ESP8266
     void onSTAGotIP(WiFiEventStationModeGotIP ipInfo);
     void onSTADisconnected(WiFiEventStationModeDisconnected event_info);
+#endif
+
+#ifdef ESP32
+    void WiFiEvent(WiFiEvent_t event, system_event_info_t info);
+#endif
+
 
     /**
      * установка строки с текущей временной зоной в текстовом виде,
@@ -94,7 +102,7 @@ public:
      * вместо автоопределения по ip
      * !ВНИМАНИЕ! Никакого отношения к текущей системной часовой зоне эта функция не имеет!!! 
      */
-    void setTimezone(const char *var);
+    void httpTimezone(const char *var);
 
     /**
      * Функция установки системного времени, принимает в качестве аргумента указатель на строку в формате
@@ -162,13 +170,6 @@ public:
     {
         return localtime(now())->tm_min;
     }
-
-    /**
-     * заглушка для любителей руками подергать время :)
-     */
-    void timerefresh();
-
-
 
     /**
      * возвращает true если врямя еще не было синхронизированно каким либо из доступных источников

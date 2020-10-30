@@ -10,14 +10,20 @@
 #include "constants.h"
 
 // STRING Macro
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+#ifndef __STRINGIFY
+ #define __STRINGIFY(a) #a
+#endif
+#define TOSTRING(x) __STRINGIFY(x)
 
 // LOG macro's
-#if defined(EMBUI_DEBUG) && 1==0 // DEBUG_TELNET_OUTPUT // Deprecated
-	#define LOG(func, ...) telnet.func(__VA_ARGS__)
-#elif defined(EMBUI_DEBUG)
+#if defined(EMBUI_DEBUG)
 	#define LOG(func, ...) Serial.func(__VA_ARGS__)
 #else
 	#define LOG(func, ...) ;
 #endif
+
+#ifdef ESP32
+ #include <functional>
+#endif
+
+typedef std::function<void(void)> callback_function_t;

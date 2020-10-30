@@ -10,8 +10,7 @@ void setup() {
   Serial.begin(BAUD_RATE);
   Serial.print("Starting test...");
 
-  embui.init();
-  create_parameters();
+  // Start EmbUI framework
   embui.begin();
 
 }
