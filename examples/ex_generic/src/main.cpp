@@ -8,7 +8,7 @@
 // MAIN Setup
 void setup() {
   Serial.begin(BAUD_RATE);
-  Serial.print("Starting test...");
+  Serial.println("Starting test...");
 
   // Start EmbUI framework
   embui.begin();

@@ -27,17 +27,21 @@
 #include <ArduinoJson.h>
 
 #ifdef ESP8266
+ #include <Updater.h>
  #include <ESP8266mDNS.h>        // Include the mDNS library
  #ifdef USE_SSDP
   #include <ESP8266SSDP.h>
  #endif
-#else
+#endif
+
+#ifdef ESP32
  #include <ESPmDNS.h>
  #include <Update.h>
  #ifdef USE_SSDP
   #include <ESP32SSDP.h>
  #endif
 #endif
+
 
 #include <Ticker.h>   // esp планировщик
 
@@ -304,6 +308,11 @@ class EmbUI
     callback_function_t _cb_STAConnected = nullptr;
     callback_function_t _cb_STADisconnected = nullptr;
     callback_function_t _cb_STAGotIP = nullptr;
+
+    /*
+     * OTA update progress, return upload %
+     */
+    uint8_t uploadProgress(size_t len, size_t total);
 
 #ifdef USE_SSDP
     void ssdp_begin() {
