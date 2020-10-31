@@ -39,8 +39,8 @@ void emptyFunction(const String &, const String &){}
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
     if (host.length()==0){
-      Serial.println(F("MQTT host is empty - disabled!"));
-      return;   // выходим если host не задан
+        LOG(println, PSTR("UI: MQTT host is empty - disabled!"));
+        return;   // выходим если host не задан
     }
     String m_pref=param(FPSTR(P_m_pref));
     String m_host=param(FPSTR(P_m_host));
@@ -56,7 +56,7 @@ void EmbUI::mqtt(const String &pref, const String &host, int port, const String 
     if(m_user == FPSTR(P_null)) var(FPSTR(P_m_user), user);
     if(m_pass == FPSTR(P_null)) var(FPSTR(P_m_pass), pass);
 
-    //Serial.println(F("MQTT Init completed"));
+    LOG(println, PSTR("UI: MQTT Init completed"));
 
     if (remotecontrol) embui.sysData.mqtt_remotecontrol = true;
     mqt = mqttFunction;
