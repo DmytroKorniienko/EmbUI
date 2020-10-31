@@ -14,23 +14,17 @@
 #define PUB_PERIOD 10000            // Publication period, ms
 #define SECONDARY_PERIOD 300U       // second handler timer, ms
 
+// Update defs
+#define FW_MAGIC    0xe9
+#ifdef ESP32
+ #define U_FS   U_SPIFFS
+#endif
+
 EmbUI embui;
 
 void section_main_frame(Interface *interf, JsonObject *data) {}
 void pubCallback(Interface *interf){}
 String httpCallback(const String &param, const String &value, bool isSet) { return String(); }
-void uploadProgress(size_t len, size_t total){
-    static int prev = 0;
-    float part = total / 50.0;
-    int curr = len / part;
-    if (curr != prev) {
-        prev = curr;
-        for (int i = 0; i < curr; i++){
-            LOG(print, "=");
-        }
-        LOG(print, "\n");
-    }
-}
 
 void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len){
     if(type == WS_EVT_CONNECT){
@@ -291,8 +285,7 @@ void EmbUI::begin(){
         request->send(200, FPSTR(PGmimetxt), out);
     });
 
-#ifndef ESP32
-    // Simple Firmware Update Form (ESP32 ota broken)
+    // Simple Firmware Update Form
     server.on(PSTR("/update"), HTTP_GET, [](AsyncWebServerRequest *request){
         request->send(200, FPSTR(PGmimehtml), F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>"));
     });
@@ -308,10 +301,17 @@ void EmbUI::begin(){
         }
     },[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         if (!index) {
-            Update.runAsync(true);
-            int type = (data[0] == 0xe9 || data[0] == 0x1f)? U_FLASH : U_FS;
-            size_t size = (type == U_FLASH)? ((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000) : (uintptr_t)&_FS_end - (uintptr_t)&_FS_start;
-            LOG(printf_P, PSTR("Update %s Start (%u)\n"), (type == U_FLASH)? F("Firmware") : F("Filesystem"), request->contentLength());
+            int type = (data[0] == FW_MAGIC)? U_FLASH : U_FS;
+
+            #ifdef ESP8266
+                Update.runAsync(true);
+                // TODO: разобраться почему под littlefs образ генерится чуть больше чем размер доступной памяти по константам
+                size_t size = (type == U_FLASH)? request->contentLength() : (uintptr_t)&_FS_end - (uintptr_t)&_FS_start;
+            #endif
+            #ifdef ESP32
+                size_t size = (type == U_FLASH)? request->contentLength() : UPDATE_SIZE_UNKNOWN;
+            #endif
+            LOG(printf_P, PSTR("Updating %s, file size:%u\n"), (type == U_FLASH)? F("Firmware") : F("Filesystem"), request->contentLength());
 
             if (!Update.begin(size, type)) {
                 Update.printError(Serial);
@@ -329,9 +329,8 @@ void EmbUI::begin(){
                 Update.printError(Serial);
             }
         }
-        uploadProgress(index + len, request->contentLength());
+        embui.uploadProgress(index + len, request->contentLength());
     });
-#endif
 
     //First request will return 0 results unless you start scan from somewhere else (loop/setup)
     //Do not request more often than 3-5 seconds
@@ -430,3 +429,18 @@ void EmbUI::set_callback(CallBack set, CallBack action, callback_function_t call
             return;
     }
 };
+
+/*
+ * OTA update progress
+ */
+uint8_t EmbUI::uploadProgress(size_t len, size_t total){
+    static int prev = 0;
+    float part = total / 25.0;  // logger chunks
+    int curr = len / part;
+    uint8_t progress = 100*len/total;
+    if (curr != prev) {
+        prev = curr;
+        LOG(printf_P, PSTR("%u%%.."), progress );
+    }
+    return progress;
+}

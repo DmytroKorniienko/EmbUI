@@ -15,7 +15,7 @@ static const char T_SETTINGS[] PROGMEM = "settings";
 static const char T_OPT_NETW[] PROGMEM = "networking";
 
 // UI handlers
-static const char T_DO_OTAUPD[] PROGMEM = "otaupd";
+static const char T_DO_OTAUPD[] PROGMEM = "update";
 static const char T_SET_WIFI[] PROGMEM = "set_wifi";
 static const char T_SET_WIFIAP[] PROGMEM = "set_wifiAP";
 static const char T_SET_MQTT[] PROGMEM = "set_mqtt";
