@@ -111,9 +111,8 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)   // , WiFiEventI
 void EmbUI::wifi_init(){
     String hn = param(FPSTR(P_hostname));
     String appwd = param(FPSTR(P_APpwd));
-
+    getAPmac();
     if (!hn.length()){
-        getAPmac();
         hn = String(__IDPREFIX) + mc;
         var(FPSTR(P_hostname), hn, true);
     }
@@ -187,13 +186,18 @@ void EmbUI::setup_mDns(){
 void EmbUI::getAPmac(){
     if(*mc) return;
 
-    uint8_t _mac[6];
+    uint8_t _mac[7];
 
     #ifdef ESP32
+        // uint64_t chipid = ESP.getEfuseMac();
+        // memset(_mac,0,sizeof(_mac));
+        // memcpy(_mac,&chipid,6);
+
         if(WiFi.getMode() == WIFI_MODE_NULL)
             WiFi.mode(WIFI_MODE_AP);
     #endif
     WiFi.softAPmacAddress(_mac);
 
+    LOG(printf_P,PSTR("UI MAC:%02X%02X%02X\n"), _mac[3], _mac[4], _mac[5]);
     sprintf_P(mc, PSTR("%02X%02X%02X"), _mac[3], _mac[4], _mac[5]);
 }
