@@ -10,8 +10,12 @@
  #include "MemoryInfo.h"
 #endif
 
+#ifndef MAX_WS_CLIENTS
 #define MAX_WS_CLIENTS 4
+#endif
+#ifndef PUB_PERIOD
 #define PUB_PERIOD 10000            // Publication period, ms
+#endif
 #define SECONDARY_PERIOD 300U       // second handler timer, ms
 
 // Update defs
@@ -399,8 +403,8 @@ void EmbUI::handle(){
     MDNS.update();
 #endif
     //_connected();
-    //mqtt_handle();
-    //udpLoop();
+    mqtt_handle();
+    udpLoop();
 
     static unsigned long timer = 0;
     if (timer + SECONDARY_PERIOD > millis()) return;
