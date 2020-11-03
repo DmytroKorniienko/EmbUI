@@ -145,7 +145,7 @@ void EmbUI::mqtt_reconnect(){
 }
 
 void EmbUI::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-  Serial.println(F("Disconnected from MQTT."));
+  LOG(println,F("UI: Disconnected from MQTT."));
   embui.sysData.mqtt_connect = false;
   embui.sysData.mqtt_connected = false;
 }
@@ -157,15 +157,15 @@ void EmbUI::_onMqttConnect(bool sessionPresent) {
 void EmbUI::onMqttConnect(){
     sysData.mqtt_connect = false;
     sysData.mqtt_connected = true;
-    Serial.println(F("Connected to MQTT."));
+    LOG(println,F("UI: Connected to MQTT."));
     if(sysData.mqtt_remotecontrol){
         subscribeAll();
     }
 }
 
 void EmbUI::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
-    LOG(print, F("Publish received: "));
-    Serial.println(topic);
+    LOG(print, F("UI: Publish received: "));
+    LOG(println, topic);
 
     char buffer[len + 2];
     memset(buffer, 0, sizeof(buffer));
@@ -201,10 +201,10 @@ void EmbUI::subscribeAll(bool isOnlyGetSet){
     if(isOnlyGetSet){
         mqttClient.subscribe(id(F("embui/set/#")).c_str(), 0);
         mqttClient.subscribe(id(F("embui/get/#")).c_str(), 0);
-        LOG(println, F("Subscribe embui/get/# & embui/set/#"));
+        LOG(println, F("UI: Subscribe embui/get/# & embui/set/#"));
     } else {
         mqttClient.subscribe(id(F("embui/#")).c_str(), 0);
-        LOG(println, F("Subscribe All (embui/#)"));
+        LOG(println, F("UI: Subscribe All (embui/#)"));
     }
 }
 
