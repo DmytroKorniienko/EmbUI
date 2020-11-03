@@ -19,7 +19,15 @@
 #define SECONDARY_PERIOD 300U       // second handler timer, ms
 
 // Update defs
-#define FW_MAGIC    0xe9
+#ifndef ESP_IMAGE_HEADER_MAGIC
+ #define ESP_IMAGE_HEADER_MAGIC 0xE9
+#endif
+
+#ifndef GZ_HEADER
+ #define GZ_HEADER 0x1F
+#endif
+
+
 #ifdef ESP32
  #define U_FS   U_SPIFFS
 #endif
@@ -305,14 +313,14 @@ void EmbUI::begin(){
         }
     },[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         if (!index) {
-            int type = (data[0] == FW_MAGIC)? U_FLASH : U_FS;
-
             #ifdef ESP8266
+        	int type = (data[0] == ESP_IMAGE_HEADER_MAGIC || data[0] == GZ_HEADER)? U_FLASH : U_FS;
                 Update.runAsync(true);
                 // TODO: разобраться почему под littlefs образ генерится чуть больше чем размер доступной памяти по константам
                 size_t size = (type == U_FLASH)? request->contentLength() : (uintptr_t)&_FS_end - (uintptr_t)&_FS_start;
             #endif
             #ifdef ESP32
+                int type = (data[0] == ESP_IMAGE_HEADER_MAGIC)? U_FLASH : U_FS;
                 size_t size = (type == U_FLASH)? request->contentLength() : UPDATE_SIZE_UNKNOWN;
             #endif
             LOG(printf_P, PSTR("Updating %s, file size:%u\n"), (type == U_FLASH)? F("Firmware") : F("Filesystem"), request->contentLength());
