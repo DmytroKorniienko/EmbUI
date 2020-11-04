@@ -141,6 +141,12 @@
 			>
 		{{/if}}
 		{{#if html != "select" && block}}{{>tmpl_section _this}}{{/if}}
+		{{#if html == "iframe"}}
+			<div class="frame">{{value}}</div>
+		{{/if}}
+		{{#if html == "iframe2"}}
+			<div class="frame"><iframe id="{{id}}" name="{{id}}" src="{{value}}" class="iframe">iframe does not supported</iframe></div>
+		{{/if}}
 		</div>
 	</script>
 
