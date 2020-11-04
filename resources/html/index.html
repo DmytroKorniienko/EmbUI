@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-	<meta name="theme-color" content="#1f8dd6">
+	<meta name="theme-color" content="#2a3033">
 	<title>EmbUI</title>
 	<link rel="stylesheet" href="css/all.css">
 </head>
@@ -141,6 +141,12 @@
 			>
 		{{/if}}
 		{{#if html != "select" && block}}{{>tmpl_section _this}}{{/if}}
+		{{#if html == "iframe"}}
+			<div class="frame">{{value}}</div>
+		{{/if}}
+		{{#if html == "iframe2"}}
+			<div class="frame"><iframe id="{{id}}" name="{{id}}" src="{{value}}" class="iframe">iframe does not supported</iframe></div>
+		{{/if}}
 		</div>
 	</script>
 

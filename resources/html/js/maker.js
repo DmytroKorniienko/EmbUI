@@ -66,6 +66,7 @@ var render = function(){
 			for (var i = 0; i < frame.length; i++) if (typeof frame[i] == "object") {
 				if (frame[i].section == "menu") {
 					global.menu =  frame[i].block;
+					document.title = obj.app + " - " + obj.mc;
 					global.app = obj.app;
 					global.mc = obj.mc;
 					global.ver = obj.ver;
