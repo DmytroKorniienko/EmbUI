@@ -26,4 +26,4 @@ void set_language(Interface *interf, JsonObject *data);
 
 //void remote_action(RA action, ...);
 
-//void uploadProgress(size_t len, size_t total);
+//uint8_t uploadProgress(size_t len, size_t total);

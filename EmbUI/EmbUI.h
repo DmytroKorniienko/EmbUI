@@ -114,7 +114,7 @@ class Interface;
 void __attribute__((weak)) section_main_frame(Interface *interf, JsonObject *data);
 void __attribute__((weak)) pubCallback(Interface *interf);
 String __attribute__((weak)) httpCallback(const String &param, const String &value, bool isset);
-void __attribute__((weak)) uploadProgress(size_t len, size_t total);
+uint8_t __attribute__((weak)) uploadProgress(size_t len, size_t total);
 void __attribute__((weak)) create_parameters();
 
 //----------------------
@@ -308,11 +308,6 @@ class EmbUI
     callback_function_t _cb_STAConnected = nullptr;
     callback_function_t _cb_STADisconnected = nullptr;
     callback_function_t _cb_STAGotIP = nullptr;
-
-    /*
-     * OTA update progress, return upload %
-     */
-    uint8_t uploadProgress(size_t len, size_t total);
 
 #ifdef USE_SSDP
     void ssdp_begin() {

@@ -341,7 +341,7 @@ void EmbUI::begin(){
                 Update.printError(Serial);
             }
         }
-        embui.uploadProgress(index + len, request->contentLength());
+        uploadProgress(index + len, request->contentLength());
     });
 
     //First request will return 0 results unless you start scan from somewhere else (loop/setup)
@@ -445,7 +445,7 @@ void EmbUI::set_callback(CallBack set, CallBack action, callback_function_t call
 /*
  * OTA update progress
  */
-uint8_t EmbUI::uploadProgress(size_t len, size_t total){
+uint8_t uploadProgress(size_t len, size_t total){
     static int prev = 0;
     float part = total / 25.0;  // logger chunks
     int curr = len / part;
