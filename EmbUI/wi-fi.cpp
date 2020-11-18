@@ -61,50 +61,66 @@ void EmbUI::onWiFiMode(WiFiEventModeChange event_info){
 #endif  //ESP8266
 
 #ifdef ESP32
-// need to test it under ESP32 (might not need any scheduler to handle both Client and AP at the same time)
-void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)   // , WiFiEventInfo_t info
+void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     switch (event){
     case SYSTEM_EVENT_AP_START:
         LOG(println, F("UI WiFi: Access-point started"));
         setup_mDns();
         break;
+
     case SYSTEM_EVENT_STA_CONNECTED:
-        LOG(print, F("UI WiFi: STA connected - "));
+        LOG(println, F("UI WiFi: STA connected"));
+
         if(_cb_STAConnected)
             _cb_STAConnected();        // execule callback
         break;
+
     case SYSTEM_EVENT_STA_GOT_IP:
         WiFi.mode(WIFI_STA);            // Shutdown internal Access Point
+
+    	/* this is a weird hack to mitigate DHCP-client hostname issue
+	     * https://github.com/espressif/arduino-esp32/issues/2537
+         * we use some IDF functions to restart dhcp-client, that has been disabled before STA connect
+	    */
+	    tcpip_adapter_dhcpc_start(TCPIP_ADAPTER_IF_STA);
+	    tcpip_adapter_ip_info_t iface;
+	    tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &iface);
+        if(!iface.ip.addr){
+            LOG(println, F("UI WiFi: DHCP discover..."));
+	        return;
+    	}
+
         LOG(printf_P, PSTR("SSID:'%s', IP: "), WiFi.SSID().c_str());  // IPAddress(info.got_ip.ip_info.ip.addr)
-        LOG(println, WiFi.localIP());
+        LOG(println, IPAddress(iface.ip.addr));
 
         if(WiFi.getMode() != WIFI_MODE_STA){    // Switch to STA only mode once IP obtained
-            WiFi.mode(WIFI_MODE_STA);         
+            WiFi.mode(WIFI_MODE_STA);
             LOG(println, F("UI WiFi: switch to STA mode"));
         }
+
+        embuischedw.detach();
+        setup_mDns();
         if(_cb_STAGotIP)
             _cb_STAGotIP();        // execule callback
-
-        setup_mDns();
         break;
+
     case SYSTEM_EVENT_STA_DISCONNECTED:
         LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.disconnected.reason);
         // https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/esp32/esp_wifi_types.h
         if(WiFi.getMode() != WIFI_MODE_APSTA){
-            WiFi.mode(WIFI_MODE_APSTA);         // Enable internal AP if station connection is lost
-            LOG(println, F("UI WiFi: Switch to AP-Station mode"));
+            embuischedw.once(WIFI_BEGIN_DELAY, [this](){ WiFi.mode(WIFI_MODE_APSTA);
+                                                        LOG(println, F("UI WiFi: Switch to AP-Station mode"));
+                                                        embuischedw.detach();} );
         }
         if(_cb_STADisconnected)
             _cb_STADisconnected();        // execule callback
-
-        embuischedw.once(WIFI_RECONNECT_TIMER, [this](){ WiFi.begin(); } ); // esp32 doesn't auto-reconnects, so reschedule it
         break;
+
     default:
         break;
     }
-    // handle network events for timelib
-    timeProcessor.WiFiEvent(event, info);
+    timeProcessor.WiFiEvent(event, info);    // handle network events for timelib
 }
 #endif  //ESP32
 
@@ -116,13 +132,6 @@ void EmbUI::wifi_init(){
         hn = String(__IDPREFIX) + mc;
         var(FPSTR(P_hostname), hn, true);
     }
-
-    #ifdef ESP8266
-        WiFi.hostname(hn);
-    #elif defined ESP32
-        WiFi.setHostname(hn.c_str());
-        //WiFi.softAPsetHostname(hn);
-    #endif
 
     if (appwd.length()<WIFI_PSK_MIN_LENGTH)
         appwd = "";
@@ -137,20 +146,41 @@ void EmbUI::wifi_init(){
         LOG(println, F("AP-only mode"));
         WiFi.mode(WIFI_AP);
     } else {
-        LOG(println, F("AP/STA mode"));
-        WiFi.mode(WIFI_AP_STA);
+        LOG(println, F("STA mode"));
+        WiFi.mode(WIFI_STA);       // we start in STA mode, esp32 can't set client's hotname in ap/sta
+
+    #ifdef ESP8266
+        WiFi.hostname(hn);
         WiFi.begin();   // use internaly stored last known credentials for connection
+    #elif defined ESP32
+    	/* this is a weird hack to mitigate DHCP hostname issue
+	     * order of initialization does matter, pls keep it like this till fixed in upstream
+	     * https://github.com/espressif/arduino-esp32/issues/2537
+	     */
+	    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        WiFi.begin();   // use internaly stored last known credentials for connection
+	    if (!WiFi.setHostname(hn.c_str()))
+            LOG(println, F("UI WiFi: Failed to set hostname :("));
+    #endif
         LOG(println, F("UI WiFi: STA reconecting..."));
     }
 }
 
 void EmbUI::wifi_connect(const char *ssid, const char *pwd)
 {
-    if (ssid) {
-        WiFi.begin(ssid, pwd);
-        LOG(printf_P, PSTR("UI WiFi: client connecting to SSID:%s, pwd:%s\n"), ssid, pwd ? pwd : "");
+    if (ssid){
+        String _ssid(ssid); String _pwd(pwd);   // I need objects to pass it to the lambda
+        embuischedw.once(WIFI_BEGIN_DELAY, [_ssid, _pwd, this](){
+                    LOG(printf_P, PSTR("UI WiFi: client connecting to SSID:%s, pwd:%s\n"), _ssid.c_str(), _pwd.c_str());
+                    #ifdef ESP32
+                        WiFi.disconnect();
+                	    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+                    #endif
+                    WiFi.begin(_ssid.c_str(), _pwd.c_str());
+	                embuischedw.detach();
+            });
     } else {
-        WiFi.begin();
+        embuischedw.once(WIFI_BEGIN_DELAY, [this](){ WiFi.begin(); embuischedw.detach();} );
     }
 }
 
@@ -186,18 +216,14 @@ void EmbUI::setup_mDns(){
 void EmbUI::getAPmac(){
     if(*mc) return;
 
-    uint8_t _mac[7];
+    uint8_t _mac[6];
 
     #ifdef ESP32
-        // uint64_t chipid = ESP.getEfuseMac();
-        // memset(_mac,0,sizeof(_mac));
-        // memcpy(_mac,&chipid,6);
-
         if(WiFi.getMode() == WIFI_MODE_NULL)
             WiFi.mode(WIFI_MODE_AP);
     #endif
     WiFi.softAPmacAddress(_mac);
 
-    LOG(printf_P,PSTR("UI MAC:%02X%02X%02X\n"), _mac[3], _mac[4], _mac[5]);
+    LOG(printf_P,PSTR("UI MAC ID:%02X%02X%02X\n"), _mac[3], _mac[4], _mac[5]);
     sprintf_P(mc, PSTR("%02X%02X%02X"), _mac[3], _mac[4], _mac[5]);
 }

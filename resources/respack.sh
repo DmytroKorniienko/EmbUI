@@ -4,11 +4,11 @@ echo "Preparing resources for EmbUI FS image"
 
 mkdir -p ./data/css ./data/js ./data/login ./data/extras
 cat html/css/*.css | gzip -9 > ./data/css/all.css.gz
-cat html/css/wallpaper.jpg | gzip -9 > ./data/css/wallpaper.jpg.gz
+cp html/css/*.jpg ./data/css/
 cat html/js/*.js | gzip -9 > ./data/js/all.js.gz
 cat html/index.html | gzip -9 > ./data/index.html.gz
 cat html/favicon.ico | gzip -9 > ./data/favicon.ico.gz
-cat html/.exclude.files > ./data/.exclude.files
+cp html/.exclude.files > ./data/
 
 cat html/login/index.htm | gzip -9 > ./data/login/index.htm.gz
 cat html/login/favicon.ico | gzip -9 > ./data/login/favicon.ico.gz

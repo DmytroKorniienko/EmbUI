@@ -15,8 +15,10 @@
  #include <WiFi.h>
 #endif
 
-#define WIFI_CONNECT_TIMEOUT    7
-#define WIFI_RECONNECT_TIMER    30
+#define WIFI_CONNECT_TIMEOUT    7       // timer for esp8266 STA connection attempt 
+#define WIFI_RECONNECT_TIMER    30      // timer for esp8266, STA connect retry
+#define WIFI_BEGIN_DELAY        3       // scheduled delay for STA begin() connection
+
 #define WIFI_PSK_MIN_LENGTH     8
 
 //#endif
