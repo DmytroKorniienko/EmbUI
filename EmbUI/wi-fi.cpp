@@ -113,6 +113,7 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
                                                         LOG(println, F("UI WiFi: Switch to AP-Station mode"));
                                                         embuischedw.detach();} );
         }
+
         if(_cb_STADisconnected)
             _cb_STADisconnected();        // execule callback
         break;

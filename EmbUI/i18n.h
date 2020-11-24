@@ -1,9 +1,9 @@
-// localization resources goes here
+// localization for BasicUI resources goes here
 
 #pragma once
 
 /**
- *  Dictionary size
+ *  Dictionary size,
  *  must be more or equal to the number of messages in TD Enum
  */
 #define DICT_SIZE 70
@@ -83,7 +83,7 @@ enum TD : uint8_t {
 
 
 
-// English Strings (order does not matther)
+// English Strings (order does not matter)
 static const char T_EN_LANG[] PROGMEM = "Interface language";
 static const char T_EN_ACTION[] PROGMEM = "Action";
 static const char T_EN_ACTIVE[] PROGMEM = "Active";
@@ -161,7 +161,7 @@ static const char T_RU_Conf[] PROGMEM = "Конфигурация";
 static const char T_RU_Confs[] PROGMEM = "Конфигурации";
 static const char T_RU_CONNECT[] PROGMEM = "Подключиться";
 static const char T_RU_Create[] PROGMEM = "Создать";
-static const char T_RU_DATETIME[] PROGMEM = "Date / Time / Time Zone";
+static const char T_RU_DATETIME[] PROGMEM = "Дата / Время / Часовая зона";
 static const char T_RU_DEBUG[] PROGMEM = "Отладка";
 static const char T_RU_EDIT[] PROGMEM = "Редактировать";
 static const char T_RU_EVENT[] PROGMEM = "Событие";
@@ -200,8 +200,8 @@ static const char T_RU_WiFiAPOpts[] PROGMEM = "Настройки WiFi-точк�
 static const char T_RU_WiFiClientOpts[] PROGMEM = "Настройки WiFi-клиента";
 static const char T_RU_WiFiClient[] PROGMEM = "WiFi-клиент";
 static const char T_RU_W_MON[] PROGMEM = "Понедельник";
-static const char T_RU_W_WED[] PROGMEM = "Среда";
 static const char T_RU_W_TUE[] PROGMEM = "Вторник";
+static const char T_RU_W_WED[] PROGMEM = "Среда";
 static const char T_RU_W_THU[] PROGMEM = "Четверг";
 static const char T_RU_W_FRI[] PROGMEM = "Пятница";
 static const char T_RU_W_SAT[] PROGMEM = "Суббота";
@@ -214,7 +214,7 @@ static const char T_RU_W_SUN[] PROGMEM = "Воскресенье";
  *  it is a two-dim array of pointers to flash strings.
  *  Each row is a set of messages of a given language
  *  Each colums is a language index
- *  Messages indexes of each lang must match each other
+ *  Message indexes of each lang must match each otherб
  *  it is possible to reuse untraslated mesages from other lang's
  */
 static const char *const T_DICT[][DICT_SIZE] PROGMEM = {

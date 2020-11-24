@@ -7,9 +7,6 @@
 #define ui_h
 
 #include "EmbUI.h"
-//#include <ESPAsyncWebServer.h>
-//#include "ArduinoJson.h"
-//#include "LList.h"
 
 class frameSend {
     public:
@@ -113,7 +110,7 @@ class Interface {
         void constant(const String &id, const String &label);
         void constant(const String &id, const String &value, const String &label);
         void text(const String &id, const String &label, bool directly = false);
-        void text(const String &id, const String &value, const String &label, bool directly = false);
+        void text(const String &id, const String &value, const String &label, bool directly);   // 4-й параметр обяхателен, т.к. компилятор умудряется привести F() к булевому виду и использует неверный оверлоад (под esp32)
         void password(const String &id, const String &label);
         void password(const String &id, const String &value, const String &label);
         void number(const String &id, const String &label, int min = 0, int max = 0);

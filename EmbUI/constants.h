@@ -33,21 +33,34 @@ static const char P_type[] PROGMEM = "type";
 static const char P_value[] PROGMEM = "value";
 static const char P_wifi[] PROGMEM = "wifi";
 
-// System config variables
+// UI colors
+static const char P_GRAY[] PROGMEM = "gray";
+
+// System configuration variables
 static const char P_cfgfile[] PROGMEM = "/config.json";
 
-static const char P_APonly[] PROGMEM = "APonly";
-static const char P_APpwd[] PROGMEM = "APpwd";
-static const char P_hostname[] PROGMEM = "hostname";
+static const char P_hostname[] PROGMEM = "hostname";    // System hostname
+static const char P_APonly[] PROGMEM = "APonly";        // AccessPoint-only mode
+static const char P_APpwd[] PROGMEM = "APpwd";          // AccessPoint password
+static const char P_TZSET[] PROGMEM = "TZSET";          // TimeZone rule variable
+static const char P_userntp[] PROGMEM = "userntp";      // user-defined NTP server
+static const char P_DTIME[] PROGMEM = "datetime";
+static const char P_LANGUAGE[] PROGMEM = "lang";        // UI language
+
+// WiFi vars
+static const char P_WCSSID[] PROGMEM = "wcssid";        // WiFi-Client SSID
+static const char P_WCPASS[] PROGMEM = "wcpass";        // WiFi-Client password
+
+// MQTT vars
 static const char P_m_host[] PROGMEM = "m_host";
 static const char P_m_pass[] PROGMEM = "m_pass";
 static const char P_m_port[] PROGMEM = "m_port";
 static const char P_m_pref[] PROGMEM = "m_pref";
 static const char P_m_user[] PROGMEM = "m_user";
-static const char P_TZSET[] PROGMEM = "TZSET";
-static const char P_userntp[] PROGMEM = "userntp";
+static const char P_m_tupd[] PROGMEM = "m_tupd";     // mqtt update interval
 
-// http-related
+
+// http-related constants
 static const char PGgzip[] PROGMEM = "gzip";
 static const char PGhdrcachec[] PROGMEM = "Cache-Control";
 static const char PGhdrcontentenc[] PROGMEM = "Content-Encoding";

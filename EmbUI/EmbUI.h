@@ -255,12 +255,21 @@ class EmbUI
      */
     void wifi_connect(const char *ssid=nullptr, const char *pwd=nullptr);
 
-
+    /**
+     * метод для установки коллбеков на системные события, типа:
+     * - WiFi подключиля/отключился
+     * - получено время от NTP
+     */
     void set_callback(CallBack set, CallBack action, callback_function_t callback=nullptr);
 
 
 
   private:
+    /**
+     * call to create system-dependent variables,
+     * both run-time and persistent
+     */ 
+    void create_sysvars();
     //void led_handle();        // пока убираю
     void led_on();
     void led_off();
@@ -274,7 +283,9 @@ class EmbUI
     void mqtt_handle();
     void subscribeAll(bool isOnlyGetSet=true);
     void mqtt_reconnect();
-    
+
+    // WiFi-related
+    Ticker embuischedw;        // планировщик WiFi
     /**
       * устанавлием режим WiFi
       */
@@ -295,8 +306,6 @@ class EmbUI
 
     void connectToMqtt();
     void onMqttConnect();
-    void setup_mDns();
-    Ticker embuischedw;        // планировщик WiFi
 
     static void onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
     static void onMqttSubscribe(uint16_t packetId, uint8_t qos);
@@ -315,6 +324,8 @@ class EmbUI
     callback_function_t _cb_STAConnected = nullptr;
     callback_function_t _cb_STADisconnected = nullptr;
     callback_function_t _cb_STAGotIP = nullptr;
+
+    void setup_mDns();
 
 #ifdef USE_SSDP
     void ssdp_begin() {
