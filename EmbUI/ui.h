@@ -8,6 +8,13 @@
 
 #include "EmbUI.h"
 
+#ifdef ESP8266
+  #define IFACE_DYN_JSON_SIZE 3073
+#elif defined ESP32
+  #define IFACE_DYN_JSON_SIZE 8192
+#endif
+
+
 class frameSend {
     public:
         virtual ~frameSend(){};
@@ -66,15 +73,15 @@ class Interface {
     EmbUI *embui;
 
     public:
-        Interface(EmbUI *j, AsyncWebSocket *server, size_t size = 3000): json(size), section_stack(){
+        Interface(EmbUI *j, AsyncWebSocket *server, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             embui = j;
             send_hndl = new frameSendAll(server);
         }
-        Interface(EmbUI *j, AsyncWebSocketClient *client, size_t size = 3000): json(size), section_stack(){
+        Interface(EmbUI *j, AsyncWebSocketClient *client, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             embui = j;
             send_hndl = new frameSendClient(client);
         }
-        Interface(EmbUI *j, AsyncWebServerRequest *request, size_t size = 3000): json(size), section_stack(){
+        Interface(EmbUI *j, AsyncWebServerRequest *request, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             embui = j;
             send_hndl = new frameSendHttp(request);
         }

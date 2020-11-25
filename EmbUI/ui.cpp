@@ -5,8 +5,10 @@
 
 #include "ui.h"
 
+#define IFACE_STA_JSON_SIZE 256
+
 void Interface::frame(const String &id, const String &value){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("iframe");;
     obj[FPSTR(P_type)] = F("frame");
     obj[FPSTR(P_id)] = id;
@@ -18,7 +20,7 @@ void Interface::frame(const String &id, const String &value){
 }
 
 void Interface::frame2(const String &id, const String &value){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("iframe2");;
     obj[FPSTR(P_type)] = F("frame");
     obj[FPSTR(P_id)] = id;
@@ -30,7 +32,7 @@ void Interface::frame2(const String &id, const String &value){
 }
 
 void Interface::hidden(const String &id, const String &value){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_hidden);
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -45,7 +47,7 @@ void Interface::hidden(const String &id){
 }
 
 void Interface::constant(const String &id, const String &value, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("const");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -61,7 +63,7 @@ void Interface::constant(const String &id, const String &label){
 }
 
 void Interface::text(const String &id, const String &value, const String &label, bool directly){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = F("text");
     obj[FPSTR(P_id)] = id;
@@ -80,7 +82,7 @@ void Interface::text(const String &id, const String &label, bool directly){
 }
 
 void Interface::number(const String &id, int value, const String &label, int min, int max){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = FPSTR(P_number);
     obj[FPSTR(P_id)] = id;
@@ -99,7 +101,7 @@ void Interface::number(const String &id, const String &label, int min, int max){
 }
 
 void Interface::number(const String &id, float value, const String &label, float step, int min, int max){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = FPSTR(P_number);
     obj[FPSTR(P_id)] = id;
@@ -119,7 +121,7 @@ void Interface::number(const String &id, const String &label, float step, int mi
 }
 
 void Interface::time(const String &id, const String &value, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = FPSTR(P_time);
     obj[FPSTR(P_id)] = id;
@@ -136,7 +138,7 @@ void Interface::time(const String &id, const String &label){
 }
 
 void Interface::date(const String &id, const String &value, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = FPSTR(P_date);
     obj[FPSTR(P_id)] = id;
@@ -153,7 +155,7 @@ void Interface::date(const String &id, const String &label){
 }
 
 void Interface::datetime(const String &id, const String &value, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = F("datetime-local");
     obj[FPSTR(P_id)] = id;
@@ -170,7 +172,7 @@ void Interface::datetime(const String &id, const String &label){
 }
 
 void Interface::range(const String &id, int value, int min, int max, float step, const String &label, bool directly){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = F("range");
     obj[FPSTR(P_id)] = id;
@@ -192,7 +194,7 @@ void Interface::range(const String &id, int min, int max, float step, const Stri
 }
 
 void Interface::email(const String &id, const String &value, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = F("email");
     obj[FPSTR(P_id)] = id;
@@ -209,7 +211,7 @@ void Interface::email(const String &id, const String &label){
 }
 
 void Interface::password(const String &id, const String &value, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = FPSTR(P_password);
     obj[FPSTR(P_id)] = id;
@@ -226,7 +228,7 @@ void Interface::password(const String &id, const String &label){
 }
 
 void Interface::option(const String &value, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_label)] = label;
     obj[FPSTR(P_value)] = value;
 
@@ -236,7 +238,7 @@ void Interface::option(const String &value, const String &label){
 }
 
 void Interface::select(const String &id, const String &value, const String &label, bool directly, bool skiplabel){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("select");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -256,7 +258,7 @@ void Interface::select(const String &id, const String &label, bool directly, boo
 }
 
 void Interface::checkbox(const String &id, const String &value, const String &label, bool directly){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = F("checkbox");
     obj[FPSTR(P_id)] = id;
@@ -274,7 +276,7 @@ void Interface::checkbox(const String &id, const String &label, bool directly){
 }
 
 void Interface::color(const String &id, const String &value, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = FPSTR(P_color);
     obj[FPSTR(P_id)] = id;
@@ -291,7 +293,7 @@ void Interface::color(const String &id, const String &label){
 }
 
 void Interface::file(const String &name, const String &action, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_file);
     obj[F("name")] = name;
     obj[F("action")] = action;
@@ -303,7 +305,7 @@ void Interface::file(const String &name, const String &action, const String &lab
 }
 
 void Interface::button(const String &id, const String &label, const String &color){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_button);
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_color)] = color;
@@ -315,7 +317,7 @@ void Interface::button(const String &id, const String &label, const String &colo
 }
 
 void Interface::button_submit(const String &section, const String &label, const String &color){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_button);
     obj[FPSTR(P_submit)] = section;
     obj[FPSTR(P_color)] = color;
@@ -327,7 +329,7 @@ void Interface::button_submit(const String &section, const String &label, const 
 }
 
 void Interface::button_submit_value(const String &section, const String &value, const String &label, const String &color){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_button);
     obj[FPSTR(P_submit)] = section;
     obj[FPSTR(P_color)] = color;
@@ -340,7 +342,7 @@ void Interface::button_submit_value(const String &section, const String &value, 
 }
 
 void Interface::spacer(const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("spacer");
     if (label != "") obj[FPSTR(P_label)] = label;
 
@@ -350,7 +352,7 @@ void Interface::spacer(const String &label){
 }
 
 void Interface::comment(const String &label){
-    StaticJsonDocument<512> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE * 2> obj;
     obj[FPSTR(P_html)] = F("comment");
     if (label != "") obj[FPSTR(P_label)] = label;
 
@@ -360,7 +362,7 @@ void Interface::comment(const String &label){
 }
 
 void Interface::textarea(const String &id, const String &value, const String &label){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("textarea");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -376,7 +378,7 @@ void Interface::textarea(const String &id, const String &label){
 }
 
 void Interface::value(const String &id, const String &val, bool html){
-    StaticJsonDocument<256> obj;
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = val;
     if (html) obj[FPSTR(P_html)] = true;
@@ -417,7 +419,7 @@ bool Interface::json_frame_add(JsonObject obj) {
         LOG(printf_P, PSTR("UI: OK [%u]\tMEM: %u\n"), section_stack.end()->idx, ESP.getFreeHeap());
         return true;
     }
-    LOG(printf_P, PSTR("UI: BAD MEM: %u\n"), ESP.getFreeHeap());
+    LOG(printf_P, PSTR("UI: Frame full, mem: %u\n"), ESP.getFreeHeap());
 
     json_frame_send();
     json_frame_next();
