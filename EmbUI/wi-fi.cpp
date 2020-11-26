@@ -149,8 +149,14 @@ void EmbUI::wifi_init(){
         LOG(println, F("AP-only mode"));
         WiFi.mode(WIFI_AP);
     } else {
+    #ifdef ESP8266
+        LOG(println, F("AP/STA mode"));
+        WiFi.mode(WIFI_AP_STA);     // we start in combined STA mode, than disable AP once client get's IP address
+    #elif defined ESP32
         LOG(println, F("STA mode"));
         WiFi.mode(WIFI_STA);       // we start in STA mode, esp32 can't set client's hotname in ap/sta
+    #endif
+
 
     #ifdef ESP8266
         WiFi.hostname(hn);
