@@ -132,14 +132,15 @@ void action_demopage(Interface *interf, JsonObject *data){
     SETPARAM(FPSTR(V_VAR1));
 
     // выводим значение 1-й переменной в serial
-    Serial.printf_P(PSTR("Varialble_1 value:%s\n"), (*data)[FPSTR(V_VAR1)] );
+    const char *text = (*data)[FPSTR(V_VAR1)];
+    Serial.printf_P(PSTR("Varialble_1 value:%s\n"), text );
 
     // берем указатель на 2-ю переменную
-    const char *var2 = (*data)[FPSTR(V_VAR2)];
+    text = (*data)[FPSTR(V_VAR2)];
     // или так:
     // String var2 = (*data)[FPSTR(V_VAR2)];
     // выводим значение 2-й переменной в serial
-    Serial.printf_P(PSTR("Varialble_2 value:%s\n"), var2);
+    Serial.printf_P(PSTR("Varialble_2 value:%s\n"), text);
 
 }
 
