@@ -6,7 +6,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 	<meta name="theme-color" content="#2a3033">
 	<title>EmbUI</title>
-	<link rel="stylesheet" href="css/all.css">
+	<link rel="stylesheet" href="css/pure.css">
+	<link id="dyncss" rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
 	<div id="layout">
@@ -45,6 +46,13 @@
 			</div>
 			<div>
 				<span class="menu-title">Version:</span><span class="menu-value">{{ver}}</span>
+			</div>
+			<div>
+				<span class="menu-title">Theme:</span><span class="menu-value">
+					<a href="#" onclick="setDynCSS('css/style.css');">[C]</a> 
+					<a href="#" onclick="setDynCSS('css/style_light.css');">[L]</a>
+					<a href="#" onclick="setDynCSS('css/style_dark.css');">[D]</a>
+				</span>
 			</div>
 		</div>
 	</script>
