@@ -148,7 +148,7 @@ enum CallBack : uint8_t {
 class EmbUI
 {
     // оптимизация расхода памяти, все битовые флаги и другие потенциально "сжимаемые" переменные скидываем сюда
-    #pragma pack(push,1)
+    #pragma pack(push,2)
     typedef union _BITFIELDS {
     struct {
         bool wifi_sta:1;    // флаг успешного подключения к внешней WiFi-AP, (TODO: переделать на события с коллбеками)
