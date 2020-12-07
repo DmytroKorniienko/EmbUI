@@ -478,7 +478,7 @@ void EmbUI::create_sysvars(){
     var_create(FPSTR(P_m_user), "");                   // MQTT login
     var_create(FPSTR(P_m_pass), "");                   // MQTT pass
     var_create(FPSTR(P_m_pref), embui.mc);             // MQTT topic == use ESP MAC address
-    var_create(FPSTR(P_m_tupd), "");                   // интервал отправки данных по MQTT в секундах
+    var_create(FPSTR(P_m_tupd), F("30"));              // интервал отправки данных по MQTT в секундах
     // date/time related vars
     var_create(FPSTR(P_TZSET), "");                   // TimeZone/DST rule (empty value == GMT/no DST)
     var_create(FPSTR(P_userntp), "");                 // Backup NTP server

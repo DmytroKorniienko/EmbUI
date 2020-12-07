@@ -148,7 +148,7 @@ enum CallBack : uint8_t {
 class EmbUI
 {
     // оптимизация расхода памяти, все битовые флаги и другие потенциально "сжимаемые" переменные скидываем сюда
-    #pragma pack(push,2)
+    //#pragma pack(push,1)
     typedef union _BITFIELDS {
     struct {
         bool wifi_sta:1;    // флаг успешного подключения к внешней WiFi-AP, (TODO: переделать на события с коллбеками)
@@ -177,7 +177,7 @@ class EmbUI
         asave = AUTOSAVE_TIMEOUT; // зачем так часто записывать конфиг? Ставлю раз в 13 секунд, вместо раза в секунду [0...15]
     }
     } BITFIELDS;
-    #pragma pack(pop)
+    //#pragma pack(pop)
 
     typedef void (*buttonCallback) (Interface *interf, JsonObject *data);
     typedef void (*mqttCallback) ();
