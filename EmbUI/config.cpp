@@ -34,7 +34,8 @@ void EmbUI::save(const char *_cfg, bool force){
 
     String cfg_str;
     serializeJson(cfg, cfg_str);
-    configFile.print(cfg_str);
+    if(cfg_str.length())
+        configFile.print(cfg_str);
     configFile.close();
 
     //cfg.garbageCollect(); // несколько раз ловил Exception (3) предположительно тут, возвращаю пока проверенный способ
