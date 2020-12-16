@@ -16,16 +16,17 @@
 #endif
 
 void EmbUI::save(const char *_cfg, bool force){
-
-    if ((sysData.isNeedSave || force)){
+    if ((sysData.isNeedSave || force) && !sysData.cfgCorrupt){
       LittleFS.begin();
     } else {
+        sysData.isNeedSave = false;
         return;
     }
 
     File configFile;
     if (_cfg == nullptr) {
         LOG(println, F("UI: Save default main config file"));
+        LittleFS.rename(FPSTR(P_cfgfile),FPSTR(P_cfgfile_bkp));
         configFile = LittleFS.open(FPSTR(P_cfgfile), "w"); // PSTR("w") использовать нельзя, будет исключение!
     } else {
         LOG(printf_P, PSTR("UI: Save %s main config file\n"), _cfg);
@@ -69,7 +70,18 @@ void EmbUI::load(const char *_cfg){
     }
 
     if (error) {
-        LOG(print, F("UI: JSON config deserializeJson error: "));
-        LOG(println, error.code());
+        configFile = _cfg ? LittleFS.open(_cfg, "r") : LittleFS.open(FPSTR(P_cfgfile_bkp), "r"); // в случае ошибки пробуем восстановить конфиг из резервной копии
+        if (configFile){
+            error = deserializeJson(cfg, configFile);
+            configFile.close();
+        }
+        if(error){
+            // тут выясняется, что оба конфига повреждены, запрещаем запись
+            LittleFS.check();
+            LittleFS.gc();
+            sysData.cfgCorrupt = true;
+            LOG(print, F("UI: Critical JSON config deserializeJson error, config saving disabled: "));
+            LOG(println, error.code());
+        }
     }
 }

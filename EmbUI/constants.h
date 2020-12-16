@@ -38,6 +38,7 @@ static const char P_GRAY[] PROGMEM = "gray";
 
 // System configuration variables
 static const char P_cfgfile[] PROGMEM = "/config.json";
+static const char P_cfgfile_bkp[] PROGMEM = "/config_bkp.json";
 
 static const char P_hostname[] PROGMEM = "hostname";    // System hostname
 static const char P_APonly[] PROGMEM = "APonly";        // AccessPoint-only mode
