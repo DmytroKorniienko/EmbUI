@@ -158,6 +158,7 @@ class EmbUI
 
         bool mqtt_enable:1;
         bool isNeedSave:1;
+        bool cfgCorrupt:1;
         bool LED_INVERT:1;
         bool shouldReboot:1; // OTA update reboot flag
         uint8_t LED_PIN:5; // [0...30]
@@ -173,6 +174,7 @@ class EmbUI
         isNeedSave = false;
         LED_INVERT = false;
         shouldReboot = false; // OTA update reboot flag
+        cfgCorrupt = false;
         LED_PIN = 31; // [0...30]
         asave = AUTOSAVE_TIMEOUT; // зачем так часто записывать конфиг? Ставлю раз в 13 секунд, вместо раза в секунду [0...15]
     }
