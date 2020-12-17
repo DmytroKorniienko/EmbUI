@@ -26,7 +26,7 @@
         "url": "https://github.com/DmytroKorniienko/EmbUI.git"
     },
     "platforms": ["espressif8266"],
-    "version": "2.1.0",
+    "version": "2.2.1",
     "dependencies": {
         "bblanchon/ArduinoJson": "*",
         "AsyncWebServer-mod": "https://github.com/DmytroKorniienko/ESPAsyncWebServer",
@@ -34,7 +34,7 @@
     },
     "build": {
         "flags": [
-            "-DEMBUIVER=2.1.0",
+            "-DEMBUIVER=2.2.1",
             "-DCONFIG_LITTLEFS_FOR_IDF_3_2"
         ],
         "srcDir": "EmbUI"
