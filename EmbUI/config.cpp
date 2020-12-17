@@ -40,9 +40,14 @@ void EmbUI::save(const char *_cfg, bool force){
     configFile.close();
 
     //cfg.garbageCollect(); // несколько раз ловил Exception (3) предположительно тут, возвращаю пока проверенный способ
-    deserializeJson(cfg, cfg_str);
+    
+    delay(DELAY_AFTER_FS_WRITING); // задержка после записи    
+    DeserializationError error;
+    error = deserializeJson(cfg, cfg_str); // произошла ошибка, пытаемся восстановить конфиг
+    if (error){
+        load(_cfg);
+    }
     sysData.isNeedSave = false;
-    delay(DELAY_AFTER_FS_WRITING); // задержка после записи
 }
 
 void EmbUI::autosave(){
