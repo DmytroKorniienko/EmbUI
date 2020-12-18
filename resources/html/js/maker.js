@@ -17,8 +17,8 @@ var render = function(){
 			var value = this.value, type = this.type;
 			if (type == "checkbox"){
 				var chbox=document.getElementById(id);
-				if (chbox.checked) value = "true";
-				else value = "false";
+				if (chbox.checked) value = "1";		// send 'checked' state as "1"
+				else value = "0";
 			}
 			var data = {}; data[id] = (value !== undefined)? value : null;
 			ws.send_post(data);
@@ -83,6 +83,7 @@ var render = function(){
 			}
 			out.lockhist = false;
 		},
+		// обработка значений в полученных блоках
 		value: function(obj){
 			var frame = obj.block;
 			if (!obj.block) return;
@@ -95,8 +96,10 @@ var render = function(){
 					} else{
 						el[0].value = frame[i].value;
 						if (el[0].type == "range") go("#"+el[0].id+"-val").html(": "+el[0].value);
+						// проверяем чекбоксы на значение вкл/выкл
 						if (el[0].type == "checkbox") {
-							el[0].checked = (frame[i].value == "true");
+							el[0].checked = (frame[i].value == "true" || frame[i].value == "1");	// checkbox is 'checked' if it's value == "1" || "true"
+							//console.debug("processing checkbox num: ", i, "val: ", frame[i].value);
 						}
 					}
 				}
