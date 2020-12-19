@@ -210,6 +210,7 @@ class EmbUI
     String m_port;
     String m_user;
     String m_pass;
+    String m_will;
 
     void var(const String &key, const String &value, bool force = false);
     void var_create(const String &key, const String &value);

@@ -33,6 +33,8 @@ static const char P_type[] PROGMEM = "type";
 static const char P_value[] PROGMEM = "value";
 static const char P_wifi[] PROGMEM = "wifi";
 
+static const char p_false[] = "false"; // mqtt last will, can't be PROGMEM
+
 // UI colors
 static const char P_GRAY[] PROGMEM = "gray";
 
@@ -59,7 +61,6 @@ static const char P_m_port[] PROGMEM = "m_port";
 static const char P_m_pref[] PROGMEM = "m_pref";
 static const char P_m_user[] PROGMEM = "m_user";
 static const char P_m_tupd[] PROGMEM = "m_tupd";     // mqtt update interval
-
 
 // http-related constants
 static const char PGgzip[] PROGMEM = "gzip";

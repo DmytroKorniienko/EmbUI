@@ -44,6 +44,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
         Interface *interf = new Interface(&embui, client);
         section_main_frame(interf, nullptr);
+        embui.send_pub();
         delete interf;
 
     } else
