@@ -64,10 +64,10 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
             DynamicJsonDocument doc(1024);
             deserializeJson(doc, data, info->len);
 
-            const char *pkg = doc["pkg"];
-            if (!pkg) return;
-            if (!strcmp(pkg, "post")) {
-                JsonObject data = doc["data"];
+            String pkg = doc[F("pkg")];
+            if (pkg.isEmpty()) return;
+            if (pkg == F("post")) {
+                JsonObject data = doc[F("data")];
                 embui.post(data);
             }
         }
@@ -290,12 +290,12 @@ void EmbUI::begin(){
     });
 
     server.on(PSTR("/heap"), HTTP_GET, [this](AsyncWebServerRequest *request){
-        String out = "Heap: "+String(ESP.getFreeHeap());
+        String out = String(F("Heap: "))+String(ESP.getFreeHeap());
 #ifdef EMBUI_DEBUG
     #ifdef ESP8266
-        out += "\nFrac: " + String(getFragmentation());
+        out += String(F("\nFrac: ")) + String(getFragmentation());
     #endif
-        out += "\nClient: " + String(ws.count());
+        out += String(F("\nClient: ")) + String(ws.count());
 #endif
         request->send(200, FPSTR(PGmimetxt), out);
     });
