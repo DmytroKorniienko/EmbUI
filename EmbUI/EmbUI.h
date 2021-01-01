@@ -194,7 +194,7 @@ class EmbUI
     AsyncMqttClient mqttClient;
 
   public:
-    EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws("/ws"){
+    EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws(F("/ws")){
         memset(mc,0,sizeof(mc));
     }
     BITFIELDS sysData;
