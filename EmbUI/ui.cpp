@@ -7,6 +7,21 @@
 
 #define IFACE_STA_JSON_SIZE 256
 
+void Interface::custom(const String &id, const String &type, const String &value, const String &label, const JsonObject &param){
+    StaticJsonDocument<IFACE_STA_JSON_SIZE*2> obj; // по этот контрол выделяем IFACE_STA_JSON_SIZE*2 т.к. он может быть большой...
+    obj[FPSTR(P_html)] = F("custom");;
+    obj[FPSTR(P_type)] = type;
+    obj[FPSTR(P_id)] = id;
+    obj[FPSTR(P_value)] = value;
+    obj[FPSTR(P_label)] = label;
+    JsonObject nobj = obj.createNestedObject(String(F("param")));
+    nobj.set(param);
+
+    if (!json_frame_add(obj.as<JsonObject>())) {
+        custom(id, type, value, label, param);
+    }
+}
+
 void Interface::frame(const String &id, const String &value){
     StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("iframe");;
