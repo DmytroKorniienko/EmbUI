@@ -53,7 +53,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     } else
     if(type == WS_EVT_ERROR){
         LOG(printf_P, PSTR("ws[%s][%u] error(%u): %s\n"), server->url(), client->id(), *((uint16_t*)arg), (char*)data);
-        httpCallback(F("WS_EVT_ERROR"), "", false); // сообщим об ошибке сокета
+        httpCallback(F("sys_WS_EVT_ERROR"), "", false); // сообщим об ошибке сокета
     } else
     if(type == WS_EVT_PONG){
         LOG(printf_P, PSTR("ws[%s][%u] pong[%u]: %s\n"), server->url(), client->id(), len, (len)?(char*)data:"");

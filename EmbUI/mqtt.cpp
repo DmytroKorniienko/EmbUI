@@ -14,7 +14,7 @@ void EmbUI::connectToMqtt() {
     m_port=param(FPSTR(P_m_port));
     m_user=param(FPSTR(P_m_user));
     m_pass=param(FPSTR(P_m_pass));
-    m_will=m_pref+F("/embui/pub/online");
+    m_will=id(F("embui/pub/online"));
     
     IPAddress ip; 
     bool isIP = ip.fromString(m_host);
@@ -171,6 +171,7 @@ void EmbUI::onMqttConnect(){
         subscribeAll();
         String strue = FPSTR(P_true);
         mqttClient.publish(m_will.c_str(), 0, true, strue.c_str());
+        httpCallback(F("sys_AUTODISCOVERY"), "", false); // реализация AUTODISCOVERY
     }
 }
 
@@ -227,6 +228,11 @@ void EmbUI::publish(const String &topic, const String &payload, bool retained){
 void EmbUI::publish(const String &topic, const String &payload){
     if (!sysData.wifi_sta || !sysData.mqtt_enable) return;
     mqttClient.publish(id(topic).c_str(), 0, false, payload.c_str());
+}
+
+void EmbUI::publishto(const String &topic, const String &payload, bool retained){
+    if (!sysData.wifi_sta || !sysData.mqtt_enable) return;
+    mqttClient.publish(topic.c_str(), 0, retained, payload.c_str());
 }
 
 void EmbUI::pub_mqtt(const String &key, const String &value){
