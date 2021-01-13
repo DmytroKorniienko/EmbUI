@@ -243,6 +243,7 @@ class EmbUI
     void subscribe(const String &topic);
     void publish(const String &topic, const String &payload);
     void publish(const String &topic, const String &payload, bool retained);
+    void publishto(const String &topic, const String &payload, bool retained);
     void remControl();
     void post(JsonObject data);
     void send_pub();
