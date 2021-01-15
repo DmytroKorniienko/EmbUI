@@ -108,6 +108,7 @@ class Interface {
         void json_section_begin(const String &name, const String &label, bool main, bool hidden, bool line, JsonObject obj);
         void json_section_end();
 
+        void custom(const String &id, const String &type, const String &value, const String &label, const JsonObject &param = JsonObject());
         void frame(const String &id, const String &value);
         void frame2(const String &id, const String &value);
         void value(const String &id, bool html = false);
@@ -117,7 +118,7 @@ class Interface {
         void constant(const String &id, const String &label);
         void constant(const String &id, const String &value, const String &label);
         void text(const String &id, const String &label, bool directly = false);
-        void text(const String &id, const String &value, const String &label, bool directly);   // 4-й параметр обяхателен, т.к. компилятор умудряется привести F() к булевому виду и использует неверный оверлоад (под esp32)
+        void text(const String &id, const String &value, const String &label, bool directly);   // 4-й параметр обязателен, т.к. компилятор умудряется привести F() к булевому виду и использует неверный оверлоад (под esp32)
         void password(const String &id, const String &label);
         void password(const String &id, const String &value, const String &label);
         void number(const String &id, const String &label, int min = 0, int max = 0);

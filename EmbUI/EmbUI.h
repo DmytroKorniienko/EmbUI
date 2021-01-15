@@ -194,7 +194,7 @@ class EmbUI
     AsyncMqttClient mqttClient;
 
   public:
-    EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws("/ws"){
+    EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws(F("/ws")){
         memset(mc,0,sizeof(mc));
     }
     BITFIELDS sysData;
@@ -210,6 +210,7 @@ class EmbUI
     String m_port;
     String m_user;
     String m_pass;
+    String m_will;
 
     void var(const String &key, const String &value, bool force = false);
     void var_create(const String &key, const String &value);
@@ -242,6 +243,7 @@ class EmbUI
     void subscribe(const String &topic);
     void publish(const String &topic, const String &payload);
     void publish(const String &topic, const String &payload, bool retained);
+    void publishto(const String &topic, const String &payload, bool retained);
     void remControl();
     void post(JsonObject data);
     void send_pub();

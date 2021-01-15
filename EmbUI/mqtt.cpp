@@ -14,17 +14,16 @@ void EmbUI::connectToMqtt() {
     m_port=param(FPSTR(P_m_port));
     m_user=param(FPSTR(P_m_user));
     m_pass=param(FPSTR(P_m_pass));
+    m_will=id(F("embui/pub/online"));
     
     IPAddress ip; 
     bool isIP = ip.fromString(m_host);
-    mqttClient.setCredentials(m_user.c_str(), m_pass.c_str());
     if(isIP)
         mqttClient.setServer(ip, m_port.toInt());
     else
         mqttClient.setServer(m_host.c_str(), m_port.toInt());
 
-    mqttClient.setClientId(m_pref.isEmpty() ? mc : m_pref.c_str());
-    
+    mqttClient.setKeepAlive(30).setWill(m_will.c_str(), 0, true, p_false).setCredentials(m_user.c_str(), m_pass.c_str()).setClientId(m_pref.isEmpty() ? mc : m_pref.c_str());
     mqttClient.connect();
 }
 
@@ -59,13 +58,6 @@ void EmbUI::mqtt(const String &pref, const String &host, int port, const String 
         LOG(println, PSTR("UI: MQTT host is empty - disabled!"));
         return;   // выходим если host не задан
     }
-    m_pref=param(FPSTR(P_m_pref));
-    m_host=param(FPSTR(P_m_host));
-    m_port=param(FPSTR(P_m_port));
-    m_user=param(FPSTR(P_m_user));
-    m_pass=param(FPSTR(P_m_pass));
-    IPAddress ip; 
-    bool isIP = ip.fromString(m_host);
 
     if(m_pref == FPSTR(P_null)) var(FPSTR(P_m_pref), pref);
     if(m_host == FPSTR(P_null)) var(FPSTR(P_m_host), host);
@@ -84,14 +76,9 @@ void EmbUI::mqtt(const String &pref, const String &host, int port, const String 
     mqttClient.onUnsubscribe(onMqttUnsubscribe);
     mqttClient.onMessage(onMqttMessage);
     mqttClient.onPublish(onMqttPublish);
-    mqttClient.setClientId(m_pref.isEmpty() ? mc : m_pref.c_str());
-    mqttClient.setCredentials(m_user.c_str(), m_pass.c_str());
-    if(isIP)
-        mqttClient.setServer(ip, m_port.toInt());
-    else
-        mqttClient.setServer(m_host.c_str(), m_port.toInt());
     
     sysData.mqtt_enable = true;
+    mqtt_reconnect();
 }
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload)){
@@ -182,6 +169,9 @@ void EmbUI::onMqttConnect(){
     LOG(println,F("UI: Connected to MQTT."));
     if(sysData.mqtt_remotecontrol){
         subscribeAll();
+        String strue = FPSTR(P_true);
+        mqttClient.publish(m_will.c_str(), 0, true, strue.c_str());
+        httpCallback(F("sys_AUTODISCOVERY"), "", false); // реализация AUTODISCOVERY
     }
 }
 
@@ -238,6 +228,11 @@ void EmbUI::publish(const String &topic, const String &payload, bool retained){
 void EmbUI::publish(const String &topic, const String &payload){
     if (!sysData.wifi_sta || !sysData.mqtt_enable) return;
     mqttClient.publish(id(topic).c_str(), 0, false, payload.c_str());
+}
+
+void EmbUI::publishto(const String &topic, const String &payload, bool retained){
+    if (!sysData.wifi_sta || !sysData.mqtt_enable) return;
+    mqttClient.publish(topic.c_str(), 0, retained, payload.c_str());
 }
 
 void EmbUI::pub_mqtt(const String &key, const String &value){

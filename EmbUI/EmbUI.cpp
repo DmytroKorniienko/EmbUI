@@ -44,6 +44,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
         Interface *interf = new Interface(&embui, client);
         section_main_frame(interf, nullptr);
+        embui.send_pub();
         delete interf;
 
     } else
@@ -52,6 +53,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     } else
     if(type == WS_EVT_ERROR){
         LOG(printf_P, PSTR("ws[%s][%u] error(%u): %s\n"), server->url(), client->id(), *((uint16_t*)arg), (char*)data);
+        httpCallback(F("sys_WS_EVT_ERROR"), "", false); // сообщим об ошибке сокета
     } else
     if(type == WS_EVT_PONG){
         LOG(printf_P, PSTR("ws[%s][%u] pong[%u]: %s\n"), server->url(), client->id(), len, (len)?(char*)data:"");
@@ -62,10 +64,10 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
             DynamicJsonDocument doc(1024);
             deserializeJson(doc, data, info->len);
 
-            const char *pkg = doc["pkg"];
-            if (!pkg) return;
-            if (!strcmp(pkg, "post")) {
-                JsonObject data = doc["data"];
+            String pkg = doc[F("pkg")];
+            if (pkg.isEmpty()) return;
+            if (pkg == F("post")) {
+                JsonObject data = doc[F("data")];
                 embui.post(data);
             }
         }
@@ -288,12 +290,12 @@ void EmbUI::begin(){
     });
 
     server.on(PSTR("/heap"), HTTP_GET, [this](AsyncWebServerRequest *request){
-        String out = "Heap: "+String(ESP.getFreeHeap());
+        String out = String(F("Heap: "))+String(ESP.getFreeHeap());
 #ifdef EMBUI_DEBUG
     #ifdef ESP8266
-        out += "\nFrac: " + String(getFragmentation());
+        out += String(F("\nFrac: ")) + String(getFragmentation());
     #endif
-        out += "\nClient: " + String(ws.count());
+        out += String(F("\nClient: ")) + String(ws.count());
 #endif
         request->send(200, FPSTR(PGmimetxt), out);
     });

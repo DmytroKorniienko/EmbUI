@@ -59,8 +59,17 @@ void EmbUI::autosave(){
 }
 
 void EmbUI::load(const char *_cfg){
-    if (!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
+    uint8_t retry_cnt = 0;
+
+    while(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED) && retry_cnt<5){
         LOG(println, F("UI: Can't initialize LittleFS"));
+        retry_cnt++;
+        delay(100);
+        //return;
+    }
+
+    if(retry_cnt==5 && !LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
+        LOG(println, F("UI: Fatal error - can't initialize LittleFS"));
         return;
     }
     
@@ -71,7 +80,14 @@ void EmbUI::load(const char *_cfg){
         error = deserializeJson(cfg, configFile);
         configFile.close();
     } else {
-        return;
+        configFile = _cfg ? LittleFS.open(_cfg, "r") : LittleFS.open(FPSTR(P_cfgfile_bkp), "r"); // в случае ошибки пробуем восстановить конфиг из резервной копии
+        if (configFile){
+            error = deserializeJson(cfg, configFile);
+            configFile.close();
+        } else {
+            LOG(println, F("UI: Fatal error - missed configs"));
+            return;
+        }
     }
 
     if (error) {
