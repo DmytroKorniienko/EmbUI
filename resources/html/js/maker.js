@@ -12,6 +12,10 @@ var render = function(){
 			var value = this.value, type = this.type;
 			if (type == "range") go("#"+id+"-val").html(": " + value);
 			if (type == "text" || type == "password") go("#"+id+"-val").html(" ("+value.length+")");
+			if (type == "color") go("#"+id+"-val").html(" ("+value+")");
+			if (this.id != id){
+				custom_hook(this.id, d, id);
+			}
 		},
 		on_change: function(d, id) {
 			var value = this.value, type = this.type;
@@ -19,6 +23,9 @@ var render = function(){
 				var chbox=document.getElementById(id);
 				if (chbox.checked) value = "true";
 				else value = "false";
+			}
+			if (this.id != id){
+				custom_hook(this.id, d, id);
 			}
 			var data = {}; data[id] = (value !== undefined)? value : null;
 			ws.send_post(data);
