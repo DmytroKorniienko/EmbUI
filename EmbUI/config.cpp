@@ -98,8 +98,10 @@ void EmbUI::load(const char *_cfg){
         }
         if(error){
             // тут выясняется, что оба конфига повреждены, запрещаем запись
+#ifdef ESP8266
             LittleFS.check();
             LittleFS.gc();
+#endif
             sysData.cfgCorrupt = true;
             LOG(print, F("UI: Critical JSON config deserializeJson error, config saving disabled: "));
             LOG(println, error.code());

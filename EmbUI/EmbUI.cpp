@@ -326,7 +326,7 @@ void EmbUI::begin(){
                 int type = (data[0] == ESP_IMAGE_HEADER_MAGIC)? U_FLASH : U_FS;
                 size_t size = (type == U_FLASH)? request->contentLength() : UPDATE_SIZE_UNKNOWN;
             #endif
-            LOG(printf_P, PSTR("Updating %s, file size:%u\n"), (type == U_FLASH)? F("Firmware") : F("Filesystem"), request->contentLength());
+            LOG(printf_P, PSTR("Updating %s, file size:%u\n"), (type == U_FLASH)? "Firmware" : "Filesystem", request->contentLength());
 
             if (!Update.begin(size, type)) {
                 Update.printError(Serial);

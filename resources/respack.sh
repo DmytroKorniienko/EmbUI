@@ -11,7 +11,7 @@ cat html/css/*_dark.css | gzip -9 > ./data/css/style_dark.css.gz
 cp html/css/*.jpg ./data/css/
 cp html/css/*.webp ./data/css/
 
-cat html/js/*.js | gzip -9 > ./data/js/all.js.gz
+cat html/js/*.js | gzip -9 > ./data/js/embui.js.gz
 cat html/index.html | gzip -9 > ./data/index.html.gz
 cat html/favicon.ico | gzip -9 > ./data/favicon.ico.gz
 cp html/.exclude.files ./data/
