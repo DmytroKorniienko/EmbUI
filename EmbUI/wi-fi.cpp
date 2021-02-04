@@ -167,7 +167,13 @@ void EmbUI::wifi_init(){
 	     * https://github.com/espressif/arduino-esp32/issues/2537
 	     */
 	    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-        WiFi.begin();   // use internaly stored last known credentials for connection
+        // use internaly stored last known credentials for connection
+        if ( WiFi.begin() == WL_CONNECT_FAILED ){
+            embuischedw.once(WIFI_BEGIN_DELAY, [this](){ WiFi.mode(WIFI_MODE_APSTA);
+                                                        LOG(println, F("UI WiFi: Switch to AP-Station mode"));
+                                                        embuischedw.detach();} );
+        }
+        
 	    if (!WiFi.setHostname(hn.c_str()))
             LOG(println, F("UI WiFi: Failed to set hostname :("));
     #endif
