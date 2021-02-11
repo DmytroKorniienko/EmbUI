@@ -34,6 +34,7 @@ void create_parameters(){
     /**
      * регистрируем свои переменные
      */
+    embui.var_create(FPSTR(V_LED), "1");    // LED default status is on
     embui.var_create(FPSTR(V_VAR1), "");    // заводим пустую переменную по умолчанию
 
     /**
@@ -44,6 +45,8 @@ void create_parameters(){
 
     // обработчики
     embui.section_handle_add(FPSTR(T_SET_DEMO), action_demopage);           // обработка данных из секции "Demo"
+
+    embui.section_handle_add(FPSTR(V_LED), action_blink);               // обработка рычажка светодиода
 
 };
 
@@ -112,6 +115,9 @@ void block_demopage(Interface *interf, JsonObject *data){
     interf->json_section_main(FPSTR(T_SET_DEMO), F("Some demo controls"));
     interf->comment(F("Комментарий: набор контролов для демонстрации"));     // комментарий-описание секции
 
+    // переключатель, связанный со светодиодом. Изменяется синхронно 
+    interf->checkbox(FPSTR(V_LED), F("Onboard LED"), true);
+
     interf->text(FPSTR(V_VAR1), F("текстовое поле"));                                 // текстовое поле со значением переменной из конфигурации
     interf->text(FPSTR(V_VAR2), F("some default val"), F("Второе текстовое поле"), false);   // текстовое поле со значением "по-умолчанию"
     /*  кнопка отправки данных секции на обработку
@@ -142,6 +148,17 @@ void action_demopage(Interface *interf, JsonObject *data){
     // выводим значение 2-й переменной в serial
     Serial.printf_P(PSTR("Varialble_2 value:%s\n"), text);
 
+}
+
+
+void action_blink(Interface *interf, JsonObject *data){
+  if (!data) return;  // здесь обрабатывает только данные
+
+  SETPARAM(FPSTR(V_LED));  // save new LED state to the config
+
+  // set LED state to the new checkbox state
+  digitalWrite(LED_BUILTIN, !(*data)[FPSTR(V_LED)].as<unsigned int>()); // write inversed signal for biuldin LED
+  Serial.printf("LED: %d\n", (*data)[FPSTR(V_LED)].as<unsigned int>());
 }
 
 /**

@@ -9,8 +9,8 @@ go.formdata = function(form){
 	var controls = {},
 	checkValue = function(element){
 		switch (element.type.toLowerCase()){
-			case 'checkbox':
-				return element.checked?	"true" : "false";
+			case 'checkbox':		// use "1" as a value for 'checked' boxes  
+				return element.checked?	"1" : "0";
 			case 'radio':
 				if(element.checked) return element.value;
 				break;

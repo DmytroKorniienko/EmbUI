@@ -7,6 +7,7 @@ static const char T_HEADLINE[] PROGMEM = "EmbUI Demo";    // имя проект
 
 
 // Our variable names
+static const char V_LED[] PROGMEM = "vLED";
 static const char V_VAR1[] PROGMEM = "v1";
 static const char V_VAR2[] PROGMEM = "v2";
 
