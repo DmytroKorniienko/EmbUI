@@ -109,7 +109,8 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
     case SYSTEM_EVENT_STA_DISCONNECTED:
         LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.disconnected.reason);
         // https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/esp32/esp_wifi_types.h
-        if(WiFi.getMode() != WIFI_MODE_APSTA){
+        if(WiFi.getMode() != WIFI_MODE_APSTA && !embuischedw.active()){
+            LOG(println, PSTR("UI WiFi: Reconnect attempt"));
             embuischedw.once(WIFI_BEGIN_DELAY, [this](){ WiFi.mode(WIFI_MODE_APSTA);
                                                         LOG(println, F("UI WiFi: Switch to AP-Station mode"));
                                                         embuischedw.detach();} );
