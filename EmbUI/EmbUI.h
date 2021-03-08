@@ -73,7 +73,7 @@
 class Interface;
 
 //-----------------------
-#define TOGLE_STATE(val, curr) (val == FPSTR(P_true))? true : (val == FPSTR(P_false))? false : !curr;
+#define TOGLE_STATE(val, curr) (val == "1")? true : (val == "0")? false : !curr;
 
 #define SETPARAM(key, call...) if (data->containsKey(key)) { \
     embui.var(key, (*data)[key]); \
