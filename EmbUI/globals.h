@@ -17,9 +17,13 @@
 
 // LOG macro's
 #if defined(EMBUI_DEBUG)
-	#define LOG(func, ...) Serial.func(__VA_ARGS__)
+  #ifndef EMBUI_DEBUG_PORT
+    #define EMBUI_DEBUG_PORT Serial
+  #endif
+
+  #define LOG(func, ...) EMBUI_DEBUG_PORT.func(__VA_ARGS__)
 #else
-	#define LOG(func, ...) ;
+  #define LOG(func, ...) ;
 #endif
 
 #ifdef ESP32
