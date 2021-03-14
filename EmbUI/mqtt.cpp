@@ -23,6 +23,7 @@ void EmbUI::connectToMqtt() {
     else
         mqttClient.setServer(m_host.c_str(), m_port.toInt());
 
+    mqttClient.disconnect();
     mqttClient.setKeepAlive(30).setWill(m_will.c_str(), 0, true, "0").setCredentials(m_user.c_str(), m_pass.c_str()).setClientId(m_pref.isEmpty() ? mc : m_pref.c_str());
     mqttClient.connect();
 }
@@ -50,8 +51,9 @@ void EmbUI::onMqttPublish(uint16_t packetId) {
 typedef void (*mqttCallback) (const String &topic, const String &payload);
 mqttCallback mqt;
 
-void fake(){}
+void mqtt_dummy_connect(){ embui.onMqttConnect(); }
 void mqtt_emptyFunction(const String &, const String &){}
+
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
     if (host.length()==0){
         LOGF(println, PSTR("UI: MQTT host is empty - disabled!"));
@@ -82,31 +84,31 @@ void EmbUI::mqtt(const String &pref, const String &host, int port, const String 
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload)){
     mqtt(pref, host, port, user, pass, mqttFunction, false);
-    onConnect = fake;
+    onConnect = mqtt_dummy_connect;
 }
 
 void EmbUI::mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload)){
     getAPmac();
     mqtt(mc, host, port, user, pass, mqttFunction, false);
-    onConnect = fake;
+    onConnect = mqtt_dummy_connect;
 }
 
 void EmbUI::mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
     getAPmac();
     mqtt(mc, host, port, user, pass, mqttFunction, remotecontrol);
-    onConnect = fake;
+    onConnect = mqtt_dummy_connect;
 }
 
 void EmbUI::mqtt(const String &host, int port, const String &user, const String &pass, bool remotecontrol){
     getAPmac();
     mqtt(mc, host, port, user, pass, mqtt_emptyFunction, remotecontrol);
-    onConnect = fake;
+    onConnect = mqtt_dummy_connect;
 }
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, bool remotecontrol){
     getAPmac();
     mqtt(pref, host, port, user, pass, mqtt_emptyFunction, remotecontrol);
-    onConnect = fake;
+    onConnect = mqtt_dummy_connect;
 }
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol){
@@ -129,6 +131,17 @@ void EmbUI::mqtt(const String &host, int port, const String &user, const String 
     getAPmac();
     mqtt(mc, host, port, user, pass, mqttFunction, remotecontrol);
     onConnect = mqttConnect;
+}
+
+void EmbUI::mqtt(void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
+    mqt = mqttFunction;
+    if (remotecontrol) embui.sysData.mqtt_remotecontrol = true;
+}
+
+void EmbUI::mqtt(void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol){
+    onConnect = mqttConnect;
+    mqt = mqttFunction;
+    if (remotecontrol) embui.sysData.mqtt_remotecontrol = true;
 }
 
 void EmbUI::mqtt_handle(){

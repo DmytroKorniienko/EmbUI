@@ -147,6 +147,7 @@ enum CallBack : uint8_t {
 
 class EmbUI
 {
+    friend void mqtt_dummy_connect();
     // оптимизация расхода памяти, все битовые флаги и другие потенциально "сжимаемые" переменные скидываем сюда
     //#pragma pack(push,1)
     typedef union _BITFIELDS {
@@ -239,6 +240,9 @@ class EmbUI
     void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) ());
     void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) ());
     void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol);
+    void mqtt(void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol);
+    void mqtt(void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol);
+
     void mqttReconnect();
     void subscribe(const String &topic);
     void publish(const String &topic, const String &payload);
