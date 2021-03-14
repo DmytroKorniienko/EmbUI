@@ -40,7 +40,7 @@ String httpCallback(const String &param, const String &value, bool isSet) { retu
 
 void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len){
     if(type == WS_EVT_CONNECT){
-        LOG(printf_P, PSTR("UI: ws[%s][%u] connect MEM: %u\n"), server->url(), client->id(), ESP.getFreeHeap());
+        LOGF(printf_P, PSTR("UI: ws[%s][%u] connect MEM: %u\n"), server->url(), client->id(), ESP.getFreeHeap());
 
         Interface *interf = new Interface(&embui, client);
         section_main_frame(interf, nullptr);
@@ -49,14 +49,14 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
     } else
     if(type == WS_EVT_DISCONNECT){
-        LOG(printf_P, PSTR("ws[%s][%u] disconnect\n"), server->url(), client->id());
+        LOGF(printf_P, PSTR("ws[%s][%u] disconnect\n"), server->url(), client->id());
     } else
     if(type == WS_EVT_ERROR){
-        LOG(printf_P, PSTR("ws[%s][%u] error(%u): %s\n"), server->url(), client->id(), *((uint16_t*)arg), (char*)data);
+        LOGF(printf_P, PSTR("ws[%s][%u] error(%u): %s\n"), server->url(), client->id(), *((uint16_t*)arg), (char*)data);
         httpCallback(F("sys_WS_EVT_ERROR"), "", false); // сообщим об ошибке сокета
     } else
     if(type == WS_EVT_PONG){
-        LOG(printf_P, PSTR("ws[%s][%u] pong[%u]: %s\n"), server->url(), client->id(), len, (len)?(char*)data:"");
+        LOGF(printf_P, PSTR("ws[%s][%u] pong[%u]: %s\n"), server->url(), client->id(), len, (len)?(char*)data:"");
     } else
     if(type == WS_EVT_DATA){
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
@@ -106,7 +106,7 @@ void EmbUI::post(JsonObject data){
     delete interf;
 
     if (section) {
-        LOG(printf_P, PSTR("\nUI: POST SECTION: %s\n\n"), section->name.c_str());
+        LOGF(printf_P, PSTR("\nUI: POST SECTION: %s\n\n"), section->name.c_str());
         Interface *interf = new Interface(this, &ws);
         section->callback(interf, &data);
         delete interf;
@@ -126,26 +126,26 @@ void EmbUI::var(const String &key, const String &value, bool force)
     unsigned len = key.length() + value.length() + 16;
     size_t cap = cfg.capacity(), mem = cfg.memoryUsage();
 
-    LOG(printf_P, PSTR("UI WRITE: key (%s) value (%s) "), key.c_str(), value.substring(0, 15).c_str());
+    LOGF(printf_P, PSTR("UI WRITE: key (%s) value (%s) "), key.c_str(), value.substring(0, 15).c_str());
     if (!force && !cfg.containsKey(key)) {
-        LOG(printf_P, PSTR("UI ERROR: KEY (%s) is NOT initialized!\n"), key.c_str());
+        LOGF(printf_P, PSTR("UI ERROR: KEY (%s) is NOT initialized!\n"), key.c_str());
         return;
     }
 
     if (cap - mem < len) {
         cfg.garbageCollect();
-        LOG(printf_P, PSTR("UI: garbage cfg %u(%u) of %u\n"), mem, cfg.memoryUsage(), cap);
+        LOGF(printf_P, PSTR("UI: garbage cfg %u(%u) of %u\n"), mem, cfg.memoryUsage(), cap);
 
     }
     if (cap - mem < len) {
-        LOG(printf_P, PSTR("UI ERROR: KEY (%s) NOT WRITE !!!!!!!!\n"), key.c_str());
+        LOGF(printf_P, PSTR("UI ERROR: KEY (%s) NOT WRITE !!!!!!!!\n"), key.c_str());
         return;
     }
 
     cfg[key] = value;
     sysData.isNeedSave = true;
 
-    LOG(printf_P, PSTR("UI FREE: %u\n"), cap - cfg.memoryUsage());
+    LOGF(printf_P, PSTR("UI FREE: %u\n"), cap - cfg.memoryUsage());
 
     // if (mqtt_remotecontrol) {
     //     publish(String(F("embui/set/")) + key, value, true);
@@ -156,7 +156,7 @@ void EmbUI::var_create(const String &key, const String &value)
 {
     if(cfg[key].isNull()){
         cfg[key] = value;
-        LOG(printf_P, PSTR("UI CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), value.substring(0, 15).c_str(), ESP.getFreeHeap());
+        LOGF(printf_P, PSTR("UI CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), value.substring(0, 15).c_str(), ESP.getFreeHeap());
     }
 }
 
@@ -167,7 +167,7 @@ void EmbUI::section_handle_add(const String &name, buttonCallback response)
     section->callback = response;
     section_handle.add(section);
 
-    LOG(printf_P, PSTR("UI REGISTER: %s\n"), name.c_str());
+    LOGF(printf_P, PSTR("UI REGISTER: %s\n"), name.c_str());
 }
 
 /**
@@ -178,7 +178,7 @@ const char* EmbUI::param(const char* key)
 {
     const char* value = cfg[key];
     if (value){
-        LOG(printf_P, PSTR("UI READ: key (%s) value (%s)\n"), key, value);
+        LOGF(printf_P, PSTR("UI READ: key (%s) value (%s)\n"), key, value);
     }
 
     return value;
@@ -210,7 +210,7 @@ void EmbUI::begin(){
     create_sysvars();       // create system variables (if missing)
     create_parameters();    // weak function, creates user-defined variables
 
-    LOG(println, String(F("UI CONFIG: ")) + embui.deb());
+    LOGF(println, String(F("UI CONFIG: ")) + embui.deb());
     #ifdef ESP8266
         e1 = WiFi.onStationModeGotIP(std::bind(&EmbUI::onSTAGotIP, this, std::placeholders::_1));
         e2 = WiFi.onStationModeDisconnected(std::bind(&EmbUI::onSTADisconnected, this, std::placeholders::_1));
@@ -232,7 +232,7 @@ void EmbUI::begin(){
     server.addHandler(&ws);
 
 #ifdef USE_SSDP
-    ssdp_begin(); LOG(println, F("Start SSDP"));
+    ssdp_begin(); LOGF(println, F("Start SSDP"));
 #endif
 
 /*
@@ -326,7 +326,7 @@ void EmbUI::begin(){
                 int type = (data[0] == ESP_IMAGE_HEADER_MAGIC)? U_FLASH : U_FS;
                 size_t size = (type == U_FLASH)? request->contentLength() : UPDATE_SIZE_UNKNOWN;
             #endif
-            LOG(printf_P, PSTR("Updating %s, file size:%u\n"), (type == U_FLASH)? "Firmware" : "Filesystem", request->contentLength());
+            LOGF(printf_P, PSTR("Updating %s, file size:%u\n"), (type == U_FLASH)? "Firmware" : "Filesystem", request->contentLength());
 
             if (!Update.begin(size, type)) {
                 Update.printError(Serial);
@@ -339,7 +339,7 @@ void EmbUI::begin(){
         }
         if (final) {
             if(Update.end(true)){
-                LOG(printf_P, PSTR("Update Success: %uB\n"), index+len);
+                LOGF(printf_P, PSTR("Update Success: %uB\n"), index+len);
             } else {
                 Update.printError(Serial);
             }
@@ -397,7 +397,7 @@ void EmbUI::led(uint8_t pin, bool invert){
 
 void EmbUI::handle(){
     if (sysData.shouldReboot) {
-        LOG(println, F("Rebooting..."));
+        LOGF(println, F("Rebooting..."));
         delay(100);
         ESP.restart();
     }
@@ -460,7 +460,7 @@ uint8_t uploadProgress(size_t len, size_t total){
     uint8_t progress = 100*len/total;
     if (curr != prev) {
         prev = curr;
-        LOG(printf_P, PSTR("%u%%.."), progress );
+        LOGF(printf_P, PSTR("%u%%.."), progress );
     }
     return progress;
 }
@@ -470,7 +470,7 @@ uint8_t uploadProgress(size_t len, size_t total){
  * both run-time and persistent
  */
 void EmbUI::create_sysvars(){
-    LOG(println, F("UI: Creating system vars"));
+    LOGF(println, F("UI: Creating system vars"));
     var_create(FPSTR(P_hostname), "");                // device hostname (autogenerated on first-run)
     var_create(FPSTR(P_APonly),  FPSTR(P_false));     // режим AP-only (только точка доступа), не трогать
     var_create(FPSTR(P_APpwd), "");                   // пароль внутренней точки доступа

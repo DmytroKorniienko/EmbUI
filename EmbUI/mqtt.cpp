@@ -7,7 +7,7 @@
 extern EmbUI embui;
 
 void EmbUI::connectToMqtt() {
-    LOG(println, PSTR("UI: Connecting to MQTT..."));
+    LOGF(println, PSTR("UI: Connecting to MQTT..."));
 
     m_pref=param(FPSTR(P_m_pref));
     m_host=param(FPSTR(P_m_host));
@@ -55,7 +55,7 @@ void emptyFunction(const String &, const String &){}
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
     if (host.length()==0){
-        LOG(println, PSTR("UI: MQTT host is empty - disabled!"));
+        LOGF(println, PSTR("UI: MQTT host is empty - disabled!"));
         return;   // выходим если host не задан
     }
 
@@ -65,7 +65,7 @@ void EmbUI::mqtt(const String &pref, const String &host, int port, const String 
     if(m_user == FPSTR(P_null)) var(FPSTR(P_m_user), user);
     if(m_pass == FPSTR(P_null)) var(FPSTR(P_m_pass), pass);
 
-    LOG(println, PSTR("UI: MQTT Init completed"));
+    LOGF(println, PSTR("UI: MQTT Init completed"));
 
     if (remotecontrol) embui.sysData.mqtt_remotecontrol = true;
     mqt = mqttFunction;
@@ -154,7 +154,7 @@ void EmbUI::mqtt_reconnect(){
 }
 
 void EmbUI::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-  LOG(println,F("UI: Disconnected from MQTT."));
+  LOGF(println,F("UI: Disconnected from MQTT."));
   embui.sysData.mqtt_connect = false;
   embui.sysData.mqtt_connected = false;
 }
@@ -166,7 +166,7 @@ void EmbUI::_onMqttConnect(bool sessionPresent) {
 void EmbUI::onMqttConnect(){
     sysData.mqtt_connect = false;
     sysData.mqtt_connected = true;
-    LOG(println,F("UI: Connected to MQTT."));
+    LOGF(println,F("UI: Connected to MQTT."));
     if(sysData.mqtt_remotecontrol){
         subscribeAll();
         String strue = FPSTR(P_true);
@@ -176,8 +176,8 @@ void EmbUI::onMqttConnect(){
 }
 
 void EmbUI::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
-    LOG(print, F("UI: Publish received: "));
-    LOG(println, topic);
+    LOGF(print, F("UI: Publish received: "));
+    LOGF(println, topic);
 
     char buffer[len + 2];
     memset(buffer, 0, sizeof(buffer));
@@ -213,10 +213,10 @@ void EmbUI::subscribeAll(bool isOnlyGetSet){
     if(isOnlyGetSet){
         mqttClient.subscribe(id(F("embui/set/#")).c_str(), 0);
         mqttClient.subscribe(id(F("embui/get/#")).c_str(), 0);
-        LOG(println, F("UI: Subscribe embui/get/# & embui/set/#"));
+        LOGF(println, F("UI: Subscribe embui/get/# & embui/set/#"));
     } else {
         mqttClient.subscribe(id(F("embui/#")).c_str(), 0);
-        LOG(println, F("UI: Subscribe All (embui/#)"));
+        LOGF(println, F("UI: Subscribe All (embui/#)"));
     }
 }
 

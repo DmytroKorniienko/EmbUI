@@ -21,9 +21,9 @@
     #define EMBUI_DEBUG_PORT Serial
   #endif
 
-  #define LOG(func, ...) EMBUI_DEBUG_PORT.func(__VA_ARGS__)
+  #define LOGF(func, ...) EMBUI_DEBUG_PORT.func(__VA_ARGS__)
 #else
-  #define LOG(func, ...) ;
+  #define LOGF(func, ...) ;
 #endif
 
 #ifdef ESP32
