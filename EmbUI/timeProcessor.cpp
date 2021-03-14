@@ -43,7 +43,7 @@ TimeProcessor::TimeProcessor()
 
     #ifdef TZONE
           configTzTime(TZONE, NTP1ADDRESS, NTP2ADDRESS);
-        LOG(print, F("TIME: Time Zone set to: "));      LOG(print, TZONE);
+        LOGF(print, F("TIME: Time Zone set to: "));      LOGF(print, TZONE);
     #else
           configTzTime(TZ_DEFAULT, NTP1ADDRESS, NTP2ADDRESS);
     #endif
@@ -126,13 +126,13 @@ void TimeProcessor::tzsetup(const char* tz){
       _tzfix.reserve(sizeof(tz)) ;
       _tzfix += FPSTR(P_LOC);
       if (_tz.indexOf('<',1) > 0){  // there might be two <> quotes
-    	//LOG(print, "2nd pos: "); LOG(println, _tz.indexOf('<',1)); 
+    	//LOGF(print, "2nd pos: "); LOGF(println, _tz.indexOf('<',1)); 
         _tzfix += _tz.substring(_tz.indexOf('>')+1, _tz.indexOf('<',1));
         _tzfix += FPSTR(P_LOC);
       }
       _tzfix += _tz.substring(_tz.lastIndexOf('>')+1, _tz.length());
       setenv("TZ", _tzfix.c_str(), 1/*overwrite*/);
-      LOG(printf_P, PSTR("TIME: TZ fix applied: %s\n"), _tzfix.c_str());
+      LOGF(printf_P, PSTR("TIME: TZ fix applied: %s\n"), _tzfix.c_str());
     } else {
       setenv("TZ", tz, 1/*overwrite*/);
     }
@@ -140,7 +140,7 @@ void TimeProcessor::tzsetup(const char* tz){
     tzset();
     tzone = ""; // сбрасываем костыльную зону
     usehttpzone = false;  // запрещаем использование http
-    LOG(printf_P, PSTR("TIME: TZSET rules changed to: %s\n"), tz);
+    LOGF(printf_P, PSTR("TIME: TZSET rules changed to: %s\n"), tz);
 }
 
 #ifndef TZONE
@@ -152,14 +152,14 @@ unsigned int TimeProcessor::getHttpData(String &payload, const String &url)
 {
   WiFiClient client;
   HTTPClient http;
-  LOG(println, F("TimeZone updating via HTTP..."));
+  LOGF(println, F("TimeZone updating via HTTP..."));
   http.begin(client, url);
 
   int httpCode = http.GET();
   if (httpCode == HTTP_CODE_OK){
     payload = http.getString(); 
   } else {
-    LOG(printf_P, PSTR("Time HTTPCode=%d\n"), httpCode);
+    LOGF(printf_P, PSTR("Time HTTPCode=%d\n"), httpCode);
   }
   http.end();
   return payload.length();
@@ -184,14 +184,14 @@ void TimeProcessor::getTimeHTTP()
             return;
     }
 
-    LOG(println, result);
+    LOGF(println, result);
     DynamicJsonDocument doc(TIMEAPI_BUFSIZE);
     DeserializationError error = deserializeJson(doc, result);
     result="";
 
     if (error) {
-        LOG(print, F("Time deserializeJson error: "));
-        LOG(println, error.code());
+        LOGF(print, F("Time deserializeJson error: "));
+        LOGF(println, error.code());
         return;
     }
 
@@ -209,12 +209,12 @@ void TimeProcessor::getTimeHTTP()
         const char *tz = doc[F("timezone")];
         tzone+=tz;
     }
-    LOG(printf_P, PSTR("HTTP TimeZone: %s, offset: %d, dst offset: %d\n"), tzone.c_str(), raw_offset, dst_offset);
+    LOGF(printf_P, PSTR("HTTP TimeZone: %s, offset: %d, dst offset: %d\n"), tzone.c_str(), raw_offset, dst_offset);
 
     setOffset(raw_offset+dst_offset);
 
     if (doc[F("dst_from")]!=nullptr){
-        LOG(println, F("Zone has DST, rescheduling refresh"));
+        LOGF(println, F("Zone has DST, rescheduling refresh"));
         httprefreshtimer();
     }
 }
@@ -240,7 +240,7 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
 
         timer = (mktime(tm) - getUnixTime())% DAYSECONDS;
 
-        LOG(printf_P, PSTR("Schedule TZ refresh in %ld\n"), timer);
+        LOGF(printf_P, PSTR("Schedule TZ refresh in %ld\n"), timer);
     }
 
     #ifdef ESP8266
@@ -285,7 +285,7 @@ void TimeProcessor::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
             // отложенный запрос смещения зоны через http-сервис
             httprefreshtimer(HTTPSYNC_DELAY);
         #endif
-        LOG(println, F("UI TIME: Starting sntp sync"));
+        LOGF(println, F("UI TIME: Starting sntp sync"));
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
         sntp_stop();
@@ -301,7 +301,7 @@ void TimeProcessor::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
 
 
 void TimeProcessor::timeavailable(){
-    LOG(println, F("UI TIME: Time adjusted"));
+    LOGF(println, F("UI TIME: Time adjusted"));
     isSynced = true;
     if(_timecallback)
         _timecallback();
@@ -322,7 +322,7 @@ void TimeProcessor::getDateTimeString(String &buf, const time_t _tstamp){
  * установка текущего смещения от UTC в секундах
  */
 void TimeProcessor::setOffset(const int val){
-    LOG(printf_P, PSTR("UI Time: Set time zone offset to: %d\n"), val);
+    LOGF(printf_P, PSTR("UI Time: Set time zone offset to: %d\n"), val);
 
     #ifdef ESP8266
         sntp_set_timezone_in_seconds(val);
@@ -351,7 +351,7 @@ void TimeProcessor::setcustomntp(const char* ntp){
              return;
 
     sntp_setservername(CUSTOM_NTP_INDEX, (char*)ntp);
-    LOG(printf_P, PSTR("Set custom NTP to: %s\n"), ntp);
+    LOGF(printf_P, PSTR("Set custom NTP to: %s\n"), ntp);
 }
 
 void TimeProcessor::attach_callback(callback_function_t callback){

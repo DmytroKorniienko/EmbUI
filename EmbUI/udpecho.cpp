@@ -37,18 +37,18 @@ void EmbUI::udpLoop(){
     {
         char *data = new char[packetSize+1];
         
-        LOG(printf, PSTR("Received %d bytes from %s, port %d\n"), packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
+        LOGF(printf, PSTR("Received %d bytes from %s, port %d\n"), packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
         uint32_t len = Udp.read(data, packetSize);
         if (len > 0)
         {
             data[len] = 0;
         }
-        LOG(printf, PSTR("UDP packet contents: %s\n"), data);
+        LOGF(printf, PSTR("UDP packet contents: %s\n"), data);
 
         // send back a reply, to the IP address and port we got the packet from
         Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
         //Udp.write(ip.c_str());
-        LOG(println, String(F("Send UDP: ")) + udpMessage);
+        LOGF(println, String(F("Send UDP: ")) + udpMessage);
         Udp.print(udpMessage);
         Udp.endPacket();
 

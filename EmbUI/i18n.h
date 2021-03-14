@@ -108,7 +108,7 @@ static const char T_EN_More[] PROGMEM = "More...";
 static const char T_EN_MQTT_Host[] PROGMEM = "MQTT host";
 static const char T_EN_MQTT_Interval[] PROGMEM = "MQTT update interval, sec.";
 static const char T_EN_MQTT_Port[] PROGMEM = "MQTT port";
-static const char T_EN_MQTT_Topic[] PROGMEM = "MQTT topic";
+static const char T_EN_MQTT_Prefix[] PROGMEM = "MQTT prefix";
 static const char T_EN_MQTT[] PROGMEM = "MQTT";
 static const char T_EN_MSG_APOnly[] PROGMEM = "In AP-only EmbUI always works as an Access Point and never attempt any WiFi-client connections";
 static const char T_EN_MSG_APProtect[] PROGMEM = "Protect AP with a password";
@@ -243,7 +243,7 @@ static const char *const T_DICT[][DICT_SIZE] PROGMEM = {
     T_EN_MQTT_Host,
     T_RU_MQTT_Interval,
     T_EN_MQTT_Port,
-    T_EN_MQTT_Topic,
+    T_EN_MQTT_Prefix,
     T_RU_MSG_APOnly,
     T_RU_MSG_APProtect,
     T_RU_MSG_DATETIME,
@@ -311,7 +311,7 @@ static const char *const T_DICT[][DICT_SIZE] PROGMEM = {
     T_EN_MQTT_Host,
     T_EN_MQTT_Interval,
     T_EN_MQTT_Port,
-    T_EN_MQTT_Topic,
+    T_EN_MQTT_Prefix,
     T_EN_MSG_APOnly,
     T_EN_MSG_APProtect,
     T_EN_MSG_DATETIME,

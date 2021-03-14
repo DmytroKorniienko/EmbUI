@@ -9,7 +9,7 @@ static const char P_button[] PROGMEM = "button";
 static const char P_color[] PROGMEM = "color";
 static const char P_date[] PROGMEM = "date";
 static const char P_directly[] PROGMEM = "directly";
-static const char P_false[] PROGMEM = "false";
+static const char P_false[] PROGMEM = "0";
 static const char P_file[] PROGMEM = "file";
 static const char P_final[] PROGMEM = "final";
 static const char P_hidden[] PROGMEM = "hidden";
@@ -28,12 +28,10 @@ static const char P_section[] PROGMEM = "section";
 static const char P_step[] PROGMEM = "step";
 static const char P_submit[] PROGMEM = "submit";
 static const char P_time[] PROGMEM = "time";
-static const char P_true[] PROGMEM = "true";
+static const char P_true[] PROGMEM = "1";
 static const char P_type[] PROGMEM = "type";
 static const char P_value[] PROGMEM = "value";
 static const char P_wifi[] PROGMEM = "wifi";
-
-static const char p_false[] = "false"; // mqtt last will, can't be PROGMEM
 
 // UI colors
 static const char P_GRAY[] PROGMEM = "gray";
