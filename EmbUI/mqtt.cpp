@@ -23,7 +23,7 @@ void EmbUI::connectToMqtt() {
     else
         mqttClient.setServer(m_host.c_str(), m_port.toInt());
 
-    mqttClient.setKeepAlive(30).setWill(m_will.c_str(), 0, true, p_false).setCredentials(m_user.c_str(), m_pass.c_str()).setClientId(m_pref.isEmpty() ? mc : m_pref.c_str());
+    mqttClient.setKeepAlive(30).setWill(m_will.c_str(), 0, true, "0").setCredentials(m_user.c_str(), m_pass.c_str()).setClientId(m_pref.isEmpty() ? mc : m_pref.c_str());
     mqttClient.connect();
 }
 
@@ -51,8 +51,7 @@ typedef void (*mqttCallback) (const String &topic, const String &payload);
 mqttCallback mqt;
 
 void fake(){}
-void emptyFunction(const String &, const String &){}
-
+void mqtt_emptyFunction(const String &, const String &){}
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
     if (host.length()==0){
         LOGF(println, PSTR("UI: MQTT host is empty - disabled!"));
@@ -100,19 +99,19 @@ void EmbUI::mqtt(const String &host, int port, const String &user, const String 
 
 void EmbUI::mqtt(const String &host, int port, const String &user, const String &pass, bool remotecontrol){
     getAPmac();
-    mqtt(mc, host, port, user, pass, emptyFunction, remotecontrol);
+    mqtt(mc, host, port, user, pass, mqtt_emptyFunction, remotecontrol);
     onConnect = fake;
 }
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, bool remotecontrol){
     getAPmac();
-    mqtt(pref, host, port, user, pass, emptyFunction, remotecontrol);
+    mqtt(pref, host, port, user, pass, mqtt_emptyFunction, remotecontrol);
     onConnect = fake;
 }
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol){
     getAPmac();
-    mqtt(pref, host, port, user, pass, emptyFunction, remotecontrol);
+    mqtt(pref, host, port, user, pass, mqtt_emptyFunction, remotecontrol);
     onConnect = mqttConnect;
 
 }
