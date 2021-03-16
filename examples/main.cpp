@@ -27,7 +27,7 @@ void set_by_btn(Interface *interf, JsonObject *data){
 }
 
 void create_parameters(){
-    LOGF(println, F("Создание дефолтных параметров"));
+    LOG(println, F("Создание дефолтных параметров"));
     // создаем дефолтные параметры для нашего проекта, то что создано через var_create сохраняется в конфиг
     embui.var_create(F("chk"), "false");
 
@@ -80,7 +80,7 @@ void pubCallback(Interface *interf){
 }
 
 String httpCallback(const String &param, const String &value, bool isset){
-    LOGF(printf_P, PSTR("HTTP: %s - %s\n"), param.c_str(), value.c_str());
+    LOG(printf_P, PSTR("HTTP: %s - %s\n"), param.c_str(), value.c_str());
     embui.publish(String(F("embui/pub/")) + param,value,false); // отправляем обратно в MQTT в топик embui/pub/
     return String();
 }

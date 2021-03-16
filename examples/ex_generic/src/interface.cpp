@@ -18,7 +18,7 @@
  * 
  */
 void create_parameters(){
-    LOGF(println, F("UI: Creating application vars"));
+    LOG(println, F("UI: Creating application vars"));
 
    /**
     * регистрируем статические секции для web-интерфейса с системными настройками,
@@ -67,7 +67,7 @@ void section_main_frame(Interface *interf, JsonObject *data){
   interf->json_frame_flush();
 
   if(!embui.sysData.wifi_sta){                      // если контроллер не подключен к внешней AP, сразу открываем вкладку с настройками WiFi
-    LOGF(println, F("UI: Opening network setup section"));
+    LOG(println, F("UI: Opening network setup section"));
     BasicUI::block_settings_netw(interf, data);
   } else {
     block_demopage(interf, data);                   // Строим блок с demo переключателями
@@ -132,7 +132,7 @@ void block_demopage(Interface *interf, JsonObject *data){
 void action_demopage(Interface *interf, JsonObject *data){
     if (!data) return;
 
-    LOGF(println, F("porcessig section demo"));
+    LOG(println, F("porcessig section demo"));
 
     // сохраняем значение 1-й переменной в конфиг фреймворка
     SETPARAM(FPSTR(V_VAR1));

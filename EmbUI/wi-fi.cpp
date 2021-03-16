@@ -10,7 +10,7 @@
 #include "user_interface.h"
 void EmbUI::onSTAConnected(WiFiEventStationModeConnected ipInfo)
 {
-    LOGF(printf_P, PSTR("UI WiFi: STA connected - SSID:'%s'"), ipInfo.ssid.c_str());
+    LOG(printf_P, PSTR("UI WiFi: STA connected - SSID:'%s'"), ipInfo.ssid.c_str());
     if(_cb_STAConnected)
         _cb_STAConnected();        // execule callback
 }
@@ -19,7 +19,7 @@ void EmbUI::onSTAGotIP(WiFiEventStationModeGotIP ipInfo)
 {
     sysData.wifi_sta = true;
     embuischedw.detach();
-    LOGF(printf_P, PSTR(", IP: %s\n"), ipInfo.ip.toString().c_str());
+    LOG(printf_P, PSTR(", IP: %s\n"), ipInfo.ip.toString().c_str());
     wifi_setmode(WIFI_STA);            // Shutdown internal Access Point
     timeProcessor.onSTAGotIP(ipInfo);
     if(_cb_STAGotIP)
@@ -30,7 +30,7 @@ void EmbUI::onSTAGotIP(WiFiEventStationModeGotIP ipInfo)
 
 void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
 {
-    LOGF(printf_P, PSTR("UI WiFi: Disconnected from SSID: %s, reason: %d\n"), event_info.ssid.c_str(), event_info.reason);
+    LOG(printf_P, PSTR("UI WiFi: Disconnected from SSID: %s, reason: %d\n"), event_info.ssid.c_str(), event_info.reason);
     sysData.wifi_sta = false;       // to be removed and replaced with API-method
 
     if (embuischedw.active())
@@ -43,7 +43,7 @@ void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
       Далее делаем периодические попытки переподключений каждые WIFI_RECONNECT_TIMER секунд
     */
     embuischedw.once_scheduled(WIFI_CONNECT_TIMEOUT, [this](){
-        LOGF(println, F("UI WiFi: switching to internal AP"));
+        LOG(println, F("UI WiFi: switching to internal AP"));
         wifi_setmode(WIFI_AP);
         embuischedw.once_scheduled(WIFI_RECONNECT_TIMER, [this](){ embuischedw.detach(); wifi_setmode(WIFI_AP_STA); WiFi.begin();} );
     } );
@@ -65,12 +65,12 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     switch (event){
     case SYSTEM_EVENT_AP_START:
-        LOGF(println, F("UI WiFi: Access-point started"));
+        LOG(println, F("UI WiFi: Access-point started"));
         setup_mDns();
         break;
 
     case SYSTEM_EVENT_STA_CONNECTED:
-        LOGF(println, F("UI WiFi: STA connected"));
+        LOG(println, F("UI WiFi: STA connected"));
 
         if(_cb_STAConnected)
             _cb_STAConnected();        // execule callback
@@ -87,16 +87,16 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
 	    tcpip_adapter_ip_info_t iface;
 	    tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &iface);
         if(!iface.ip.addr){
-            LOGF(println, F("UI WiFi: DHCP discover..."));
+            LOG(println, F("UI WiFi: DHCP discover..."));
 	        return;
     	}
 
-        LOGF(printf_P, PSTR("SSID:'%s', IP: "), WiFi.SSID().c_str());  // IPAddress(info.got_ip.ip_info.ip.addr)
-        LOGF(println, IPAddress(iface.ip.addr));
+        LOG(printf_P, PSTR("SSID:'%s', IP: "), WiFi.SSID().c_str());  // IPAddress(info.got_ip.ip_info.ip.addr)
+        LOG(println, IPAddress(iface.ip.addr));
 
         if(WiFi.getMode() != WIFI_MODE_STA){    // Switch to STA only mode once IP obtained
             WiFi.mode(WIFI_MODE_STA);
-            LOGF(println, F("UI WiFi: switch to STA mode"));
+            LOG(println, F("UI WiFi: switch to STA mode"));
         }
 
         embuischedw.detach();
@@ -107,12 +107,12 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         break;
 
     case SYSTEM_EVENT_STA_DISCONNECTED:
-        LOGF(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.disconnected.reason);
+        LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.disconnected.reason);
         // https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/esp32/esp_wifi_types.h
         if(WiFi.getMode() != WIFI_MODE_APSTA && !embuischedw.active()){
-            LOGF(println, PSTR("UI WiFi: Reconnect attempt"));
+            LOG(println, PSTR("UI WiFi: Reconnect attempt"));
             embuischedw.once(WIFI_BEGIN_DELAY, [this](){ WiFi.mode(WIFI_MODE_APSTA);
-                                                        LOGF(println, F("UI WiFi: Switch to AP-Station mode"));
+                                                        LOG(println, F("UI WiFi: Switch to AP-Station mode"));
                                                         embuischedw.detach();} );
         }
 
@@ -140,21 +140,21 @@ void EmbUI::wifi_init(){
     if (appwd.length()<WIFI_PSK_MIN_LENGTH)
         appwd = "";
 
-    LOGF(printf_P, PSTR("UI WiFi: set AP params to SSID:%s, pwd:%s\n"), hn.c_str(), appwd.c_str());
+    LOG(printf_P, PSTR("UI WiFi: set AP params to SSID:%s, pwd:%s\n"), hn.c_str(), appwd.c_str());
     WiFi.softAP(hn.c_str(), appwd.c_str());
 
     String apmode = param(FPSTR(P_APonly));
 
-    LOGF(print, F("UI WiFi: start in "));
+    LOG(print, F("UI WiFi: start in "));
     if (apmode == FPSTR(P_true)){
-        LOGF(println, F("AP-only mode"));
+        LOG(println, F("AP-only mode"));
         WiFi.mode(WIFI_AP);
     } else {
     #ifdef ESP8266
-        LOGF(println, F("AP/STA mode"));
+        LOG(println, F("AP/STA mode"));
         WiFi.mode(WIFI_AP_STA);     // we start in combined STA mode, than disable AP once client get's IP address
     #elif defined ESP32
-        LOGF(println, F("STA mode"));
+        LOG(println, F("STA mode"));
         WiFi.mode(WIFI_STA);       // we start in STA mode, esp32 can't set client's hotname in ap/sta
     #endif
 
@@ -171,14 +171,14 @@ void EmbUI::wifi_init(){
         // use internaly stored last known credentials for connection
         if ( WiFi.begin() == WL_CONNECT_FAILED ){
             embuischedw.once(WIFI_BEGIN_DELAY, [this](){ WiFi.mode(WIFI_MODE_APSTA);
-                                                        LOGF(println, F("UI WiFi: Switch to AP-Station mode"));
+                                                        LOG(println, F("UI WiFi: Switch to AP-Station mode"));
                                                         embuischedw.detach();} );
         }
         
 	    if (!WiFi.setHostname(hn.c_str()))
-            LOGF(println, F("UI WiFi: Failed to set hostname :("));
+            LOG(println, F("UI WiFi: Failed to set hostname :("));
     #endif
-        LOGF(println, F("UI WiFi: STA reconecting..."));
+        LOG(println, F("UI WiFi: STA reconecting..."));
     }
 }
 
@@ -187,7 +187,7 @@ void EmbUI::wifi_connect(const char *ssid, const char *pwd)
     if (ssid){
         String _ssid(ssid); String _pwd(pwd);   // I need objects to pass it to the lambda
         embuischedw.once(WIFI_BEGIN_DELAY, [_ssid, _pwd, this](){
-                    LOGF(printf_P, PSTR("UI WiFi: client connecting to SSID:%s, pwd:%s\n"), _ssid.c_str(), _pwd.c_str());
+                    LOG(printf_P, PSTR("UI WiFi: client connecting to SSID:%s, pwd:%s\n"), _ssid.c_str(), _pwd.c_str());
                     #ifdef ESP32
                         WiFi.disconnect();
                 	    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
@@ -201,7 +201,7 @@ void EmbUI::wifi_connect(const char *ssid, const char *pwd)
 }
 
 void EmbUI::wifi_setmode(WiFiMode_t mode){
-    LOGF(printf_P, PSTR("UI WiFi: set mode: %d\n"), mode);
+    LOG(printf_P, PSTR("UI WiFi: set mode: %d\n"), mode);
     WiFi.mode(mode);
 }
 
@@ -215,7 +215,7 @@ void EmbUI::setup_mDns(){
         MDNS.end();
 
     if (!MDNS.begin(hostname.c_str())){
-        LOGF(println, F("UI mDNS: Error setting up responder!"));
+        LOG(println, F("UI mDNS: Error setting up responder!"));
         MDNS.end();
         return;
     }
@@ -223,7 +223,7 @@ void EmbUI::setup_mDns(){
     MDNS.addService(F("http"), F("tcp"), 80);
     //MDNS.addService(F("ftp"), F("tcp"), 21);
     MDNS.addService(F("txt"), F("udp"), 4243);
-    LOGF(printf_P, PSTR("UI mDNS: responder started: %s.local\n"),hostname.c_str());
+    LOG(printf_P, PSTR("UI mDNS: responder started: %s.local\n"),hostname.c_str());
 }
 
 /**
@@ -240,6 +240,6 @@ void EmbUI::getAPmac(){
     #endif
     WiFi.softAPmacAddress(_mac);
 
-    LOGF(printf_P,PSTR("UI MAC ID:%02X%02X%02X\n"), _mac[3], _mac[4], _mac[5]);
+    LOG(printf_P,PSTR("UI MAC ID:%02X%02X%02X\n"), _mac[3], _mac[4], _mac[5]);
     sprintf_P(mc, PSTR("%02X%02X%02X"), _mac[3], _mac[4], _mac[5]);
 }

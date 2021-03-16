@@ -25,11 +25,11 @@ void EmbUI::save(const char *_cfg, bool force){
 
     File configFile;
     if (_cfg == nullptr) {
-        LOGF(println, F("UI: Save default main config file"));
+        LOG(println, F("UI: Save default main config file"));
         LittleFS.rename(FPSTR(P_cfgfile),FPSTR(P_cfgfile_bkp));
         configFile = LittleFS.open(FPSTR(P_cfgfile), "w"); // PSTR("w") использовать нельзя, будет исключение!
     } else {
-        LOGF(printf_P, PSTR("UI: Save %s main config file\n"), _cfg);
+        LOG(printf_P, PSTR("UI: Save %s main config file\n"), _cfg);
         configFile = LittleFS.open(_cfg, "w"); // PSTR("w") использовать нельзя, будет исключение!
     }
 
@@ -53,7 +53,7 @@ void EmbUI::save(const char *_cfg, bool force){
 void EmbUI::autosave(){
     if (sysData.isNeedSave && millis() > astimer + sysData.asave*1000){
         save();
-        LOGF(println, F("UI: AutoSave"));
+        LOG(println, F("UI: AutoSave"));
         astimer = millis();
     }
 }
@@ -62,14 +62,14 @@ void EmbUI::load(const char *_cfg){
     uint8_t retry_cnt = 0;
 
     while(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED) && retry_cnt<5){
-        LOGF(println, F("UI: Can't initialize LittleFS"));
+        LOG(println, F("UI: Can't initialize LittleFS"));
         retry_cnt++;
         delay(100);
         //return;
     }
 
     if(retry_cnt==5 && !LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
-        LOGF(println, F("UI: Fatal error - can't initialize LittleFS"));
+        LOG(println, F("UI: Fatal error - can't initialize LittleFS"));
         return;
     }
     
@@ -85,7 +85,7 @@ void EmbUI::load(const char *_cfg){
             error = deserializeJson(cfg, configFile);
             configFile.close();
         } else {
-            LOGF(println, F("UI: Fatal error - missed configs"));
+            LOG(println, F("UI: Fatal error - missed configs"));
             return;
         }
     }
@@ -103,8 +103,8 @@ void EmbUI::load(const char *_cfg){
             LittleFS.gc();
 #endif
             sysData.cfgCorrupt = true;
-            LOGF(print, F("UI: Critical JSON config deserializeJson error, config saving disabled: "));
-            LOGF(println, error.code());
+            LOG(print, F("UI: Critical JSON config deserializeJson error, config saving disabled: "));
+            LOG(println, error.code());
         }
     }
 }

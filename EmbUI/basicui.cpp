@@ -11,7 +11,7 @@
  * 
  */
 void BasicUI::add_sections(){
-    LOGF(println, F("UI: Creating webui vars"));
+    LOG(println, F("UI: Creating webui vars"));
 
     // variable for UI language (specific to basicui translations)
     embui.var_create(FPSTR(P_LANGUAGE), String((uint8_t)lang));
@@ -168,7 +168,7 @@ void BasicUI::set_settings_wifi(Interface *interf, JsonObject *data){
     if(ssid){
         embui.wifi_connect(ssid, pwd);
     } else {
-        LOGF(println, F("UI WiFi: No SSID defined!"));
+        LOG(println, F("UI WiFi: No SSID defined!"));
     }
 
     section_settings_frame(interf, data);           // переходим в раздел "настройки"
