@@ -115,7 +115,7 @@ void Interface::number(const String &id, const String &label, int min, int max){
     number(id, (int)embui->param(id).toInt(), label, min, max);
 }
 
-void Interface::number(const String &id, float value, const String &label, float step, int min, int max){
+void Interface::number(const String &id, float value, const String &label, float step, float min, float max){
     StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = FPSTR(P_number);
@@ -131,7 +131,7 @@ void Interface::number(const String &id, float value, const String &label, float
     }
 }
 
-void Interface::number(const String &id, const String &label, float step, int min, int max){
+void Interface::number(const String &id, const String &label, float step, float min, float max){
     number(id, embui->param(id).toFloat(), label, step);
 }
 
@@ -186,7 +186,7 @@ void Interface::datetime(const String &id, const String &label){
     datetime(id, embui->param(id), label);
 }
 
-void Interface::range(const String &id, int value, int min, int max, float step, const String &label, bool directly){
+void Interface::range(const String &id, float value, float min, float max, float step, const String &label, bool directly){
     StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = F("range");
@@ -204,7 +204,7 @@ void Interface::range(const String &id, int value, int min, int max, float step,
     }
 }
 
-void Interface::range(const String &id, int min, int max, float step, const String &label, bool directly){
+void Interface::range(const String &id, float min, float max, float step, const String &label, bool directly){
     range(id, (int)embui->param(id).toInt(), min, max, step, label, directly);
 }
 
