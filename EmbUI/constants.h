@@ -35,6 +35,9 @@ static const char P_wifi[] PROGMEM = "wifi";
 
 // UI colors
 static const char P_GRAY[] PROGMEM = "gray";
+static const char P_BLUE[] PROGMEM = "blue";
+static const char P_RED[] PROGMEM = "red";
+static const char P_GREEN[] PROGMEM = "green";
 
 // System configuration variables
 static const char P_cfgfile[] PROGMEM = "/config.json";

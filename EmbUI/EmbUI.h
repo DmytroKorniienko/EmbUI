@@ -53,6 +53,8 @@
 #define AUTOSAVE_TIMEOUT    15      // configuration autosave timer, sec    (4 bit value)
 #define UDP_PORT            4243    // UDP server port
 
+#define MQTT_PUB_PERIOD     30
+
 #ifndef DELAY_AFTER_FS_WRITING
 #define DELAY_AFTER_FS_WRITING       (50U)                        // 50мс, меньшие значения могут повлиять на стабильность
 #endif
@@ -213,8 +215,26 @@ class EmbUI
     String m_pass;
     String m_will;
 
+    /**
+     * @brief - set variable's value in the system config object
+     * @param key - variable's key
+     * @param value - value to set
+     * @param force - register new key in config if it does not exist
+     * Note: by default if key has not been registerred on init it won't be created
+     */
     void var(const String &key, const String &value, bool force = false);
-    void var_create(const String &key, const String &value);
+
+    /**
+     * @brief - create varialbe template
+     * it accepts types suitable to be added to the ArduinoJson cfg document used as a dictionary
+     */
+    template <typename T> void var_create(const String &key, const T& value){
+        if(cfg[key].isNull()){
+            cfg[key] = value;
+            LOG(printf_P, PSTR("UI CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), String(value).substring(0, 15).c_str(), ESP.getFreeHeap());
+        }
+    };
+
     void section_handle_add(const String &btn, buttonCallback response);
     const char* param(const char* key);
     String param(const String &key);
@@ -270,15 +290,12 @@ class EmbUI
      */
     void set_callback(CallBack set, CallBack action, callback_function_t callback=nullptr);
 
-
-
   private:
     /**
      * call to create system-dependent variables,
      * both run-time and persistent
      */ 
     void create_sysvars();
-    //void led_handle();        // пока убираю
     void led_on();
     void led_off();
     void led_inv();

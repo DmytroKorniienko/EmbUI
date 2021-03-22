@@ -9,11 +9,13 @@
 #include "EmbUI.h"
 
 #ifdef ESP8266
-  #define IFACE_DYN_JSON_SIZE 3073
+  #define IFACE_DYN_JSON_SIZE 3072
 #elif defined ESP32
   #define IFACE_DYN_JSON_SIZE 8192
 #endif
 
+// static json doc size
+#define IFACE_STA_JSON_SIZE 256
 
 class frameSend {
     public:
@@ -99,6 +101,13 @@ class Interface {
         void json_frame_flush();
         void json_frame_send();
 
+        /**
+         * @brief - begin custom UI secton
+         * открывает секцию с указаным типом 'pkg', может быть обработан на клиенсткой стороне отлично от
+         * интерфейсных пакетов 
+         */
+        void json_frame_custom(const String &type);
+
         void json_section_menu();
         void json_section_content();
         void json_section_line(const String &name = "");
@@ -111,8 +120,24 @@ class Interface {
         void custom(const String &id, const String &type, const String &value, const String &label, const JsonObject &param = JsonObject());
         void frame(const String &id, const String &value);
         void frame2(const String &id, const String &value);
+
+        /**
+         * @brief - Add 'value' object to the Interface frame
+         * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
+         */
+        template <typename T> void value(const String &id, const T& val, bool html = false){
+            StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_value)] = val;
+            if (html) obj[FPSTR(P_html)] = true;
+
+            if (!json_frame_add(obj.as<JsonObject>())) {
+                value(id, val, html);
+            }
+        };
         void value(const String &id, bool html = false);
-        void value(const String &id, const String &val, bool html = false);
+
+
         void hidden(const String &id);
         void hidden(const String &id, const String &value);
         void constant(const String &id, const String &label);
@@ -138,12 +163,26 @@ class Interface {
         void select(const String &id, const String &label, bool directly = false, bool skiplabel = false);
         void select(const String &id, const String &value, const String &label, bool directly = false, bool skiplabel = false);
         void option(const String &value, const String &label);
+
         /**
          * элемент интерфейса checkbox
          * @param directly - значение чекбокса при изменении сразу передается на сервер без отправки формы
+         * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
          */
+        template <typename T> void checkbox(const String &id, const T& value, const String &label, bool directly = false){
+            StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+            obj[FPSTR(P_html)] = FPSTR(P_input);
+            obj[FPSTR(P_type)] = F("checkbox");
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_value)] = value;
+            obj[FPSTR(P_label)] = label;
+            if (directly) obj[FPSTR(P_directly)] = true;
+
+            if (!json_frame_add(obj.as<JsonObject>())) {
+                checkbox(id, value, label, directly);
+            }
+        };
         void checkbox(const String &id, const String &label, bool directly = false);
-        void checkbox(const String &id, const String &value, const String &label, bool directly = false);
         void color(const String &id, const String &label);
         void color(const String &id, const String &value, const String &label);
         void textarea(const String &id, const String &label);
