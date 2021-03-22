@@ -17,6 +17,7 @@ enum TD : uint8_t {
     D_ACTION = (0U),
     D_ACTIVE,
     D_ADD,
+    D_Apply,
     D_APOnlyMode,
     D_Begin,
     D_Conf,
@@ -88,6 +89,7 @@ static const char T_EN_LANG[] PROGMEM = "Interface language";
 static const char T_EN_ACTION[] PROGMEM = "Action";
 static const char T_EN_ACTIVE[] PROGMEM = "Active";
 static const char T_EN_ADD[] PROGMEM = "Add";
+static const char T_EN_Apply[] PROGMEM = "Apply";
 static const char T_EN_APOnlyMode[] PROGMEM = "AP-only Mode";
 static const char T_EN_Begin[] PROGMEM = "Begin";
 static const char T_EN_Conf[] PROGMEM = "Configuration";
@@ -155,6 +157,7 @@ static const char T_RU_LANG[] PROGMEM = "Язык интерфейса";
 static const char T_RU_ACTION[] PROGMEM = "Действие";
 static const char T_RU_ACTIVE[] PROGMEM = "Активно";
 static const char T_RU_ADD[] PROGMEM = "Добавить";
+static const char T_RU_Apply[] PROGMEM = "Применить";
 static const char T_RU_APOnlyMode[] PROGMEM = "Режим AP-only";
 static const char T_RU_Begin[] PROGMEM = "Начать";
 static const char T_RU_Conf[] PROGMEM = "Конфигурация";
@@ -222,6 +225,7 @@ static const char *const T_DICT[][DICT_SIZE] PROGMEM = {
   { T_RU_ACTION,
     T_RU_ACTIVE,
     T_RU_ADD,
+    T_RU_Apply,
     T_RU_APOnlyMode,
     T_RU_Begin,
     T_RU_Conf,
@@ -290,6 +294,7 @@ static const char *const T_DICT[][DICT_SIZE] PROGMEM = {
   { T_EN_ACTION,
     T_EN_ACTIVE,
     T_EN_ADD,
+    T_EN_Apply,
     T_EN_APOnlyMode,
     T_EN_Begin,
     T_EN_Conf,

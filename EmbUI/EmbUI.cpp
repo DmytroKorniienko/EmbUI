@@ -120,17 +120,17 @@ void EmbUI::send_pub(){
     delete interf;
 }
 
-void EmbUI::var(const String &key, const String &value, bool force)
-{
+void EmbUI::var(const String &key, const String &value, bool force){
+    if (!force && !cfg.containsKey(key)) {
+        LOG(printf_P, PSTR("UI ERROR: KEY (%s) is NOT initialized!\n"), key.c_str());
+        return;
+    }
+
     // JsonObject of N element	8 + 16 * N
     unsigned len = key.length() + value.length() + 16;
     size_t cap = cfg.capacity(), mem = cfg.memoryUsage();
 
     LOG(printf_P, PSTR("UI WRITE: key (%s) value (%s) "), key.c_str(), value.substring(0, 15).c_str());
-    if (!force && !cfg.containsKey(key)) {
-        LOG(printf_P, PSTR("UI ERROR: KEY (%s) is NOT initialized!\n"), key.c_str());
-        return;
-    }
 
     if (cap - mem < len) {
         cfg.garbageCollect();
@@ -138,7 +138,7 @@ void EmbUI::var(const String &key, const String &value, bool force)
 
     }
     if (cap - mem < len) {
-        LOG(printf_P, PSTR("UI ERROR: KEY (%s) NOT WRITE !!!!!!!!\n"), key.c_str());
+        LOG(printf_P, PSTR("UI ERROR: KEY (%s) out of mem!\n"), key.c_str());
         return;
     }
 
@@ -146,19 +146,8 @@ void EmbUI::var(const String &key, const String &value, bool force)
     sysData.isNeedSave = true;
 
     LOG(printf_P, PSTR("UI FREE: %u\n"), cap - cfg.memoryUsage());
-
-    // if (mqtt_remotecontrol) {
-    //     publish(String(F("embui/set/")) + key, value, true);
-    // }
 }
 
-void EmbUI::var_create(const String &key, const String &value)
-{
-    if(cfg[key].isNull()){
-        cfg[key] = value;
-        LOG(printf_P, PSTR("UI CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), value.substring(0, 15).c_str(), ESP.getFreeHeap());
-    }
-}
 
 void EmbUI::section_handle_add(const String &name, buttonCallback response)
 {
@@ -483,7 +472,7 @@ void EmbUI::create_sysvars(){
     var_create(FPSTR(P_m_user), "");                   // MQTT login
     var_create(FPSTR(P_m_pass), "");                   // MQTT pass
     var_create(FPSTR(P_m_pref), embui.mc);             // MQTT topic == use ESP MAC address
-    var_create(FPSTR(P_m_tupd), F("30"));              // интервал отправки данных по MQTT в секундах
+    var_create(FPSTR(P_m_tupd), TOSTRING(MQTT_PUB_PERIOD));              // интервал отправки данных по MQTT в секундах
     // date/time related vars
     var_create(FPSTR(P_TZSET), "");                   // TimeZone/DST rule (empty value == GMT/no DST)
     var_create(FPSTR(P_userntp), "");                 // Backup NTP server

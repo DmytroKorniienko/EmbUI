@@ -39,7 +39,7 @@
 				<span class="menu-title">Memory:</span><span id="pMem" class="menu-value">{{value.pMem}}</span>
 			</div>
 			<div>
-				<span class="menu-title">Uptime:</span><span id="pUptime" class="menu-value">{{value.pUptime}}</span>
+`				<span class="menu-title">Uptime:</span><span id="pUptime" class="menu-value">{{value.pUptime}}</span>
 			</div>
 			<div>
 				<span class="menu-title">ID:</span><span class="menu-value">{{mc}}</span>
@@ -154,6 +154,15 @@
 		{{/if}}
 		{{#if html == "iframe2"}}
 			<div class="frame"><iframe id="{{id}}" name="{{id}}" src="{{value}}" class="iframe">iframe does not supported</iframe></div>
+		{{/if}}
+		<!-- Custom div element, on creatу div calls user function with a name passed in {{value}} paramer
+			params: id - becomes div ID
+					param.class - becomes css class selector
+					value - becomes js function name to call		
+		-->
+		{{#if html == "custom" && type == "div"}}
+			<span class="comment">{{label}}</span>
+			<div id="{{id}}" name="{{id}}" class="{{param.class}}"><img src onerror='{{value}}("{{id}}")'></div>
 		{{/if}}
 		</div>
 	</script>

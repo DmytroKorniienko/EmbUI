@@ -237,7 +237,7 @@ void BasicUI::embuistatus(Interface *interf){
     if (!interf) return;
     interf->json_frame_value();
     interf->value(F("pTime"), embui.timeProcessor.getFormattedShortTime(), true);
-    interf->value(F("pMem"), String(ESP.getFreeHeap()), true);
-    interf->value(F("pUptime"), String(millis()/1000), true);
+    interf->value(F("pMem"), ESP.getFreeHeap(), true);
+    interf->value(F("pUptime"), millis()/1000, true);
     interf->json_frame_flush();
 }

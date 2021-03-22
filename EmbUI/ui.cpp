@@ -5,7 +5,6 @@
 
 #include "ui.h"
 
-#define IFACE_STA_JSON_SIZE 256
 
 void Interface::custom(const String &id, const String &type, const String &value, const String &label, const JsonObject &param){
     StaticJsonDocument<IFACE_STA_JSON_SIZE*2> obj; // по этот контрол выделяем IFACE_STA_JSON_SIZE*2 т.к. он может быть большой...
@@ -272,20 +271,6 @@ void Interface::select(const String &id, const String &label, bool directly, boo
     select(id, embui->param(id), label, directly, skiplabel);
 }
 
-void Interface::checkbox(const String &id, const String &value, const String &label, bool directly){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = F("checkbox");
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-    if (directly) obj[FPSTR(P_directly)] = true;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        checkbox(id, value, label, directly);
-    }
-}
-
 void Interface::checkbox(const String &id, const String &label, bool directly){
     checkbox(id, embui->param(id), label, directly);
 }
@@ -392,17 +377,6 @@ void Interface::textarea(const String &id, const String &label){
     textarea(id, embui->param(id), label);
 }
 
-void Interface::value(const String &id, const String &val, bool html){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = val;
-    if (html) obj[FPSTR(P_html)] = true;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        value(id, val, html);
-    }
-}
-
 void Interface::value(const String &id, bool html){
     value(id, embui->param(id), html);
 }
@@ -412,7 +386,7 @@ void Interface::json_frame_value(){
     json[F("pkg")] = FPSTR(P_value);
     json[FPSTR(P_final)] = false;
 
-    json_section_begin("root" + String(rand()));
+    json_section_begin("root" + String(micros()));
 }
 
 void Interface::json_frame_interface(const String &name){
@@ -424,7 +398,7 @@ void Interface::json_frame_interface(const String &name){
     }
     json[FPSTR(P_final)] = false;
 
-    json_section_begin("root" + String(rand()));
+    json_section_begin("root" + String(micros()));
 }
 
 bool Interface::json_frame_add(JsonObject obj) {
@@ -477,6 +451,19 @@ void Interface::json_frame_send(){
     LOG(println, buff.c_str());
     if (send_hndl) send_hndl->send(buff);
 }
+
+/**
+ * @brief - begin custom UI secton
+ * открывает секцию с указаным типом 'pkg', может быть обработан на клиенсткой стороне отлично от
+ * интерфейсных пакетов 
+ */
+void Interface::json_frame_custom(const String &type){
+    json[F("pkg")] = type;
+    json[FPSTR(P_final)] = false;
+
+    json_section_begin("root" + String(micros()));
+}
+
 
 void Interface::json_section_menu(){
     json_section_begin(FPSTR(P_menu));
