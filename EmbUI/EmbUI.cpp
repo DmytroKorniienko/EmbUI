@@ -10,13 +10,6 @@
  #include "MemoryInfo.h"
 #endif
 
-#ifndef MAX_WS_CLIENTS
-#define MAX_WS_CLIENTS 4
-#endif
-#ifndef PUB_PERIOD
-#define PUB_PERIOD 10000            // Publication period, ms
-#endif
-#define SECONDARY_PERIOD 300U       // second handler timer, ms
 
 // Update defs
 #ifndef ESP_IMAGE_HEADER_MAGIC
@@ -169,6 +162,7 @@ void notFound(AsyncWebServerRequest *request) {
 void mqtt_emptyFunction(const String &, const String &);
 
 void EmbUI::begin(){
+
     load();                 // try to load config from file
     create_sysvars();       // create system variables (if missing)
     create_parameters();    // weak function, creates user-defined variables
@@ -248,9 +242,11 @@ void EmbUI::begin(){
         request->send(LittleFS, F("/events_config.json"), String(), true);
     });
 */
+    // postponed reboot
     server.on(PSTR("/restart"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        sysData.shouldReboot = true;
-        request->send(200, FPSTR(PGmimetxt), F("Ok"));
+        Task *t = new Task(TASK_SECOND, TASK_ONCE, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); }, &ts, false);
+        t->enableDelayed();
+        request->redirect(F("/"));
     });
 
     server.on(PSTR("/heap"), HTTP_GET, [this](AsyncWebServerRequest *request){
@@ -270,13 +266,14 @@ void EmbUI::begin(){
     });
 
     server.on(PSTR("/update"), HTTP_POST, [this](AsyncWebServerRequest *request){
-        sysData.shouldReboot = !Update.hasError();
-        if (sysData.shouldReboot) {
-            request->redirect("/");
-        } else {
-            AsyncWebServerResponse *response = request->beginResponse(500, FPSTR(PGmimetxt), F("FAIL"));
+        if (Update.hasError()) {
+            AsyncWebServerResponse *response = request->beginResponse(500, FPSTR(PGmimetxt), F("UPDATE FAILED"));
             response->addHeader(F("Connection"), F("close"));
             request->send(response);
+        } else {
+            Task *t = new Task(TASK_SECOND, TASK_ONCE, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); }, &ts, false);
+            t->enableDelayed();
+            request->redirect(F("/"));
         }
     },[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         if (!index) {
@@ -350,6 +347,19 @@ void EmbUI::begin(){
     server.onNotFound(notFound);
 
     server.begin();
+
+    tValPublisher.set(PUB_PERIOD * TASK_SECOND, TASK_FOREVER, [this](){ if (ws.count()){send_pub();} } );   // publisher works only if there are websock clients connected
+    ts.addTask(tValPublisher);
+    tValPublisher.enableDelayed();
+
+    tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
+            ws.cleanupClients(MAX_WS_CLIENTS);
+            #ifdef ESP8266
+                MDNS.update();
+            #endif
+        } );
+    ts.addTask(tHouseKeeper);
+    tHouseKeeper.enableDelayed();
 }
 
 void EmbUI::led(uint8_t pin, bool invert){
@@ -360,33 +370,9 @@ void EmbUI::led(uint8_t pin, bool invert){
 }
 
 void EmbUI::handle(){
-    if (sysData.shouldReboot) {
-        LOG(println, F("Rebooting..."));
-        delay(100);
-        ESP.restart();
-    }
-
-#ifdef ESP8266
-    MDNS.update();
-#endif
-    //_connected();
     mqtt_handle();
     udpLoop();
-
-    static unsigned long timer = 0;
-    if (timer + SECONDARY_PERIOD > millis()) return;
-    timer = millis();
-
-    //btn();
-    //led_handle();
-    autosave();
-    ws.cleanupClients(MAX_WS_CLIENTS);
-
-    //публикация изменяющихся значений
-    static unsigned long timer_pub = 0;
-    if (timer_pub + PUB_PERIOD > millis()) return;
-    timer_pub = millis();
-    send_pub();
+    ts.execute();           // run task scheduler
 }
 
 /**
@@ -449,3 +435,29 @@ void EmbUI::create_sysvars(){
     var_create(FPSTR(P_TZSET), "");                   // TimeZone/DST rule (empty value == GMT/no DST)
     var_create(FPSTR(P_userntp), "");                 // Backup NTP server
 }
+
+/**
+ * @brief - set interval period for send_pub() task in seconds
+ * 0 - will disable periodic task
+ */
+void EmbUI::setPubInterval(uint16_t _t){
+    if (_t){
+        tValPublisher.setInterval(_t);
+        tValPublisher.enableIfNot();
+    } else {
+        tValPublisher.disable();
+    }
+}
+
+/**
+ * @brief - restart config autosave timer
+ * each call postpones cfg write to flash
+ */
+void EmbUI::autosave(bool force){
+    if (force){
+        tAutoSave.disable();
+        save(nullptr, force);
+    } else {
+        tAutoSave.restartDelayed();
+    }
+};

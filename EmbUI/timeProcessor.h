@@ -9,7 +9,7 @@
 #include "globals.h"
 
 #ifndef TZONE
-    #include <Ticker.h>
+    #include "ts.h"
 #endif
 
 #include "wi-fi.h"
@@ -43,7 +43,7 @@ private:
     TimeProcessor& operator=(const TimeProcessor&); // noncopyable
 
 #ifndef TZONE
-    Ticker _wrk;        // планировщик
+    Task _wrk;
     /**
      * Функция обращается к внешнему http-сервису, получает временную зону/летнее время
      * на основании либо установленной переменной tzone, либо на основе IP-адреса
