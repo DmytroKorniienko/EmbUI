@@ -18,7 +18,7 @@ void EmbUI::onSTAConnected(WiFiEventStationModeConnected ipInfo)
 void EmbUI::onSTAGotIP(WiFiEventStationModeGotIP ipInfo)
 {
     sysData.wifi_sta = true;
-    embuischedw.detach();
+    embuischedw.disable();
     LOG(printf_P, PSTR(", IP: %s\n"), ipInfo.ip.toString().c_str());
     wifi_setmode(WIFI_STA);            // Shutdown internal Access Point
     timeProcessor.onSTAGotIP(ipInfo);
@@ -33,7 +33,7 @@ void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
     LOG(printf_P, PSTR("UI WiFi: Disconnected from SSID: %s, reason: %d\n"), event_info.ssid.c_str(), event_info.reason);
     sysData.wifi_sta = false;       // to be removed and replaced with API-method
 
-    if (embuischedw.active())
+    if (embuischedw.isEnabled())
         return;
 
     /*
@@ -42,11 +42,14 @@ void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
       В качестве решения переключаем контроллер в режим AP-only после WIFI_CONNECT_TIMEOUT таймаута на попытку переподключения.
       Далее делаем периодические попытки переподключений каждые WIFI_RECONNECT_TIMER секунд
     */
-    embuischedw.once_scheduled(WIFI_CONNECT_TIMEOUT, [this](){
+    embuischedw.set(WIFI_CONNECT_TIMEOUT * TASK_SECOND, TASK_ONCE, [this](){
         LOG(println, F("UI WiFi: switching to internal AP"));
         wifi_setmode(WIFI_AP);
-        embuischedw.once_scheduled(WIFI_RECONNECT_TIMER, [this](){ embuischedw.detach(); wifi_setmode(WIFI_AP_STA); WiFi.begin();} );
+        embuischedw.set(WIFI_RECONNECT_TIMER * TASK_SECOND, TASK_ONCE, [this](){ embuischedw.disable(); wifi_setmode(WIFI_AP_STA); WiFi.begin();} );
+        embuischedw.restartDelayed();
     } );
+
+    embuischedw.restartDelayed();
 
     timeProcessor.onSTADisconnected(event_info);
     if(_cb_STADisconnected)
@@ -99,7 +102,7 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
             LOG(println, F("UI WiFi: switch to STA mode"));
         }
 
-        embuischedw.detach();
+        embuischedw.disable();
         sysData.wifi_sta = true;
         setup_mDns();
         if(_cb_STAGotIP)
@@ -109,11 +112,12 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
     case SYSTEM_EVENT_STA_DISCONNECTED:
         LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.disconnected.reason);
         // https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/esp32/esp_wifi_types.h
-        if(WiFi.getMode() != WIFI_MODE_APSTA && !embuischedw.active()){
+        if(WiFi.getMode() != WIFI_MODE_APSTA && !embuischedw.isEnabled()){
             LOG(println, PSTR("UI WiFi: Reconnect attempt"));
-            embuischedw.once(WIFI_BEGIN_DELAY, [this](){ WiFi.mode(WIFI_MODE_APSTA);
+            embuischedw.set(WIFI_BEGIN_DELAY* TASK_SECOND, TASK_ONCE, [this](){ WiFi.mode(WIFI_MODE_APSTA);
                                                         LOG(println, F("UI WiFi: Switch to AP-Station mode"));
-                                                        embuischedw.detach();} );
+                                                        embuischedw.disable();} );
+            embuischedw.restartDelayed();
         }
 
         sysData.wifi_sta = false;
@@ -170,11 +174,12 @@ void EmbUI::wifi_init(){
 	    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
         // use internaly stored last known credentials for connection
         if ( WiFi.begin() == WL_CONNECT_FAILED ){
-            embuischedw.once(WIFI_BEGIN_DELAY, [this](){ WiFi.mode(WIFI_MODE_APSTA);
+            embuischedw.set(WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE, [this](){ WiFi.mode(WIFI_MODE_APSTA);
                                                         LOG(println, F("UI WiFi: Switch to AP-Station mode"));
-                                                        embuischedw.detach();} );
+                                                        embuischedw.disable();} );
+            embuischedw.restartDelayed();
         }
-        
+
 	    if (!WiFi.setHostname(hn.c_str()))
             LOG(println, F("UI WiFi: Failed to set hostname :("));
     #endif
@@ -186,19 +191,21 @@ void EmbUI::wifi_connect(const char *ssid, const char *pwd)
 {
     if (ssid){
         String _ssid(ssid); String _pwd(pwd);   // I need objects to pass it to the lambda
-        embuischedw.once(WIFI_BEGIN_DELAY, [_ssid, _pwd, this](){
+        embuischedw.set(WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE, [_ssid, _pwd, this](){
                     LOG(printf_P, PSTR("UI WiFi: client connecting to SSID:%s, pwd:%s\n"), _ssid.c_str(), _pwd.c_str());
                     #ifdef ESP32
                         WiFi.disconnect();
                 	    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
                     #endif
                     WiFi.begin(_ssid.c_str(), _pwd.c_str());
-	                embuischedw.detach();
+	                embuischedw.disable();
             });
     } else {
-        embuischedw.once(WIFI_BEGIN_DELAY, [this](){ WiFi.begin(); embuischedw.detach();} );
+        embuischedw.set(WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE, [this](){ WiFi.begin(); embuischedw.disable();} );
     }
+    embuischedw.restartDelayed();
 }
+
 
 void EmbUI::wifi_setmode(WiFiMode_t mode){
     LOG(printf_P, PSTR("UI WiFi: set mode: %d\n"), mode);

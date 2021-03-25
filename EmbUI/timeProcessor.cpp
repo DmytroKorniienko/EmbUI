@@ -221,7 +221,7 @@ void TimeProcessor::getTimeHTTP()
 
 void TimeProcessor::httprefreshtimer(const uint32_t delay){
     if (!usehttpzone){
-        _wrk.detach();
+        _wrk.disable();
         return;     // выходим если не выставлено разрешение на использование http
     }
 
@@ -243,12 +243,16 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
         LOG(printf_P, PSTR("Schedule TZ refresh in %ld\n"), timer);
     }
 
+    _wrk.set(timer * TASK_SECOND, TASK_ONCE, [this](){getTimeHTTP();});
+    _wrk.restartDelayed();
+
+/*
     #ifdef ESP8266
         _wrk.once_scheduled(timer, std::bind(&TimeProcessor::getTimeHTTP, this));
     #elif defined ESP32
         _wrk.once((float)timer, std::bind(&TimeProcessor::getTimeHTTP, this));
     #endif
-
+*/
 }
 #endif
 
@@ -290,7 +294,7 @@ void TimeProcessor::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
     case SYSTEM_EVENT_STA_DISCONNECTED:
         sntp_stop();
         #ifndef TZONE
-            _wrk.detach();
+            _wrk.disable();
         #endif
         break;
     default:
