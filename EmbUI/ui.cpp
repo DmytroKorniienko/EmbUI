@@ -380,6 +380,15 @@ void Interface::textarea(const String &id, const String &label){
 void Interface::value(const String &id, bool html){
     value(id, embui->param(id), html);
 }
+/*
+void Interface::value(JsonObject &data){
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+
+    if (!json_frame_add(data)) {
+        value(data);
+    }
+}
+*/
 
 ///////////////////////////////////////
 void Interface::json_frame_value(){
