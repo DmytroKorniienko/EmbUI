@@ -10,8 +10,10 @@
 
 #ifdef ESP8266
   #define IFACE_DYN_JSON_SIZE 3072
+  #define POST_DYN_JSON_SIZE  1024
 #elif defined ESP32
   #define IFACE_DYN_JSON_SIZE 8192
+  #define POST_DYN_JSON_SIZE  2048
 #endif
 
 // static json doc size
@@ -135,8 +137,13 @@ class Interface {
                 value(id, val, html);
             }
         };
+
         void value(const String &id, bool html = false);
 
+        inline void value(JsonObject &data){
+            if (!json_frame_add(data))
+                value(data);
+        }
 
         void hidden(const String &id);
         void hidden(const String &id, const String &value);

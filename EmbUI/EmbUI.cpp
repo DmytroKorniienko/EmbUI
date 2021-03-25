@@ -61,33 +61,32 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     if(type == WS_EVT_DATA){
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
         if(info->final && info->index == 0 && info->len == len){
-            DynamicJsonDocument doc(1024);
-            deserializeJson(doc, data, info->len);
+            DynamicJsonDocument doc(POST_DYN_JSON_SIZE);
+            deserializeJson(doc, (const char*)data, info->len); // deserialize via copy to prevent dangling pointers in action()'s
 
-            String pkg = doc[F("pkg")];
-            if (pkg.isEmpty()) return;
-            if (pkg == F("post")) {
+            if (doc[FPSTR(P_pkg)] && doc[FPSTR(P_pkg)] == F("post")) {
+                doc.shrinkToFit();      // this doc should not grow anyway
                 JsonObject data = doc[F("data")];
                 embui.post(data);
             }
         }
-  }
+    }
 }
 
+/**
+ * @brief - process posted data for the registered action
+ * if post came from the WebUI echoes received data back to the WebUI,
+ * if post came from some other place - sends data to the WebUI
+ * looks for registered action for the section name and calls the action with post data if found
+ */
 void EmbUI::post(JsonObject data){
     section_handle_t *section = nullptr;
     int count = 0;
-    Interface *interf = new Interface(this, &ws, 512);
-    interf->json_frame_value();
 
     for (JsonPair kv : data) {
-        String key = kv.key().c_str(), val = kv.value();
-        if (val != FPSTR(P_null)) {
-            interf->value(key, val);
             ++count;
-        }
 
-        const char *kname = key.c_str();
+        const char *kname = kv.key().c_str();
         for (int i = 0; !section && i < section_handle.size(); i++) {
             const char *sname = section_handle[i]->name.c_str();
             const char *mall = strchr(sname, '*');
@@ -99,11 +98,12 @@ void EmbUI::post(JsonObject data){
     }
 
     if (count) {
+        Interface *interf = new Interface(this, &ws, 512);
+        interf->json_frame_value();
+        interf->value(data);
         interf->json_frame_flush();
-    } else {
-        interf->json_frame_clear();
+        delete interf;
     }
-    delete interf;
 
     if (section) {
         LOG(printf_P, PSTR("\nUI: POST SECTION: %s\n\n"), section->name.c_str());
@@ -118,34 +118,6 @@ void EmbUI::send_pub(){
     Interface *interf = new Interface(this, &ws, 512);
     pubCallback(interf);
     delete interf;
-}
-
-void EmbUI::var(const String &key, const String &value, bool force){
-    if (!force && !cfg.containsKey(key)) {
-        LOG(printf_P, PSTR("UI ERROR: KEY (%s) is NOT initialized!\n"), key.c_str());
-        return;
-    }
-
-    // JsonObject of N element	8 + 16 * N
-    unsigned len = key.length() + value.length() + 16;
-    size_t cap = cfg.capacity(), mem = cfg.memoryUsage();
-
-    LOG(printf_P, PSTR("UI WRITE: key (%s) value (%s) "), key.c_str(), value.substring(0, 15).c_str());
-
-    if (cap - mem < len) {
-        cfg.garbageCollect();
-        LOG(printf_P, PSTR("UI: garbage cfg %u(%u) of %u\n"), mem, cfg.memoryUsage(), cap);
-
-    }
-    if (cap - mem < len) {
-        LOG(printf_P, PSTR("UI ERROR: KEY (%s) out of mem!\n"), key.c_str());
-        return;
-    }
-
-    cfg[key] = value;
-    sysData.isNeedSave = true;
-
-    LOG(printf_P, PSTR("UI FREE: %u\n"), cap - cfg.memoryUsage());
 }
 
 

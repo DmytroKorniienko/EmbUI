@@ -24,6 +24,7 @@ static const char P_null[] PROGMEM = "null";
 static const char P_number[] PROGMEM = "number";
 static const char P_options[] PROGMEM = "options";
 static const char P_password[] PROGMEM = "password";
+static const char P_pkg[] PROGMEM = "pkg";
 static const char P_section[] PROGMEM = "section";
 static const char P_step[] PROGMEM = "step";
 static const char P_submit[] PROGMEM = "submit";

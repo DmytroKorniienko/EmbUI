@@ -221,8 +221,32 @@ class EmbUI
      * @param value - value to set
      * @param force - register new key in config if it does not exist
      * Note: by default if key has not been registerred on init it won't be created
+     * beware of dangling pointers here passing non-static char*, use JsonVariant or String instead 
      */
-    void var(const String &key, const String &value, bool force = false);
+    template <typename T> void var(const String &key, const T& value, bool force = false){
+            if (!force && !cfg.containsKey(key)) {
+            LOG(printf_P, PSTR("UI ERR: KEY (%s) is NOT initialized!\n"), key.c_str());
+            return;
+        }
+
+        String _v=value;
+        if ((cfg.capacity() - cfg.memoryUsage()) < _v.length()+16){
+            // cfg is out of mem, try to compact it
+            //size_t mem = cfg.memoryUsage();
+            cfg.garbageCollect();
+            //LOG(printf_P, PSTR("UI: cfg garbage cleaned: %u, free %u\n"), mem - cfg.memoryUsage(), cfg.capacity() - cfg.memoryUsage());
+            LOG(printf_P, PSTR("UI: cfg garbage cleanup: %u free out of %u\n"), cfg.capacity() - cfg.memoryUsage(), cfg.capacity());
+        }
+
+        if (cfg[key].set(value)){
+            LOG(printf_P, PSTR("UI cfg WRITE key '%s', cfg mem free: %d\n"), key.c_str(), cfg.capacity() - cfg.memoryUsage());
+            sysData.isNeedSave = true;
+            autoSaveReset();
+            return;
+        }
+
+        LOG(printf_P, PSTR("UI ERR: KEY (%s), cfg out of mem!\n"), key.c_str());
+    }
 
     /**
      * @brief - create varialbe template
@@ -230,7 +254,7 @@ class EmbUI
      */
     template <typename T> void var_create(const String &key, const T& value){
         if(cfg[key].isNull()){
-            cfg[key] = value;
+            cfg[key].set(value);
             LOG(printf_P, PSTR("UI CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), String(value).substring(0, 15).c_str(), ESP.getFreeHeap());
         }
     };
@@ -269,7 +293,15 @@ class EmbUI
     void publish(const String &topic, const String &payload, bool retained);
     void publishto(const String &topic, const String &payload, bool retained);
     void remControl();
+
+    /**
+     * @brief - process posted data for the registered action
+     * if post came from the WebUI echoes received data back to the WebUI,
+     * if post came from some other place - sends data to the WebUI
+     * looks for registered action for the section name and calls the action with post data if found
+     */
     void post(JsonObject data);
+
     void send_pub();
     String id(const String &tpoic);
 
