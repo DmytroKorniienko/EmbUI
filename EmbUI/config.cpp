@@ -16,12 +16,10 @@
 #endif
 
 void EmbUI::save(const char *_cfg, bool force){
-    if ((sysData.isNeedSave || force) && !sysData.cfgCorrupt){
-      LittleFS.begin();
-    } else {
-        sysData.isNeedSave = false;
+    if ( sysData.cfgCorrupt && !force )
         return;
-    }
+
+    LittleFS.begin();
 
     File configFile;
     if (_cfg == nullptr) {
@@ -33,29 +31,7 @@ void EmbUI::save(const char *_cfg, bool force){
         configFile = LittleFS.open(_cfg, "w"); // PSTR("w") использовать нельзя, будет исключение!
     }
 
-    String cfg_str;
-    serializeJson(cfg, cfg_str);
-    if(cfg_str.length())
-        configFile.print(cfg_str);
-    configFile.close();
-
-    //cfg.garbageCollect(); // несколько раз ловил Exception (3) предположительно тут, возвращаю пока проверенный способ
-    
-    delay(DELAY_AFTER_FS_WRITING); // задержка после записи    
-    DeserializationError error;
-    error = deserializeJson(cfg, cfg_str); // произошла ошибка, пытаемся восстановить конфиг
-    if (error){
-        load(_cfg);
-    }
-    sysData.isNeedSave = false;
-}
-
-void EmbUI::autosave(){
-    if (sysData.isNeedSave && millis() > astimer + sysData.asave*1000){
-        save();
-        LOG(println, F("UI: AutoSave"));
-        astimer = millis();
-    }
+    serializeJson(cfg, configFile);
 }
 
 void EmbUI::load(const char *_cfg){

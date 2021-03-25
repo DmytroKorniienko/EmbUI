@@ -23,7 +23,6 @@
 #endif
 
 #include <ESPAsyncWebServer.h>
-//#include <SPIFFSEditor.h>
 #include <ArduinoJson.h>
 
 #ifdef ESP8266
@@ -42,21 +41,27 @@
  #endif
 #endif
 
-
-#include <Ticker.h>   // esp планировщик
-
 #include <AsyncMqttClient.h>
 #include "LList.h"
-
+#include "ts.h"
 #include "timeProcessor.h"
 
-#define AUTOSAVE_TIMEOUT    15      // configuration autosave timer, sec    (4 bit value)
 #define UDP_PORT            4243    // UDP server port
+
+#ifndef PUB_PERIOD
+#define PUB_PERIOD 10            // Values Publication period, s
+#endif
 
 #define MQTT_PUB_PERIOD     30
 
 #ifndef DELAY_AFTER_FS_WRITING
 #define DELAY_AFTER_FS_WRITING       (50U)                        // 50мс, меньшие значения могут повлиять на стабильность
+#endif
+
+#define AUTOSAVE_TIMEOUT    2       // configuration autosave timer, sec    (4 bit value, multiplied by AUTOSAVE_MULTIPLIER)
+
+#ifndef AUTOSAVE_MULTIPLIER
+#define AUTOSAVE_MULTIPLIER       (10U)                           // множитель таймера автосохранения конфиг файла
 #endif
 
 #ifndef __DISABLE_BUTTON0
@@ -67,10 +72,17 @@
 #define __IDPREFIX F("EmbUI-")
 #endif
 
+// size of a JsonDocument to hold EmbUI config 
 #ifndef __CFGSIZE
 #define __CFGSIZE (2048)
 #endif
 
+#ifndef MAX_WS_CLIENTS
+#define MAX_WS_CLIENTS 4
+#endif
+
+// TaskScheduler - Let the runner object be a global, single instance shared between object files.
+extern Scheduler ts;
 
 class Interface;
 
@@ -160,12 +172,10 @@ class EmbUI
         bool mqtt_remotecontrol:1;
 
         bool mqtt_enable:1;
-        bool isNeedSave:1;
         bool cfgCorrupt:1;
         bool LED_INVERT:1;
-        bool shouldReboot:1; // OTA update reboot flag
-        uint8_t LED_PIN:5; // [0...30]
-        uint8_t asave:4; // зачем так часто записывать конфиг? Ставлю раз в 15 секунд, вместо раза в секунду [0...15]
+        uint8_t LED_PIN:5;   // [0...30]
+        uint8_t asave:4;     // 4 бита значения таймера автосохранения конфига (домножается на AUTOSAVE_MULTIPLIER)
     };
     uint32_t flags; // набор битов для конфига
     _BITFIELDS() {
@@ -174,12 +184,10 @@ class EmbUI
         mqtt_connect = false;
         mqtt_remotecontrol = false;
         mqtt_enable = false;
-        isNeedSave = false;
         LED_INVERT = false;
-        shouldReboot = false; // OTA update reboot flag
         cfgCorrupt = false;
         LED_PIN = 31; // [0...30]
-        asave = AUTOSAVE_TIMEOUT; // зачем так часто записывать конфиг? Ставлю раз в 13 секунд, вместо раза в секунду [0...15]
+        asave = AUTOSAVE_TIMEOUT; // defaul timeout 2*10 sec
     }
     } BITFIELDS;
     //#pragma pack(pop)
@@ -199,7 +207,18 @@ class EmbUI
   public:
     EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws(F("/ws")){
         memset(mc,0,sizeof(mc));
+
+        ts.addTask(embuischedw);    // WiFi helper
+        tAutoSave.set(sysData.asave * AUTOSAVE_MULTIPLIER * TASK_SECOND, TASK_ONCE, [this](){LOG(println, F("UI: AutoSave")); save();} );    // config autosave timer
+        ts.addTask(tAutoSave);
     }
+
+    ~EmbUI(){
+        ts.deleteTask(tAutoSave);
+        ts.deleteTask(tValPublisher);
+        ts.deleteTask(tHouseKeeper);
+    }
+
     BITFIELDS sysData;
     AsyncWebServer server;
     AsyncWebSocket ws;
@@ -239,9 +258,8 @@ class EmbUI
         }
 
         if (cfg[key].set(value)){
-            LOG(printf_P, PSTR("UI cfg WRITE key '%s', cfg mem free: %d\n"), key.c_str(), cfg.capacity() - cfg.memoryUsage());
-            sysData.isNeedSave = true;
-            autoSaveReset();
+            LOG(printf_P, PSTR("UI cfg WRITE key:'%s' val:'%s...', cfg mem free: %d\n"), key.c_str(), _v.substring(0, 15).c_str(), cfg.capacity() - cfg.memoryUsage());
+            autosave();
             return;
         }
 
@@ -256,6 +274,7 @@ class EmbUI
         if(cfg[key].isNull()){
             cfg[key].set(value);
             LOG(printf_P, PSTR("UI CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), String(value).substring(0, 15).c_str(), ESP.getFreeHeap());
+            autosave();
         }
     };
 
@@ -269,7 +288,7 @@ class EmbUI
     void init();
     void begin();
     void handle();
-    void autoSaveReset() {astimer = millis();} // передвинуть таймер
+    void autoSaveReset() {}      // obsolete, use autosave only when explicitly saving cfg object
     void save(const char *_cfg = nullptr, bool force = false);
     void load(const char *_cfg = nullptr);
     void udp(const String &message);
@@ -322,6 +341,12 @@ class EmbUI
      */
     void set_callback(CallBack set, CallBack action, callback_function_t callback=nullptr);
 
+    /**
+     * @brief - set interval period for send_pub() task in seconds
+     * 0 - will disable periodic task
+     */
+    void setPubInterval(uint16_t _t);
+
   private:
     /**
      * call to create system-dependent variables,
@@ -331,7 +356,13 @@ class EmbUI
     void led_on();
     void led_off();
     void led_inv();
-    void autosave();
+
+    /**
+     * @brief - restart config autosave timer
+     * each call postpones cfg write to flash
+     */
+    void autosave(bool force = false);
+
     void udpBegin();
     void udpLoop();
     void btn();
@@ -341,8 +372,14 @@ class EmbUI
     void subscribeAll(bool isOnlyGetSet=true);
     void mqtt_reconnect();
 
+
+    // Scheduler tasks
+    Task embuischedw;       // WiFi reconnection helper
+    Task tValPublisher;     // Status data publisher
+    Task tHouseKeeper;     // Maintenance task, runs every second
+    Task tAutoSave;          // config autosave timer
+
     // WiFi-related
-    Ticker embuischedw;        // планировщик WiFi
     /**
       * устанавлием режим WiFi
       */
