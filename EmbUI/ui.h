@@ -23,6 +23,7 @@ class frameSend {
     public:
         virtual ~frameSend(){};
         virtual void send(const String &data){};
+        virtual void send(const JsonObject& data){};
         virtual void flush(){}
 };
 
@@ -33,6 +34,7 @@ class frameSendAll: public frameSend {
         frameSendAll(AsyncWebSocket *server){ ws = server; }
         ~frameSendAll() { ws = nullptr; }
         void send(const String &data){ if (data.length()) ws->textAll(data); };
+        void send(const JsonObject& data);
 };
 
 class frameSendClient: public frameSend {
@@ -42,6 +44,10 @@ class frameSendClient: public frameSend {
         frameSendClient(AsyncWebSocketClient *client){ cl = client; }
         ~frameSendClient() { cl = nullptr; }
         void send(const String &data){ if (data.length()) cl->text(data); };
+        /**
+         * @brief - serialize and send json obj directly to the ws buffer
+         */
+        void send(const JsonObject& data);
 };
 
 class frameSendHttp: public frameSend {
@@ -58,6 +64,12 @@ class frameSendHttp: public frameSend {
         void send(const String &data){
             if (!data.length()) return;
             stream->print(data);
+        };
+        /**
+         * @brief - serialize and send json obj directly to the ws buffer
+         */
+        void send(const JsonObject& data){
+            serializeJson(data, *stream);
         };
         void flush(){
             req->send(stream);
@@ -101,7 +113,10 @@ class Interface {
         void json_frame_next();
         void json_frame_clear();
         void json_frame_flush();
-        void json_frame_send();
+        /**
+         * @brief - serialize and send Interface object to the WebSocket 
+         */
+        void json_frame_send(){ if (send_hndl) send_hndl->send(json.as<JsonObject>()); };
 
         /**
          * @brief - begin custom UI secton
