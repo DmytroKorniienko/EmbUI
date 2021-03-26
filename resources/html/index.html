@@ -155,12 +155,12 @@
 		{{#if html == "iframe2"}}
 			<div class="frame"><iframe id="{{id}}" name="{{id}}" src="{{value}}" class="iframe">iframe does not supported</iframe></div>
 		{{/if}}
+		{{#if html == "custom" && type == "div"}}
 		<!-- Custom div element, on creatу div calls user function with a name passed in {{value}} paramer
 			params: id - becomes div ID
 					param.class - becomes css class selector
 					value - becomes js function name to call		
 		-->
-		{{#if html == "custom" && type == "div"}}
 			<span class="comment">{{label}}</span>
 			<div id="{{id}}" name="{{id}}" class="{{param.class}}"><img src onerror='{{value}}("{{id}}")'></div>
 		{{/if}}

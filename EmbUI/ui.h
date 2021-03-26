@@ -155,8 +155,8 @@ class Interface {
         void password(const String &id, const String &value, const String &label);
         void number(const String &id, const String &label, int min = 0, int max = 0);
         void number(const String &id, int value, const String &label, int min = 0, int max = 0);
-        void number(const String &id, const String &label, float step, int min = 0, int max = 0);
-        void number(const String &id, float value, const String &label, float step, int min = 0, int max = 0);
+        void number(const String &id, const String &label, float step, float min = 0, float max = 0);
+        void number(const String &id, float value, const String &label, float step, float min = 0, float max = 0);
         void time(const String &id, const String &label);
         void time(const String &id, const String &value, const String &label);
         void date(const String &id, const String &label);
@@ -165,8 +165,8 @@ class Interface {
         void datetime(const String &id, const String &value, const String &label);
         void email(const String &id, const String &label);
         void email(const String &id, const String &value, const String &label);
-        void range(const String &id, int min, int max, float step, const String &label, bool directly = false);
-        void range(const String &id, int value, int min, int max, float step, const String &label, bool directly = false);
+        void range(const String &id, float min, float max, float step, const String &label, bool directly = false);
+        void range(const String &id, float value, float min, float max, float step, const String &label, bool directly = false);
         void select(const String &id, const String &label, bool directly = false, bool skiplabel = false);
         void select(const String &id, const String &value, const String &label, bool directly = false, bool skiplabel = false);
         void option(const String &value, const String &label);
