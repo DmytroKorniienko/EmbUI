@@ -445,13 +445,6 @@ void Interface::json_frame_flush(){
     json_frame_clear();
 }
 
-void Interface::json_frame_send(){
-    String buff;
-    serializeJson(json, buff);
-    LOG(println, buff.c_str());
-    if (send_hndl) send_hndl->send(buff);
-}
-
 /**
  * @brief - begin custom UI secton
  * открывает секцию с указаным типом 'pkg', может быть обработан на клиенсткой стороне отлично от
@@ -520,3 +513,29 @@ void Interface::json_section_end(){
     LOG(printf_P, PSTR("UI: section end %s [%u] MEM: %u\n"), section->name.c_str(), section_stack.size(), ESP.getFreeHeap());
     delete section;
 }
+
+/**
+ * @brief - serialize and send json obj directly to the ws buffer
+ */
+void frameSendAll::send(const JsonObject& data){
+    size_t length = measureJson(data);
+    AsyncWebSocketMessageBuffer * buffer = ws->makeBuffer(length);
+    if (!buffer)
+        return;
+
+    serializeJson(data, (char*)buffer->get(), ++length);
+    ws->textAll(buffer);
+};
+
+/**
+ * @brief - serialize and send json obj directly to the ws buffer
+ */
+void frameSendClient::send(const JsonObject& data){
+    size_t length = measureJson(data);
+    AsyncWebSocketMessageBuffer * buffer = cl->server()->makeBuffer(length);
+    if (!buffer)
+        return;
+
+    serializeJson(data, (char*)buffer->get(), ++length);
+    cl->text(buffer);
+};

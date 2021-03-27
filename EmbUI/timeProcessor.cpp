@@ -274,7 +274,7 @@ void TimeProcessor::onSTADisconnected(const WiFiEventStationModeDisconnected eve
 {
   sntp_stop();
   #ifndef TZONE
-    _wrk.detach();
+    _wrk.disable();
   #endif
 }
 #endif  //ESP8266
