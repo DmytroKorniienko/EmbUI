@@ -444,7 +444,7 @@ void EmbUI::create_sysvars(){
  */
 void EmbUI::setPubInterval(uint16_t _t){
     if (_t){
-        tValPublisher.setInterval(_t);
+        tValPublisher.setInterval(_t * TASK_SECOND);
         tValPublisher.enableIfNot();
     } else {
         tValPublisher.disable();
