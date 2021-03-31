@@ -135,6 +135,7 @@ class Interface {
         void json_section_end();
 
         void custom(const String &id, const String &type, const String &value, const String &label, const JsonObject &param = JsonObject());
+
         void frame(const String &id, const String &value);
         void frame2(const String &id, const String &value);
 
@@ -155,6 +156,10 @@ class Interface {
 
         void value(const String &id, bool html = false);
 
+        /**
+         * @brief - Add the whole JsonObject to the Interface frame
+         * actualy it is a copy-object method used to echo back the data to the WebSocket in one-to-many scenarios
+         */
         inline void value(JsonObject &data){
             if (!json_frame_add(data))
                 value(data);
@@ -162,26 +167,102 @@ class Interface {
 
         void hidden(const String &id);
         void hidden(const String &id, const String &value);
-        void constant(const String &id, const String &label);
+
         void constant(const String &id, const String &value, const String &label);
+        void constant(const String &id, const String &label);
+
+        // 4-й параметр обязателен, т.к. компилятор умудряется привести F() к булевому виду и использует неверный оверлоад (под esp32)
+        template <typename T>
+        void text(const String &id, const T &value, const String &label, bool directly){ html_input(id, F("text"), value, label, directly); };
         void text(const String &id, const String &label, bool directly = false);
-        void text(const String &id, const String &value, const String &label, bool directly);   // 4-й параметр обязателен, т.к. компилятор умудряется привести F() к булевому виду и использует неверный оверлоад (под esp32)
+
+        template <typename T>
+        void password(const String &id, const T &value, const String &label){ html_input(id, FPSTR(P_password), value, label); };
         void password(const String &id, const String &label);
-        void password(const String &id, const String &value, const String &label);
-        void number(const String &id, const String &label, int min = 0, int max = 0);
-        void number(const String &id, int value, const String &label, int min = 0, int max = 0);
-        void number(const String &id, const String &label, float step, float min = 0, float max = 0);
-        void number(const String &id, float value, const String &label, float step, float min = 0, float max = 0);
+
+        /**
+         * @brief - create "number" html field with optional step, min, max constraints
+         * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
+         */
+        void number(const String &id, const String &label){
+            number(id, embui->param(id), label, 0);
+        };
+
+        template <typename T>
+        void number(const String &id, const String &label, T step = 0, T min = 0, T max = 0){
+            number(id, embui->param(id), label, step, min, max);
+        };
+
+        template <typename V>
+        void number(const String &id, V value, const String &label){
+            number(id, value, label, 0);
+        };
+
+        template <typename V, typename T>
+        void number(const String &id, V value, const String &label, T step, T min = 0, T max = 0){
+            StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+            obj[FPSTR(P_html)] = FPSTR(P_input);
+            obj[FPSTR(P_type)] = FPSTR(P_number);
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_value)] = value;
+            obj[FPSTR(P_label)] = label;
+            if (min) obj[FPSTR(P_min)] = min;
+            if (max) obj[FPSTR(P_max)] = max;
+            if (step) obj[FPSTR(P_step)] = step;
+
+            if (!json_frame_add(obj.as<JsonObject>())) {
+                number(id, value, label, step, min, max);
+            }
+        };
+
+        template <typename T>
+        void time(const String &id, const T &value, const String &label){ html_input(id, FPSTR(P_time), value, label); };
         void time(const String &id, const String &label);
-        void time(const String &id, const String &value, const String &label);
+
+        template <typename T>
+        void date(const String &id, const T &value, const String &label){ html_input(id, FPSTR(P_date), value, label); };
         void date(const String &id, const String &label);
-        void date(const String &id, const String &value, const String &label);
+
+        template <typename T>
+        void datetime(const String &id, const T &value, const String &label){ html_input(id, F("datetime-local"), value, label); };
         void datetime(const String &id, const String &label);
-        void datetime(const String &id, const String &value, const String &label);
+
+        template <typename T>
+        void email(const String &id, const T &value, const String &label){ html_input(id, F("email"), value, label); };
         void email(const String &id, const String &label);
-        void email(const String &id, const String &value, const String &label);
-        void range(const String &id, float min, float max, float step, const String &label, bool directly = false);
-        void range(const String &id, float value, float min, float max, float step, const String &label, bool directly = false);
+
+        /**
+         * @brief - create "range" html field with step, min, max constraints
+         * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
+         */
+        template <typename T>
+        void range(const String &id, T min, T max, T step, const String &label, bool directly = false){
+            range(id, embui->param(id), min, max, step, label, directly);
+        };
+
+        /**
+         * @brief - create "range" html field with step, min, max constraints
+         * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
+         */
+        template <typename V, typename T>
+        void range(const String &id, V value, T min, T max, T step, const String &label, bool directly = false){
+            StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+            obj[FPSTR(P_html)] = FPSTR(P_input);
+            obj[FPSTR(P_type)] = F("range");
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_value)] = value;
+            obj[FPSTR(P_label)] = label;
+            if (directly) obj[FPSTR(P_directly)] = true;
+
+            obj[FPSTR(P_min)] = min;
+            obj[FPSTR(P_max)] = max;
+            obj[FPSTR(P_step)] = step;
+
+            if (!json_frame_add(obj.as<JsonObject>())) {
+                range(id, value, min, max, step, label, directly);
+            }
+        };
+
         void select(const String &id, const String &label, bool directly = false, bool skiplabel = false);
         void select(const String &id, const String &value, const String &label, bool directly = false, bool skiplabel = false);
         void option(const String &value, const String &label);
@@ -191,30 +272,51 @@ class Interface {
          * @param directly - значение чекбокса при изменении сразу передается на сервер без отправки формы
          * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
          */
-        template <typename T> void checkbox(const String &id, const T& value, const String &label, bool directly = false){
-            StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-            obj[FPSTR(P_html)] = FPSTR(P_input);
-            obj[FPSTR(P_type)] = F("checkbox");
-            obj[FPSTR(P_id)] = id;
-            obj[FPSTR(P_value)] = value;
-            obj[FPSTR(P_label)] = label;
-            if (directly) obj[FPSTR(P_directly)] = true;
-
-            if (!json_frame_add(obj.as<JsonObject>())) {
-                checkbox(id, value, label, directly);
-            }
-        };
+        template <typename T>
+        void checkbox(const String &id, const T& value, const String &label, bool directly = false){ html_input(id, F("checkbox"), value, label, directly); };
         void checkbox(const String &id, const String &label, bool directly = false);
+
+        template <typename T>
+        void color(const String &id, const T &value, const String &label){ html_input(id, FPSTR(P_color), value, label); };
         void color(const String &id, const String &label);
-        void color(const String &id, const String &value, const String &label);
+
+        /**
+         * элемент интерфейса textarea
+         * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
+         */
+        template <typename T>
+        void textarea(const String &id, const T &value, const String &label){ html_input(id, F("textarea"), value, label); };
         void textarea(const String &id, const String &label);
-        void textarea(const String &id, const String &value, const String &label);
+
         void file(const String &name, const String &action, const String &label);
         void button(const String &id, const String &label, const String &color = "");
         void button_submit(const String &section, const String &label, const String &color = "");
         void button_submit_value(const String &section, const String &value, const String &label, const String &color = "");
         void spacer(const String &label = "");
         void comment(const String &label = "");
+
+        /**
+         * @brief - create generic html input element
+         * @param id - element id
+         * @param type - html element type, ex. 'text'
+         * @param value - element value
+         * @param label - element label
+         * @param direct - if true, element value in send via ws on-change 
+         */
+        template <typename T>
+        void html_input(const String &id, const String &type, const T &value, const String &label, bool direct = false){
+            StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+            obj[FPSTR(P_html)] = FPSTR(P_input);
+            obj[FPSTR(P_type)] = type;
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_value)] = value;
+            obj[FPSTR(P_label)] = label;
+            if (direct) obj[FPSTR(P_directly)] = true;
+
+            if (!json_frame_add(obj.as<JsonObject>())) {
+                html_input(id, type, value, label, direct);
+            }
+        };
 };
 
 #endif
