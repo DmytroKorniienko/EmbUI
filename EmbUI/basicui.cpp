@@ -1,5 +1,7 @@
 #include "basicui.h"
 
+uint8_t lang;            // default language for text resources
+
 /**
  * Define configuration variables and controls handlers
  * 
@@ -14,8 +16,9 @@ void BasicUI::add_sections(){
     LOG(println, F("UI: Creating webui vars"));
 
     // variable for UI language (specific to basicui translations)
-    embui.var_create(FPSTR(P_LANGUAGE), String((uint8_t)lang));
+    embui.var_create(FPSTR(P_LANGUAGE), LANG::RU);
 
+    lang = embui.param(FPSTR(P_LANGUAGE)).toInt();
     /**
      * обработчики действий
      */ 
@@ -227,9 +230,8 @@ void BasicUI::set_settings_time(Interface *interf, JsonObject *data){
 void BasicUI::set_language(Interface *interf, JsonObject *data){
         if (!data) return;
 
-    //lang = (*data)[FPSTR(P_LANGUAGE)].as<unsigned char>();
-    SETPARAM(FPSTR(P_LANGUAGE), lang = (*data)[FPSTR(P_LANGUAGE)].as<unsigned char>() );
-
+    //String _l= (*data)[FPSTR(P_LANGUAGE)];
+    SETPARAM(FPSTR(P_LANGUAGE), lang = (*data)[FPSTR(P_LANGUAGE)].as<unsigned short>(); );
     section_settings_frame(interf, data);
 }
 

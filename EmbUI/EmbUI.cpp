@@ -348,7 +348,7 @@ void EmbUI::begin(){
 
     server.begin();
 
-    tValPublisher.set(PUB_PERIOD * TASK_SECOND, TASK_FOREVER, [this](){ if (ws.count()){send_pub();} } );   // publisher works only if there are websock clients connected
+    tValPublisher.set(PUB_PERIOD * TASK_SECOND, TASK_FOREVER, [this](){ send_pub(); } );
     ts.addTask(tValPublisher);
     tValPublisher.enableDelayed();
 

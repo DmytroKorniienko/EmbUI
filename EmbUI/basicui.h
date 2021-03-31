@@ -14,7 +14,7 @@ enum LANG : uint8_t {
     EN = (1U),
 };
 
-static uint8_t lang = LANG::RU;   // default language for text resources
+extern uint8_t lang;
 
 // UI blocks
 static const char T_SETTINGS[] PROGMEM = "settings";
