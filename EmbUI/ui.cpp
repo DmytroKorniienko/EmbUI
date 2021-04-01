@@ -110,22 +110,6 @@ void Interface::option(const String &value, const String &label){
     }
 }
 
-void Interface::select(const String &id, const String &value, const String &label, bool directly, bool skiplabel){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = F("select");
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = skiplabel ? "" : label;
-    if (directly) obj[FPSTR(P_directly)] = true;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        select(id, value, label, directly);
-        return;
-    }
-    section_stack.end()->idx--;
-    json_section_begin(FPSTR(P_options), "", false, false, false, section_stack.end()->block.getElement(section_stack.end()->idx));
-}
-
 void Interface::select(const String &id, const String &label, bool directly, bool skiplabel){
     select(id, embui->param(id), label, directly, skiplabel);
 }
