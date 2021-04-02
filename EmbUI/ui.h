@@ -18,6 +18,7 @@
 
 // static json doc size
 #define IFACE_STA_JSON_SIZE 256
+#define FRAME_ADD_RETRY 10
 
 class frameSend {
     public:
@@ -330,9 +331,12 @@ class Interface {
             obj[FPSTR(P_label)] = label;
             if (direct) obj[FPSTR(P_directly)] = true;
 
-            if (!json_frame_add(obj.as<JsonObject>())) {
-                html_input(id, type, value, label, direct);
-            }
+            size_t _cnt = FRAME_ADD_RETRY;
+
+            do {
+                --_cnt;
+            } while (!json_frame_add(obj.as<JsonObject>()) && _cnt );
+            // html_input(id, type, value, label, direct);
         };
 };
 
