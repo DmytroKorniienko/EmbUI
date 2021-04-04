@@ -226,7 +226,7 @@ bool Interface::json_frame_add(JsonObject obj) {
         LOG(printf_P, PSTR("UI: OK [%u]\tMEM: %u\n"), section_stack.end()->idx, ESP.getFreeHeap());
         return true;
     }
-    LOG(printf_P, PSTR("UI: Frame full! obj size: $d, heap: %u\n"), obj.memoryUsage(), ESP.getFreeHeap());
+    LOG(printf_P, PSTR("UI: Frame full! obj size: %d, frame used %d/%d, heap: %u\n"), obj.memoryUsage(), json.capacity(), json.memoryUsage(), ESP.getFreeHeap());
 
     json_frame_send();
     json_frame_next();

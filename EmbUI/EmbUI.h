@@ -227,12 +227,79 @@ class EmbUI
 
     char mc[7]; // id из последних 3 байт mac-адреса "ffffff"
 
-    String m_pref; // к сожалению они нужны, т.к. в клиент передаются указатели на уже имеющийся объект, значит на конфиг ссылку отдавать нельзя!!!
-    String m_host;
-    String m_port;
-    String m_user;
-    String m_pass;
-    String m_will;
+    void section_handle_add(const String &btn, buttonCallback response);
+    const char* param(const char* key);
+    String param(const String &key);
+    bool isparamexists(const char* key){ return cfg.containsKey(key);}
+    bool isparamexists(const String &key){ return cfg.containsKey(key);}
+    void led(uint8_t pin, bool invert);
+    String deb();
+    void init();
+    void begin();
+    void handle();
+    void save(const char *_cfg = nullptr, bool force = false);
+    void load(const char *_cfg = nullptr);
+    void udp(const String &message);
+    void udp();
+
+    // MQTT
+    void pub_mqtt(const String &key, const String &value);
+    void mqtt_handle();
+    void subscribeAll(bool isOnlyGetSet=true);
+    void mqtt_reconnect();
+    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol);
+    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload));
+    void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload));
+    void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol);
+    void mqtt(const String &host, int port, const String &user, const String &pass, bool remotecontrol);
+    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, bool remotecontrol);
+    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol);
+    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) ());
+    void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) ());
+    void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol);
+    void mqtt(void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol);
+    void mqtt(void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol);
+    void mqttReconnect();
+    void subscribe(const String &topic);
+    void publish(const String &topic, const String &payload);
+    void publish(const String &topic, const String &payload, bool retained);
+    void publishto(const String &topic, const String &payload, bool retained);
+    void remControl();
+
+    /**
+     * @brief - process posted data for the registered action
+     * if post came from the WebUI echoes received data back to the WebUI,
+     * if post came from some other place - sends data to the WebUI
+     * looks for registered action for the section name and calls the action with post data if found
+     */
+    void post(JsonObject data);
+
+    void send_pub();
+    String id(const String &tpoic);
+
+    /**
+     * Initialize WiFi using stored configuration
+     */
+    void wifi_init();
+
+    /**
+     * Подключение к WiFi AP в клиентском режиме
+     */
+    void wifi_connect(const char *ssid=nullptr, const char *pwd=nullptr);
+
+    /**
+     * метод для установки коллбеков на системные события, типа:
+     * - WiFi подключиля/отключился
+     * - получено время от NTP
+     */
+    void set_callback(CallBack set, CallBack action, callback_function_t callback=nullptr);
+
+    /**
+     * @brief - set interval period for send_pub() task in seconds
+     * 0 - will disable periodic task
+     */
+    void setPubInterval(uint16_t _t);
+
 
     /**
      * @brief - set variable's value in the system config object
@@ -278,74 +345,17 @@ class EmbUI
         }
     };
 
-    void section_handle_add(const String &btn, buttonCallback response);
-    const char* param(const char* key);
-    String param(const String &key);
-    bool isparamexists(const char* key){ return cfg.containsKey(key);}
-    bool isparamexists(const String &key){ return cfg.containsKey(key);}
-    void led(uint8_t pin, bool invert);
-    String deb();
-    void init();
-    void begin();
-    void handle();
-    void autoSaveReset() {}      // obsolete, use autosave only when explicitly saving cfg object
-    void save(const char *_cfg = nullptr, bool force = false);
-    void load(const char *_cfg = nullptr);
-    void udp(const String &message);
-    void udp();
-    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol);
-    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload));
-    void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload));
-    void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol);
-    void mqtt(const String &host, int port, const String &user, const String &pass, bool remotecontrol);
-    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, bool remotecontrol);
-    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol);
-    void mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) ());
-    void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) ());
-    void mqtt(const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol);
-    void mqtt(void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol);
-    void mqtt(void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol);
-
-    void mqttReconnect();
-    void subscribe(const String &topic);
-    void publish(const String &topic, const String &payload);
-    void publish(const String &topic, const String &payload, bool retained);
-    void publishto(const String &topic, const String &payload, bool retained);
-    void remControl();
+    /**
+     * @brief - initialize/restart config autosave timer
+     * each call postpones cfg write to flash
+     */
+    void autosave(bool force = false);
 
     /**
-     * @brief - process posted data for the registered action
-     * if post came from the WebUI echoes received data back to the WebUI,
-     * if post came from some other place - sends data to the WebUI
-     * looks for registered action for the section name and calls the action with post data if found
+     * Recycler for dynamic tasks
      */
-    void post(JsonObject data);
+    void taskRecycle(Task *t);
 
-    void send_pub();
-    String id(const String &tpoic);
-
-    /**
-     * Initialize WiFi using stored configuration
-     */
-    void wifi_init();
-
-    /**
-     * Подключение к WiFi AP в клиентском режиме
-     */
-    void wifi_connect(const char *ssid=nullptr, const char *pwd=nullptr);
-
-    /**
-     * метод для установки коллбеков на системные события, типа:
-     * - WiFi подключиля/отключился
-     * - получено время от NTP
-     */
-    void set_callback(CallBack set, CallBack action, callback_function_t callback=nullptr);
-
-    /**
-     * @brief - set interval period for send_pub() task in seconds
-     * 0 - will disable periodic task
-     */
-    void setPubInterval(uint16_t _t);
 
   private:
     /**
@@ -357,27 +367,17 @@ class EmbUI
     void led_off();
     void led_inv();
 
-    /**
-     * @brief - restart config autosave timer
-     * each call postpones cfg write to flash
-     */
-    void autosave(bool force = false);
-
     void udpBegin();
     void udpLoop();
     void btn();
     void getAPmac();
-    void pub_mqtt(const String &key, const String &value);
-    void mqtt_handle();
-    void subscribeAll(bool isOnlyGetSet=true);
-    void mqtt_reconnect();
-
 
     // Scheduler tasks
     Task embuischedw;       // WiFi reconnection helper
     Task tValPublisher;     // Status data publisher
     Task tHouseKeeper;     // Maintenance task, runs every second
     Task tAutoSave;          // config autosave timer
+    std::vector<Task*> *taskTrash = nullptr;    // ptr to a vector container with obsolete tasks
 
     // WiFi-related
     /**
@@ -398,15 +398,21 @@ class EmbUI
     void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info);
 #endif
 
+    // MQTT Private Methods and vars
+    String m_pref; // к сожалению они нужны, т.к. в клиент передаются указатели на уже имеющийся объект, значит на конфиг ссылку отдавать нельзя!!!
+    String m_host;
+    String m_port;
+    String m_user;
+    String m_pass;
+    String m_will;
     void connectToMqtt();
     void onMqttConnect();
-
+    static void _onMqttConnect(bool sessionPresent);
     static void onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
     static void onMqttSubscribe(uint16_t packetId, uint8_t qos);
     static void onMqttUnsubscribe(uint16_t packetId);
     static void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
     static void onMqttPublish(uint16_t packetId);
-    static void _onMqttConnect(bool sessionPresent);
 
     unsigned int localUdpPort = UDP_PORT;
     //char udpRemoteIP[16];
@@ -420,6 +426,9 @@ class EmbUI
     callback_function_t _cb_STAGotIP = nullptr;
 
     void setup_mDns();
+
+    // Dyn tasks garbage collector
+    void taskGC();
 
 #ifdef USE_SSDP
     void ssdp_begin() {
