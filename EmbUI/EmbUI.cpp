@@ -262,7 +262,7 @@ void EmbUI::begin(){
 
     // Simple Firmware Update Form
     server.on(PSTR("/update"), HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(200, FPSTR(PGmimehtml), F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>"));
+        request->send(200, FPSTR(PGmimehtml), F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' accept='.bin, .gz' name='update'><input type='submit' value='Update'></form>"));
     });
 
     server.on(PSTR("/update"), HTTP_POST, [this](AsyncWebServerRequest *request){
@@ -357,6 +357,7 @@ void EmbUI::begin(){
             #ifdef ESP8266
                 MDNS.update();
             #endif
+            taskGC();
         } );
     ts.addTask(tHouseKeeper);
     tHouseKeeper.enableDelayed();
@@ -442,7 +443,7 @@ void EmbUI::create_sysvars(){
  */
 void EmbUI::setPubInterval(uint16_t _t){
     if (_t){
-        tValPublisher.setInterval(_t);
+        tValPublisher.setInterval(_t * TASK_SECOND);
         tValPublisher.enableIfNot();
     } else {
         tValPublisher.disable();
@@ -461,3 +462,24 @@ void EmbUI::autosave(bool force){
         tAutoSave.restartDelayed();
     }
 };
+
+void EmbUI::taskRecycle(Task *t){
+    if (!taskTrash)
+        taskTrash = new std::vector<Task*>(8);
+
+    taskTrash->emplace_back(t);
+}
+
+// Dyn tasks garbage collector
+void EmbUI::taskGC(){
+    if (!taskTrash || taskTrash->empty())
+        return;
+
+    size_t heapbefore = ESP.getFreeHeap();
+    for(auto& _t : *taskTrash) { delete _t; }
+
+    delete taskTrash;
+    taskTrash = nullptr;
+
+    LOG(printf_P, PSTR("UI: task garbage collect: released %d bytes\n"), ESP.getFreeHeap() - heapbefore);
+}
