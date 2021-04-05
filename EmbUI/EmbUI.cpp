@@ -10,13 +10,6 @@
  #include "MemoryInfo.h"
 #endif
 
-#ifndef MAX_WS_CLIENTS
-#define MAX_WS_CLIENTS 4
-#endif
-#ifndef PUB_PERIOD
-#define PUB_PERIOD 10000            // Publication period, ms
-#endif
-#define SECONDARY_PERIOD 300U       // second handler timer, ms
 
 // Update defs
 #ifndef ESP_IMAGE_HEADER_MAGIC
@@ -61,33 +54,32 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     if(type == WS_EVT_DATA){
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
         if(info->final && info->index == 0 && info->len == len){
-            DynamicJsonDocument doc(1024);
-            deserializeJson(doc, data, info->len);
+            DynamicJsonDocument doc(POST_DYN_JSON_SIZE);
+            deserializeJson(doc, (const char*)data, info->len); // deserialize via copy to prevent dangling pointers in action()'s
 
-            String pkg = doc[F("pkg")];
-            if (pkg.isEmpty()) return;
-            if (pkg == F("post")) {
+            if (doc[FPSTR(P_pkg)] && doc[FPSTR(P_pkg)] == F("post")) {
+                doc.shrinkToFit();      // this doc should not grow anyway
                 JsonObject data = doc[F("data")];
                 embui.post(data);
             }
         }
-  }
+    }
 }
 
+/**
+ * @brief - process posted data for the registered action
+ * if post came from the WebUI echoes received data back to the WebUI,
+ * if post came from some other place - sends data to the WebUI
+ * looks for registered action for the section name and calls the action with post data if found
+ */
 void EmbUI::post(JsonObject data){
     section_handle_t *section = nullptr;
     int count = 0;
-    Interface *interf = new Interface(this, &ws, 512);
-    interf->json_frame_value();
 
     for (JsonPair kv : data) {
-        String key = kv.key().c_str(), val = kv.value();
-        if (val != FPSTR(P_null)) {
-            interf->value(key, val);
             ++count;
-        }
 
-        const char *kname = key.c_str();
+        const char *kname = kv.key().c_str();
         for (int i = 0; !section && i < section_handle.size(); i++) {
             const char *sname = section_handle[i]->name.c_str();
             const char *mall = strchr(sname, '*');
@@ -99,11 +91,12 @@ void EmbUI::post(JsonObject data){
     }
 
     if (count) {
+        Interface *interf = new Interface(this, &ws, 1024); // <- Error at lamp Seetings/Other
+        interf->json_frame_value();
+        interf->value(data);
         interf->json_frame_flush();
-    } else {
-        interf->json_frame_clear();
+        delete interf;
     }
-    delete interf;
 
     if (section) {
         LOG(printf_P, PSTR("\nUI: POST SECTION: %s\n\n"), section->name.c_str());
@@ -120,45 +113,6 @@ void EmbUI::send_pub(){
     delete interf;
 }
 
-void EmbUI::var(const String &key, const String &value, bool force)
-{
-    // JsonObject of N element	8 + 16 * N
-    unsigned len = key.length() + value.length() + 16;
-    size_t cap = cfg.capacity(), mem = cfg.memoryUsage();
-
-    LOG(printf_P, PSTR("UI WRITE: key (%s) value (%s) "), key.c_str(), value.substring(0, 15).c_str());
-    if (!force && !cfg.containsKey(key)) {
-        LOG(printf_P, PSTR("UI ERROR: KEY (%s) is NOT initialized!\n"), key.c_str());
-        return;
-    }
-
-    if (cap - mem < len) {
-        cfg.garbageCollect();
-        LOG(printf_P, PSTR("UI: garbage cfg %u(%u) of %u\n"), mem, cfg.memoryUsage(), cap);
-
-    }
-    if (cap - mem < len) {
-        LOG(printf_P, PSTR("UI ERROR: KEY (%s) NOT WRITE !!!!!!!!\n"), key.c_str());
-        return;
-    }
-
-    cfg[key] = value;
-    sysData.isNeedSave = true;
-
-    LOG(printf_P, PSTR("UI FREE: %u\n"), cap - cfg.memoryUsage());
-
-    // if (mqtt_remotecontrol) {
-    //     publish(String(F("embui/set/")) + key, value, true);
-    // }
-}
-
-void EmbUI::var_create(const String &key, const String &value)
-{
-    if(cfg[key].isNull()){
-        cfg[key] = value;
-        LOG(printf_P, PSTR("UI CREATE key: (%s) value: (%s) RAM: %d\n"), key.c_str(), value.substring(0, 15).c_str(), ESP.getFreeHeap());
-    }
-}
 
 void EmbUI::section_handle_add(const String &name, buttonCallback response)
 {
@@ -208,6 +162,7 @@ void notFound(AsyncWebServerRequest *request) {
 void mqtt_emptyFunction(const String &, const String &);
 
 void EmbUI::begin(){
+
     load();                 // try to load config from file
     create_sysvars();       // create system variables (if missing)
     create_parameters();    // weak function, creates user-defined variables
@@ -287,9 +242,11 @@ void EmbUI::begin(){
         request->send(LittleFS, F("/events_config.json"), String(), true);
     });
 */
+    // postponed reboot
     server.on(PSTR("/restart"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        sysData.shouldReboot = true;
-        request->send(200, FPSTR(PGmimetxt), F("Ok"));
+        Task *t = new Task(TASK_SECOND, TASK_ONCE, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); }, &ts, false);
+        t->enableDelayed();
+        request->redirect(F("/"));
     });
 
     server.on(PSTR("/heap"), HTTP_GET, [this](AsyncWebServerRequest *request){
@@ -305,17 +262,18 @@ void EmbUI::begin(){
 
     // Simple Firmware Update Form
     server.on(PSTR("/update"), HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(200, FPSTR(PGmimehtml), F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>"));
+        request->send(200, FPSTR(PGmimehtml), F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' accept='.bin, .gz' name='update'><input type='submit' value='Update'></form>"));
     });
 
     server.on(PSTR("/update"), HTTP_POST, [this](AsyncWebServerRequest *request){
-        sysData.shouldReboot = !Update.hasError();
-        if (sysData.shouldReboot) {
-            request->redirect("/");
-        } else {
-            AsyncWebServerResponse *response = request->beginResponse(500, FPSTR(PGmimetxt), F("FAIL"));
+        if (Update.hasError()) {
+            AsyncWebServerResponse *response = request->beginResponse(500, FPSTR(PGmimetxt), F("UPDATE FAILED"));
             response->addHeader(F("Connection"), F("close"));
             request->send(response);
+        } else {
+            Task *t = new Task(TASK_SECOND, TASK_ONCE, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); }, &ts, false);
+            t->enableDelayed();
+            request->redirect(F("/"));
         }
     },[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         if (!index) {
@@ -389,6 +347,20 @@ void EmbUI::begin(){
     server.onNotFound(notFound);
 
     server.begin();
+
+    tValPublisher.set(PUB_PERIOD * TASK_SECOND, TASK_FOREVER, [this](){ send_pub(); } );
+    ts.addTask(tValPublisher);
+    tValPublisher.enableDelayed();
+
+    tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
+            ws.cleanupClients(MAX_WS_CLIENTS);
+            #ifdef ESP8266
+                MDNS.update();
+            #endif
+            taskGC();
+        } );
+    ts.addTask(tHouseKeeper);
+    tHouseKeeper.enableDelayed();
 }
 
 void EmbUI::led(uint8_t pin, bool invert){
@@ -399,33 +371,11 @@ void EmbUI::led(uint8_t pin, bool invert){
 }
 
 void EmbUI::handle(){
-    if (sysData.shouldReboot) {
-        LOG(println, F("Rebooting..."));
-        delay(100);
-        ESP.restart();
-    }
-
-#ifdef ESP8266
-    MDNS.update();
-#endif
-    //_connected();
     mqtt_handle();
     udpLoop();
-
-    static unsigned long timer = 0;
-    if (timer + SECONDARY_PERIOD > millis()) return;
-    timer = millis();
-
+    ts.execute();           // run task scheduler
     //btn();
     //led_handle();
-    autosave();
-    ws.cleanupClients(MAX_WS_CLIENTS);
-
-    //публикация изменяющихся значений
-    static unsigned long timer_pub = 0;
-    if (timer_pub + PUB_PERIOD > millis()) return;
-    timer_pub = millis();
-    send_pub();
 }
 
 /**
@@ -483,8 +433,55 @@ void EmbUI::create_sysvars(){
     var_create(FPSTR(P_m_user), "");                   // MQTT login
     var_create(FPSTR(P_m_pass), "");                   // MQTT pass
     var_create(FPSTR(P_m_pref), embui.mc);             // MQTT topic == use ESP MAC address
-    var_create(FPSTR(P_m_tupd), F("30"));              // интервал отправки данных по MQTT в секундах
+    var_create(FPSTR(P_m_tupd), TOSTRING(MQTT_PUB_PERIOD));              // интервал отправки данных по MQTT в секундах
     // date/time related vars
     var_create(FPSTR(P_TZSET), "");                   // TimeZone/DST rule (empty value == GMT/no DST)
     var_create(FPSTR(P_userntp), "");                 // Backup NTP server
+}
+
+/**
+ * @brief - set interval period for send_pub() task in seconds
+ * 0 - will disable periodic task
+ */
+void EmbUI::setPubInterval(uint16_t _t){
+    if (_t){
+        tValPublisher.setInterval(_t * TASK_SECOND);
+        tValPublisher.enableIfNot();
+    } else {
+        tValPublisher.disable();
+    }
+}
+
+/**
+ * @brief - restart config autosave timer
+ * each call postpones cfg write to flash
+ */
+void EmbUI::autosave(bool force){
+    if (force){
+        tAutoSave.disable();
+        save(nullptr, force);
+    } else {
+        tAutoSave.restartDelayed();
+    }
+};
+
+void EmbUI::taskRecycle(Task *t){
+    if (!taskTrash)
+        taskTrash = new std::vector<Task*>(8);
+
+    taskTrash->emplace_back(t);
+}
+
+// Dyn tasks garbage collector
+void EmbUI::taskGC(){
+    if (!taskTrash || taskTrash->empty())
+        return;
+
+    size_t heapbefore = ESP.getFreeHeap();
+    for(auto& _t : *taskTrash) { delete _t; }
+
+    delete taskTrash;
+    taskTrash = nullptr;
+
+    LOG(printf_P, PSTR("UI: task garbage collect: released %d bytes\n"), ESP.getFreeHeap() - heapbefore);
 }

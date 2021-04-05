@@ -25,13 +25,25 @@
         "type": "git",
         "url": "https://github.com/DmytroKorniienko/EmbUI.git"
     },
-    "platforms": ["espressif8266"],
+    "platforms": ["espressif8266", "espressif32"],
     "version": "2.3.0",
-    "dependencies": {
-        "bblanchon/ArduinoJson": "*",
-        "AsyncWebServer-mod": "https://github.com/DmytroKorniienko/ESPAsyncWebServer",
-        "marvinroger/AsyncMqttClient": "*"
-    },
+    "dependencies":
+    [
+        {"owner": "bblanchon",
+         "name": "ArduinoJson",
+         "version": "*"},
+        {"name": "AsyncWebServer-mod",
+         "version": "https://github.com/DmytroKorniienko/ESPAsyncWebServer"},
+        {"owner": "marvinroger",
+         "name": "AsyncMqttClient",
+         "version": "*"},
+        {"owner": "arkhipenko",
+         "name": "TaskScheduler",
+         "version": "*"},
+        {"name": "LITTLEFS",
+         "version": "https://github.com/lorol/LITTLEFS.git",
+         "platforms": ["espressif32"]}
+    ],
     "build": {
         "flags": [
             "-DEMBUIVER=2.3.0",

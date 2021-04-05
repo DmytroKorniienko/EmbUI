@@ -85,7 +85,6 @@ void section_main_frame(Interface *interf, JsonObject *data){
 void block_menu(Interface *interf, JsonObject *data){
     if (!interf) return;
     // создаем меню
-    embui.autoSaveReset();          // автосохранение конфига будет отсчитываться от этого момента
     interf->json_section_menu();
 
     /**

@@ -90,7 +90,8 @@ var render = function(){
 			}
 			out.lockhist = false;
 		},
-		// обработка значений в полученных блоках
+		// обработка данных, полученных в пакете "pkg":"value"
+		// блок разбирается на объекты по id и их value применяются к элементам шаблона на html странице  
 		value: function(obj){
 			var frame = obj.block;
 			if (!obj.block) return;
@@ -105,7 +106,8 @@ var render = function(){
 						if (el[0].type == "range") go("#"+el[0].id+"-val").html(": "+el[0].value);
 						// проверяем чекбоксы на значение вкл/выкл
 						if (el[0].type == "checkbox") {
-							el[0].checked = (frame[i].value == "true" || frame[i].value == "1");	// checkbox is 'checked' if it's value == "1" || "true"
+							// allow multiple types of TRUE value for checkboxes
+							el[0].checked = (frame[i].value == "1" || frame[i].value == 1 || frame[i].value == true || frame[i].value == "true" );
 							//console.debug("processing checkbox num: ", i, "val: ", frame[i].value);
 						}
 					}
@@ -115,6 +117,15 @@ var render = function(){
 	};
 	return out;
 };
+
+/**
+ * rawdata callback - Stub function to handle rawdata messages from controller
+ * Data could be sent from the controller via json_frame_custom(String("rawdata")) method
+ * and handled in a custom user js script via redefined function
+ */
+function rawdata_cb(msg){
+    console.log('Got raw data, redefine rawdata_cb(msg) func to handle it.', msg);
+}
 
 window.addEventListener("load", function(ev){
 	var rdr = this.rdr = render();
@@ -129,6 +140,11 @@ window.addEventListener("load", function(ev){
 		ws.connect();
 	}
 	ws.connect();
+
+	// any messages with "pkg":"rawdata" are handled here bypassing interface/value handlers
+	ws.onrawdata = function(mgs){
+		rawdata_cb(mgs);
+	}
 
 	var active = false, layout =  go("#layout");
 	go("#menuLink").bind("click", function(){

@@ -24,6 +24,7 @@ static const char P_null[] PROGMEM = "null";
 static const char P_number[] PROGMEM = "number";
 static const char P_options[] PROGMEM = "options";
 static const char P_password[] PROGMEM = "password";
+static const char P_pkg[] PROGMEM = "pkg";
 static const char P_section[] PROGMEM = "section";
 static const char P_step[] PROGMEM = "step";
 static const char P_submit[] PROGMEM = "submit";
@@ -35,6 +36,9 @@ static const char P_wifi[] PROGMEM = "wifi";
 
 // UI colors
 static const char P_GRAY[] PROGMEM = "gray";
+static const char P_BLUE[] PROGMEM = "blue";
+static const char P_RED[] PROGMEM = "red";
+static const char P_GREEN[] PROGMEM = "green";
 
 // System configuration variables
 static const char P_cfgfile[] PROGMEM = "/config.json";
