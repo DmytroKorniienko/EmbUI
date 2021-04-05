@@ -52,7 +52,6 @@ void block_effects_main(Interface *interf, JsonObject *data, bool fast=true){
 void block_menu(Interface *interf, JsonObject *data){
     if (!interf) return;
     // создаем меню
-    embui.autoSaveReset(); // автосохранение конфига будет отсчитываться от этого момента
     interf->json_section_menu();
     interf->option(F("Tab1"), F("Вкладка"));
     interf->json_section_end();

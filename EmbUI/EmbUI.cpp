@@ -91,7 +91,7 @@ void EmbUI::post(JsonObject data){
     }
 
     if (count) {
-        Interface *interf = new Interface(this, &ws, 512);
+        Interface *interf = new Interface(this, &ws, 1024); // <- Error at lamp Seetings/Other
         interf->json_frame_value();
         interf->value(data);
         interf->json_frame_flush();
