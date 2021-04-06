@@ -18,7 +18,7 @@
 
 // static json doc size
 #define IFACE_STA_JSON_SIZE 256
-#define FRAME_ADD_RETRY 10
+#define FRAME_ADD_RETRY 5
 
 class frameSend {
     public:
@@ -110,7 +110,7 @@ class Interface {
 
         void json_frame_value();
         void json_frame_interface(const String &name = "");
-        bool json_frame_add(JsonObject obj);
+        bool json_frame_add(JsonObjectConst obj);
         void json_frame_next();
         void json_frame_clear();
         void json_frame_flush();
@@ -161,9 +161,15 @@ class Interface {
          * @brief - Add the whole JsonObject to the Interface frame
          * actualy it is a copy-object method used to echo back the data to the WebSocket in one-to-many scenarios
          */
-        inline void value(JsonObject &data){
-            if (!json_frame_add(data))
-                value(data);
+        inline void value(JsonObjectConst data){
+            size_t _cnt = FRAME_ADD_RETRY;
+            do {
+                --_cnt;
+                #ifdef EMBUI_DEBUG
+                    if (!_cnt)
+                        LOG(println, FPSTR(P_ERR_obj2large));
+                #endif
+            } while (!json_frame_add(data) && _cnt);
         }
 
         void hidden(const String &id);
@@ -335,8 +341,11 @@ class Interface {
 
             do {
                 --_cnt;
+                #ifdef EMBUI_DEBUG
+                    if (!_cnt)
+                        LOG(println, FPSTR(P_ERR_obj2large));
+                #endif
             } while (!json_frame_add(obj.as<JsonObject>()) && _cnt );
-            // html_input(id, type, value, label, direct);
         };
 };
 

@@ -75,3 +75,6 @@ static const char PGmimetxt[] PROGMEM  = "text/plain";
 static const char PGmimexml[] PROGMEM  = "text/xml";
 static const char PGnocache[] PROGMEM = "no-cache, no-store, must-revalidate";
 static const char PG404[] PROGMEM  = "Not found";
+
+// LOG Messages
+static const char P_ERR_obj2large[] PROGMEM  = "UI: ERORR - can't add object to frame, too large!";
