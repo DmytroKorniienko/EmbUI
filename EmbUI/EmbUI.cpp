@@ -54,13 +54,43 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     if(type == WS_EVT_DATA){
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
         if(info->final && info->index == 0 && info->len == len){
-            DynamicJsonDocument doc(POST_DYN_JSON_SIZE);
-            deserializeJson(doc, (const char*)data, info->len); // deserialize via copy to prevent dangling pointers in action()'s
+            LOG(printf_P, PSTR("UI: =POST= LEN: %u\n"), len);
 
-            if (doc[FPSTR(P_pkg)] && doc[FPSTR(P_pkg)] == F("post")) {
-                doc.shrinkToFit();      // this doc should not grow anyway
-                JsonObject data = doc[F("data")];
-                embui.post(data);
+            DynamicJsonDocument *doc = new DynamicJsonDocument(2*len);
+            DeserializationError error = deserializeJson((*doc), (const char*)data, info->len); // deserialize via copy to prevent dangling pointers in action()'s
+            if (error){
+                LOG(printf_P, PSTR("UI: Post deserialization err: %d\n"), error.code());
+                return;
+            }
+
+            if ((*doc)[FPSTR(P_pkg)] && (*doc)[FPSTR(P_pkg)] == F("post")) {
+                doc->shrinkToFit();      // this doc should not grow anyway
+                //LOG(printf_P, PSTR("UI: =POST= MEM_1: %u\n"), doc->memoryUsage());
+
+                if (embui.ws.count()>1 && (*doc)[F("data")]){   // if there are multiple ws cliens connected, we must echo back data section, to reflect any changes
+                    DynamicJsonDocument *echo = new DynamicJsonDocument(len+32);
+                    DeserializationError error = deserializeJson((*echo), data, info->len); // deserialize via zero-copy, it will be released once data copied to ws buffer
+                    if (error){
+                        LOG(printf_P, PSTR("UI: Echo deserialization err: %d\n"), error.code());
+                    } else {
+                        JsonObject _d = (*echo)[F("data")];
+                        LOG(printf_P, PSTR("UI: =ECHO= MEM_1: %u\n"), _d.memoryUsage());
+                        Interface *interf = new Interface(&embui, &embui.ws, len+128);      // about 128 bytes requred for section structs
+                        interf->json_frame_value();
+                        interf->value(_d);
+                        interf->json_frame_flush();
+                        delete interf;
+                        delete echo;
+                    }
+                } // else { LOG(println, F("NO DATA or less than 1 ws client")); }
+
+                // откладываем обработку и освобождаем буфера ws
+                new Task(100, TASK_ONCE, nullptr, &ts, true, nullptr, [doc](){
+                    JsonObject data = (*doc)[F("data")];
+                    embui.post(data);
+                    delete doc;
+                    TASK_RECYCLE;
+                });
             }
         }
     }
@@ -68,17 +98,12 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
 /**
  * @brief - process posted data for the registered action
- * if post came from the WebUI echoes received data back to the WebUI,
- * if post came from some other place - sends data to the WebUI
  * looks for registered action for the section name and calls the action with post data if found
  */
 void EmbUI::post(JsonObject data){
     section_handle_t *section = nullptr;
-    int count = 0;
 
     for (JsonPair kv : data) {
-            ++count;
-
         const char *kname = kv.key().c_str();
         for (int i = 0; !section && i < section_handle.size(); i++) {
             const char *sname = section_handle[i]->name.c_str();
@@ -88,14 +113,6 @@ void EmbUI::post(JsonObject data){
                 section = section_handle[i];
             }
         };
-    }
-
-    if (count) {
-        Interface *interf = new Interface(this, &ws, 1024); // <- Error at lamp Seetings/Other
-        interf->json_frame_value();
-        interf->value(data);
-        interf->json_frame_flush();
-        delete interf;
     }
 
     if (section) {
@@ -244,8 +261,7 @@ void EmbUI::begin(){
 */
     // postponed reboot
     server.on(PSTR("/restart"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        Task *t = new Task(TASK_SECOND, TASK_ONCE, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); }, &ts, false);
-        t->enableDelayed();
+        new Task(TASK_SECOND, TASK_ONCE, nullptr, &ts, true, nullptr, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); });
         request->redirect(F("/"));
     });
 

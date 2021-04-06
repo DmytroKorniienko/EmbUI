@@ -219,14 +219,18 @@ void Interface::json_frame_interface(const String &name){
     json_section_begin("root" + String(micros()));
 }
 
-bool Interface::json_frame_add(JsonObject obj) {
-    //LOG(printf_P, PSTR("json_frame_add: %u = %u "), obj.memoryUsage(), json.capacity() - json.memoryUsage());
-    if (json.capacity() - json.memoryUsage() > obj.memoryUsage() + 40 && section_stack.end()->block.add(obj)) {
+bool Interface::json_frame_add(JsonObjectConst obj) {
+    if (!obj.memoryUsage()) // пустышки не передаем
+        return false;
+
+    LOG(printf_P, PSTR("UI: Frame add obj %u b, storage %d/%d"), obj.memoryUsage(), json.memoryUsage(), json.capacity());
+
+    if (json.capacity() - json.memoryUsage() > obj.memoryUsage() + 16 && section_stack.end()->block.add(obj)) {
         section_stack.end()->idx++;
-        LOG(printf_P, PSTR("UI: OK [%u]\tMEM: %u\n"), section_stack.end()->idx, ESP.getFreeHeap());
+        LOG(printf_P, PSTR("...OK [%u]\tMEM: %u\n"), section_stack.end()->idx, ESP.getFreeHeap());
         return true;
     }
-    LOG(printf_P, PSTR("UI: Frame full! obj size: %d, frame used %d/%d, heap: %u\n"), obj.memoryUsage(), json.capacity(), json.memoryUsage(), ESP.getFreeHeap());
+    LOG(printf_P, PSTR(" - Frame full! Heap: %u\n"), ESP.getFreeHeap());
 
     json_frame_send();
     json_frame_next();
@@ -243,7 +247,7 @@ void Interface::json_frame_next(){
         LOG(printf_P, PSTR("UI: section %u %s %u\n"), i, section_stack[i]->name.c_str(), section_stack[i]->idx);
         section_stack[i]->block = obj.createNestedArray(FPSTR(P_block));
     }
-    LOG(printf_P, PSTR("json_frame_next: [%u] %u = %u\n"), section_stack.size(), obj.memoryUsage(), json.capacity() - json.memoryUsage());
+    LOG(printf_P, PSTR("json_frame_next: [%u], used %u, free %u\n"), section_stack.size(), obj.memoryUsage(), json.capacity() - json.memoryUsage());
 }
 
 void Interface::json_frame_clear(){
@@ -318,7 +322,7 @@ void Interface::json_section_begin(const String &name, const String &label, bool
     section->block = obj.createNestedArray(FPSTR(P_block));
     section->idx = 0;
     section_stack.add(section);
-    LOG(printf_P, PSTR("UI: section begin %s [%u] %u\n"), name.c_str(), section_stack.size(), json.capacity() - json.memoryUsage());
+    LOG(printf_P, PSTR("UI: section begin %s [%u] %u free\n"), name.c_str(), section_stack.size(), json.capacity() - json.memoryUsage());
 }
 
 void Interface::json_section_end(){
@@ -357,4 +361,3 @@ void frameSendClient::send(const JsonObject& data){
     serializeJson(data, (char*)buffer->get(), ++length);
     cl->text(buffer);
 };
-
