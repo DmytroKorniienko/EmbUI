@@ -60,8 +60,8 @@ void BasicUI::section_settings_frame(Interface *interf, JsonObject *data){
     interf->json_section_main(FPSTR(T_SETTINGS), FPSTR(T_DICT[lang][TD::D_SETTINGS]));
 
     interf->select(FPSTR(P_LANGUAGE), String(lang), String(FPSTR(T_DICT[lang][TD::D_LANG])), true);
-    interf->option("0", "Rus");
-    interf->option("1", "Eng");
+    interf->option("0", F("Rus"));
+    interf->option("1", F("Eng"));
     interf->json_section_end();
 
     interf->spacer();
@@ -145,16 +145,34 @@ void BasicUI::block_settings_time(Interface *interf, JsonObject *data){
     interf->json_section_main(FPSTR(T_SET_TIME), FPSTR(T_DICT[lang][TD::D_DATETIME]));
 
     interf->comment(FPSTR(T_DICT[lang][TD::D_MSG_TZSet01]));     // комментарий-описание секции
+
+    // сперва рисуем простое поле с текущим значением правил временной зоны из конфига
     interf->text(FPSTR(P_TZSET), FPSTR(T_DICT[lang][TD::D_MSG_TZONE]));
+
+    // user-defined NTP server
     interf->text(FPSTR(P_userntp), FPSTR(T_DICT[lang][TD::D_NTP_Secondary]));
+    // manual date and time setup
     interf->text(FPSTR(P_DTIME), "", FPSTR(T_DICT[lang][TD::D_MSG_DATETIME]), false);
     interf->button_submit(FPSTR(T_SET_TIME), FPSTR(T_DICT[lang][TD::D_SAVE]), FPSTR(P_GRAY));
 
     interf->spacer();
+
+    // exit button
     interf->button(FPSTR(T_SETTINGS), FPSTR(T_DICT[lang][TD::D_EXIT]));
 
+    // close and send frame
     interf->json_section_end();
     interf->json_frame_flush();
+
+    // формируем и отправляем кадр с запросом подгрузки внешнего ресурса со списком правил временных зон
+    // полученные данные заместят предыдущее поле выпадающим списком с данными о всех временных зонах
+    interf->json_frame_custom(F("xload"));
+    interf->json_section_content();
+                    //id            val                         label   direct  skipl URL for external data
+    interf->select(FPSTR(P_TZSET), embui.param(FPSTR(P_TZSET)), "",     false,  true, F("/js/tz.json"));
+    interf->json_section_end();
+    interf->json_frame_flush();
+
 }
 
 /**
@@ -221,7 +239,14 @@ void BasicUI::set_settings_time(Interface *interf, JsonObject *data){
     String datetime=(*data)[FPSTR(P_DTIME)];
     if (datetime.length())
         embui.timeProcessor.setTime(datetime);
-    SETPARAM(FPSTR(P_TZSET), embui.timeProcessor.tzsetup((*data)[FPSTR(P_TZSET)]));
+    
+    // Save and apply timezone rules
+    String tzrule = embui.param(FPSTR(P_TZSET));
+    if (!tzrule.isEmpty()){
+        SETPARAM(FPSTR(P_TZSET));
+        embui.timeProcessor.tzsetup(tzrule.substring(4).c_str());   // cutoff '000_' prefix key
+    }
+
     SETPARAM(FPSTR(P_userntp), embui.timeProcessor.setcustomntp((*data)[FPSTR(P_userntp)]));
 
     section_settings_frame(interf, data);

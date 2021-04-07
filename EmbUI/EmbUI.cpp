@@ -56,7 +56,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         if(info->final && info->index == 0 && info->len == len){
             LOG(printf_P, PSTR("UI: =POST= LEN: %u\n"), len);
 
-            DynamicJsonDocument *doc = new DynamicJsonDocument(2*len);
+            DynamicJsonDocument *doc = new DynamicJsonDocument(2*len + 32);
             DeserializationError error = deserializeJson((*doc), (const char*)data, info->len); // deserialize via copy to prevent dangling pointers in action()'s
             if (error){
                 LOG(printf_P, PSTR("UI: Post deserialization err: %d\n"), error.code());
