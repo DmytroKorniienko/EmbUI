@@ -127,9 +127,97 @@ function rawdata_cb(msg){
     console.log('Got raw data, redefine rawdata_cb(msg) func to handle it.', msg);
 }
 
+/**
+ * @brief - Loads JSON objects via http request
+ * @param {*} url - URI to load
+ * @param {*} ok - callback on success
+ * @param {*} err - callback on error
+ */
+function ajaxload(url, ok, err){
+	var xhr = new XMLHttpRequest();
+	xhr.overrideMimeType("application/json");
+	xhr.responseType = 'json';
+	xhr.open('GET', url, true);
+	xhr.onreadystatechange = function(){
+		if (xhr.readyState == 4 && xhr.status == "200") {
+			ok && ok(xhr.response);
+		} else if (xhr.status != "200"){
+			err && err(xhr.status)
+		}
+	};
+	xhr.send(null);
+}
+
+/**
+ * 	"pkg":"xload" messages are used to make ajax requests for external JSON objects that could be used as data/interface templates
+ * используется для загрузки контента/шаблонов из внешних источников - "флеш" контроллера, интернет ресурсы с погодой и т.п.,
+ * объекты должны сохранять структуру как если бы они пришли от контроллера. Просмариваются рекурсивно все секции у которых есть ключ 'url',
+ * этот урл запрашивается и результат записывается в ключ 'block' текущей секции. Ожидается что по URL будет доступен корректный JSON.
+ * Результат передается в рендерер и встраивается в страницу /Vortigont/
+ * @param { * } msg - framework content/interface object
+ * @returns
+ */
+function xload(msg){
+    if (!msg.block){
+        console.log('Message has no data block!');
+        return;
+    }
+
+	console.log('Run deepfetch');
+	deepfetch(msg.block).then(() => {
+		 var rdr = this.rdr = render();	// Interface rederer to pass updated objects to
+		 console.log(msg);
+		 rdr.make(msg);
+	})
+}
+
+/**
+ * async function to traverse object and fetch all 'url' in sections,
+ * this must be done in async mode till the last end, since there could be multiple recursive ajax requests
+ * including in sections that were just fetched /Vortigont/
+ * @param {*} obj - EmbUI data object
+ */
+async function deepfetch (obj) {
+	for (let i = 0; i < obj.length; i++) if (typeof obj[i] == "object") {
+		var section = obj[i];
+		if (section.url){
+			console.log('Fetching URL"' + section.url);
+			await new Promise(next=> {
+					ajaxload(section.url,
+						function(response) {
+							section['block'] = response;
+							delete section.url;	// удаляем url из элемента т.к. работает рекурсия
+							// пробегаемся рекурсивно по новым/вложенным объектам
+							if (section.block && typeof section.block == "object") {
+								deepfetch(section.block).then(() => {
+									//console.log("Diving deeper");
+									next();
+							   })
+							} else {
+								next();
+							}
+						},
+						function(errstatus) {
+							//console.log('Error loading external content');
+							next();
+						}
+					);
+			})
+		} else if ( section.block && typeof section.block == "object" ){
+			await new Promise(next=> {
+				deepfetch(section.block).then(() => {
+					next();
+				})
+			})
+		}
+	}
+}
+
+
 window.addEventListener("load", function(ev){
 	var rdr = this.rdr = render();
 	var ws = this.ws = wbs("ws://"+location.host+"/ws");
+	//var ws = this.ws = wbs("ws://embuitst/ws");
 	ws.oninterface = function(msg) {
 		rdr.make(msg);
 	}
@@ -145,6 +233,12 @@ window.addEventListener("load", function(ev){
 	ws.onrawdata = function(mgs){
 		rawdata_cb(mgs);
 	}
+
+	// "pkg":"xload" messages are used to make ajax requests for external JSON objects that could be used as data/interface templates
+	ws.onxload = function(mgs){
+		xload(mgs);
+	}
+
 
 	var active = false, layout =  go("#layout");
 	go("#menuLink").bind("click", function(){

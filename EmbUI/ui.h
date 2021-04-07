@@ -273,13 +273,15 @@ class Interface {
         void select(const String &id, const String &label, bool directly = false, bool skiplabel = false);
 
         template <typename T>
-        void select(const String &id, const T &value, const String &label, bool directly = false, bool skiplabel = false){
+        void select(const String &id, const T &value, const String &label, bool directly = false, bool skiplabel = false, const String &exturl = (char*)0){
             StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
             obj[FPSTR(P_html)] = F("select");
             obj[FPSTR(P_id)] = id;
             obj[FPSTR(P_value)] = value;
             obj[FPSTR(P_label)] = skiplabel ? "" : label;
             if (directly) obj[FPSTR(P_directly)] = true;
+            if (!exturl.isEmpty())
+                obj[F("url")] = exturl;
 
             if (!json_frame_add(obj.as<JsonObject>())) {
                 select(id, value, label, directly);

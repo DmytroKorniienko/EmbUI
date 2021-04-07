@@ -8,6 +8,9 @@
  */
 #define DICT_SIZE 70
 
+
+
+
 /**
  * Text-Dictionary Enums for language resources
  * the order of enums must match with elements in dictionary
@@ -115,8 +118,8 @@ static const char T_EN_MQTT[] PROGMEM = "MQTT";
 static const char T_EN_MSG_APOnly[] PROGMEM = "In AP-only EmbUI always works as an Access Point and never attempt any WiFi-client connections";
 static const char T_EN_MSG_APProtect[] PROGMEM = "Protect AP with a password";
 static const char T_EN_MSG_DATETIME[] PROGMEM = "Date/Time as YYYY-MM-DDThh:mm:ss (for autonomous devices)";
-static const char T_EN_MSG_TZONE[] PROGMEM = "TZone rule (be sure to set this!)";
-static const char T_EN_MSG_TZSet01[] PROGMEM = "TZSET rule for TimeZone/daylight setup (i.e. 'MSK-3' for Europe/Moscow) Rules could be found at https://github.com/esp8266/Arduino/blob/master/cores/esp8266/TZ.h";
+static const char T_EN_MSG_TZONE[] PROGMEM = "Time zone";
+static const char T_EN_MSG_TZSet01[] PROGMEM = "TimeZone shift/daylight saving rules applied automatically, no need to adjust mannualy.";
 static const char T_EN_NTP_Secondary[] PROGMEM = "BackUp NTP-server (optional)";
 static const char T_EN_ONCE[] PROGMEM = "Once";
 static const char T_EN_ONOFF[] PROGMEM = "ON/OFF";
@@ -178,8 +181,8 @@ static const char T_RU_MQTT_Interval[] PROGMEM = "Интервал mqtt сек."
 static const char T_RU_MSG_APOnly[] PROGMEM = "В режиме AP-only лампа всегда работает как точка доступа и не будет подключаться к другим WiFi-сетям";
 static const char T_RU_MSG_APProtect[] PROGMEM = "Защитить AP паролем";
 static const char T_RU_MSG_DATETIME[] PROGMEM = "Дата/время в формате YYYY-MM-DDThh:mm:ss (если нет интернета)";
-static const char T_RU_MSG_TZONE[] PROGMEM = "правило TZone (рекоммендуется задать!)";
-static const char T_RU_MSG_TZSet01[] PROGMEM = "Правила TZSET учета поясного/сезонного времени (напр 'MSK-3' для Europe/Moscow) Нужную строку можно взять тут https://github.com/esp8266/Arduino/blob/master/cores/esp8266/TZ.h";
+static const char T_RU_MSG_TZONE[] PROGMEM = "Часовая зона";
+static const char T_RU_MSG_TZSet01[] PROGMEM = "Установки часовой зоны. Правила смены поясного/сезонного времени применяются автоматически, ручной коррекции не требуется. Если в вашей зоны нет в списке, можно выбрать общую зону сдвига от Гринвича";
 static const char T_RU_NTP_Secondary[] PROGMEM = "резервный NTP-сервер (не обязательно)";
 static const char T_RU_ONCE[] PROGMEM = "Однократно";
 static const char T_RU_ONOFF[] PROGMEM = "Вкл/Выкл";
