@@ -197,7 +197,7 @@ void EmbUI::begin(){
     #endif
 
     // восстанавливаем настройки времени
-    timeProcessor.tzsetup(param(FPSTR(P_TZSET)).c_str());
+    timeProcessor.tzsetup(param(FPSTR(P_TZSET)).substring(4).c_str());
     timeProcessor.setcustomntp(param(FPSTR(P_userntp)).c_str());
 
     // запускаем WiFi
