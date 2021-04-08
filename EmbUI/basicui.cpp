@@ -152,7 +152,7 @@ void BasicUI::block_settings_time(Interface *interf, JsonObject *data){
     // user-defined NTP server
     interf->text(FPSTR(P_userntp), FPSTR(T_DICT[lang][TD::D_NTP_Secondary]));
     // manual date and time setup
-    interf->text(FPSTR(P_DTIME), "", FPSTR(T_DICT[lang][TD::D_MSG_DATETIME]), false);
+    interf->datetime(FPSTR(P_DTIME), FPSTR(T_DICT[lang][TD::D_MSG_DATETIME]));  //Правка для выбора Даты\Времени через интерфес браузера
     interf->button_submit(FPSTR(T_SET_TIME), FPSTR(T_DICT[lang][TD::D_SAVE]), FPSTR(P_GRAY));
 
     interf->spacer();
