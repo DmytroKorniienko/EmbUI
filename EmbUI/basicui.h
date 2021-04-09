@@ -31,6 +31,12 @@ static const char T_SH_NETW[] PROGMEM = "sh_netw";
 static const char T_SH_TIME[] PROGMEM = "sh_time";
 
 /*
+    перенакрываемая функция для добавления пользовательских пунктов в меню "Настройки"
+    вызывается в конце section_settings_frame()
+*/
+void __attribute__((weak)) user_settings_frame(Interface *interf, JsonObject *data);
+
+/*
     A class with static functions to handle basic WebUI interface
 */
 class BasicUI {

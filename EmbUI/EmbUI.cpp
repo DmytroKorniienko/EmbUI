@@ -20,10 +20,7 @@
  #define GZ_HEADER 0x1F
 #endif
 
-#ifdef ESP32
- #define U_FS   U_SPIFFS
-#endif
-
+void mqtt_emptyFunction(const String &, const String &);
 
 EmbUI embui;
 
@@ -96,89 +93,24 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     }
 }
 
-/**
- * @brief - process posted data for the registered action
- * looks for registered action for the section name and calls the action with post data if found
- */
-void EmbUI::post(JsonObject data){
-    section_handle_t *section = nullptr;
-
-    for (JsonPair kv : data) {
-        const char *kname = kv.key().c_str();
-        for (int i = 0; !section && i < section_handle.size(); i++) {
-            const char *sname = section_handle[i]->name.c_str();
-            const char *mall = strchr(sname, '*');
-            unsigned len = mall? mall - sname - 1 : strlen(kname);
-            if (strncmp(sname, kname, len) == 0) {
-                section = section_handle[i];
-            }
-        };
-    }
-
-    if (section) {
-        LOG(printf_P, PSTR("\nUI: POST SECTION: %s\n\n"), section->name.c_str());
-        Interface *interf = new Interface(this, &ws);
-        section->callback(interf, &data);
-        delete interf;
-    }
-}
-
-void EmbUI::send_pub(){
-    if (!ws.count()) return;
-    Interface *interf = new Interface(this, &ws, 512);
-    pubCallback(interf);
-    delete interf;
-}
-
-
-void EmbUI::section_handle_add(const String &name, buttonCallback response)
-{
-    section_handle_t *section = new section_handle_t;
-    section->name = name;
-    section->callback = response;
-    section_handle.add(section);
-
-    LOG(printf_P, PSTR("UI REGISTER: %s\n"), name.c_str());
-}
-
-/**
- * Возвращает указатель на строку со значением параметра из конфига
- * В случае отсутствующего параметра возвращает пустой указатель
- */
-const char* EmbUI::param(const char* key)
-{
-    const char* value = cfg[key];
-    if (value){
-        LOG(printf_P, PSTR("UI READ: key (%s) value (%s)\n"), key, value);
-    }
-
-    return value;
-}
-
-/**
- * обертка над param в виде String
- * В случае несуществующего ключа возвращает пустой String("")
- */
-String EmbUI::param(const String &key)
-{
-    String value(param(key.c_str()));
-    return value;
-}
-
-String EmbUI::deb()
-{
-    String cfg_str;
-    serializeJson(cfg, cfg_str);
-    return cfg_str;
-}
-
 void notFound(AsyncWebServerRequest *request) {
     request->send(404, FPSTR(PGmimetxt), FPSTR(PG404));
 }
 
-void mqtt_emptyFunction(const String &, const String &);
-
 void EmbUI::begin(){
+
+    uint8_t retry_cnt = 3;
+
+    // монтируем ФС только один раз при старте
+    while(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
+        LOG(println, F("UI: LittleFS initialization error, retrying..."));
+        --retry_cnt;
+        delay(100);
+        if (!retry_cnt){
+            LOG(println, F("FS dirty, I Give up!"));
+            fsDirty = true;
+        }
+    }
 
     load();                 // try to load config from file
     create_sysvars();       // create system variables (if missing)
@@ -379,6 +311,95 @@ void EmbUI::begin(){
     tHouseKeeper.enableDelayed();
 }
 
+/**
+ * @brief - process posted data for the registered action
+ * looks for registered action for the section name and calls the action with post data if found
+ */
+void EmbUI::post(JsonObject data){
+    section_handle_t *section = nullptr;
+
+    for (JsonPair kv : data) {
+        const char *kname = kv.key().c_str();
+        for (int i = 0; !section && i < section_handle.size(); i++) {
+            const char *sname = section_handle[i]->name.c_str();
+            const char *mall = strchr(sname, '*');
+            unsigned len = mall? mall - sname - 1 : strlen(kname);
+            if (strncmp(sname, kname, len) == 0) {
+                section = section_handle[i];
+            }
+        };
+    }
+
+    if (section) {
+        LOG(printf_P, PSTR("\nUI: POST SECTION: %s\n\n"), section->name.c_str());
+        Interface *interf = new Interface(this, &ws);
+        section->callback(interf, &data);
+        delete interf;
+    }
+}
+
+void EmbUI::send_pub(){
+    if (!ws.count()) return;
+    Interface *interf = new Interface(this, &ws, 512);
+    pubCallback(interf);
+    delete interf;
+}
+
+
+
+void EmbUI::section_handle_add(const String &name, buttonCallback response)
+{
+    section_handle_t *section = new section_handle_t;
+    section->name = name;
+    section->callback = response;
+    section_handle.add(section);
+
+    LOG(printf_P, PSTR("UI REGISTER: %s\n"), name.c_str());
+}
+
+/**
+ * Возвращает указатель на строку со значением параметра из конфига
+ * В случае отсутствующего параметра возвращает пустой указатель
+ * (метод оставлен для совместимости)
+ */
+const char* EmbUI::param(const char* key)
+{
+    LOG(printf_P, PSTR("UI READ KEY: '%s'"), key);
+
+    const char* value = cfg[key] | "";
+    if (value){
+        LOG(printf_P, PSTR(" value (%s)\n"), value);
+    } else {
+        LOG(println, F(" key is missing or not a *char\n"));
+    }
+    return value;
+}
+
+/**
+ * обертка над param в виде String
+ * В случае несуществующего ключа возвращает пустой String("")
+ * TODO: эти методы толком не работают с объектами типа "не строка", нужна нормальная реализация с шаблонами и ДжейсонВариант
+ */
+String EmbUI::param(const String &key)
+{
+    LOG(printf_P, PSTR("UI READ KEY: '%s'"), key.c_str());
+    String v;
+    if (cfg[key].is<int>()){ v = cfg[key].as<int>(); }
+    else if (cfg[key].is<float>()) { v = cfg[key].as<float>(); }
+    else if (cfg[key].is<bool>()) { v = cfg[key].as<bool>(); }
+    else { v = cfg[key] | ""; } // откат, все что не специальный тип, то пустая строка 
+
+    LOG(printf_P, PSTR("string val (%s)\n"), v.c_str());
+    return v;
+}
+
+String EmbUI::deb()
+{
+    String cfg_str;
+    serializeJson(cfg, cfg_str);
+    return cfg_str;
+}
+
 void EmbUI::led(uint8_t pin, bool invert){
     if (pin == 31) return;
     sysData.LED_PIN = pin;
@@ -493,11 +514,10 @@ void EmbUI::taskGC(){
     if (!taskTrash || taskTrash->empty())
         return;
 
-    size_t heapbefore = ESP.getFreeHeap();
+    //size_t heapbefore = ESP.getFreeHeap();
     for(auto& _t : *taskTrash) { delete _t; }
 
     delete taskTrash;
     taskTrash = nullptr;
-
-    LOG(printf_P, PSTR("UI: task garbage collect: released %d bytes\n"), ESP.getFreeHeap() - heapbefore);
+    //LOG(printf_P, PSTR("UI: task garbage collect: released %d bytes\n"), ESP.getFreeHeap() - heapbefore);
 }

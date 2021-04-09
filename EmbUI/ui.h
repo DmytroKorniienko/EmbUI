@@ -252,7 +252,7 @@ class Interface {
          * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
          */
         template <typename V, typename T>
-        void range(const String &id, V value, T min, T max, T step, const String &label, bool directly = false){
+        void range(const String &id, V value, T min, T max, T step, const String &label, bool directly){
             StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
             obj[FPSTR(P_html)] = FPSTR(P_input);
             obj[FPSTR(P_type)] = F("range");

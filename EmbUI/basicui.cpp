@@ -69,6 +69,9 @@ void BasicUI::section_settings_frame(Interface *interf, JsonObject *data){
     interf->button(FPSTR(T_SH_NETW), FPSTR(T_DICT[lang][TD::D_WIFI_MQTT]));  // кнопка перехода в настройки сети
     interf->button(FPSTR(T_SH_TIME), FPSTR(T_DICT[lang][TD::D_Time]));       // кнопка перехода в настройки времени
 
+    // call for user_defined function that may add more elements to the "settings page"
+    user_settings_frame(interf, data);
+
     interf->spacer();
     block_settings_update(interf, data);                                     // добавляем блок интерфейса "обновления ПО"
 
@@ -241,9 +244,14 @@ void BasicUI::set_settings_time(Interface *interf, JsonObject *data){
     String datetime=(*data)[FPSTR(P_DTIME)];
     if (datetime.length())
         embui.timeProcessor.setTime(datetime);
-    
+    else if(!embui.sysData.wifi_sta) {
+        datetime=(*data)[FPSTR(P_DEVDTTIME)].as<String>();
+        if (datetime.length())
+            embui.timeProcessor.setTime(datetime);
+    }
+
     // Save and apply timezone rules
-    String tzrule = embui.param(FPSTR(P_TZSET));
+    String tzrule = (*data)[FPSTR(P_TZSET)];
     if (!tzrule.isEmpty()){
         SETPARAM(FPSTR(P_TZSET));
         embui.timeProcessor.tzsetup(tzrule.substring(4).c_str());   // cutoff '000_' prefix key

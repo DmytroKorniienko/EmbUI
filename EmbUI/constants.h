@@ -35,10 +35,13 @@ static const char P_value[] PROGMEM = "value";
 static const char P_wifi[] PROGMEM = "wifi";
 
 // UI colors
-static const char P_GRAY[] PROGMEM = "gray";
-static const char P_BLUE[] PROGMEM = "blue";
 static const char P_RED[] PROGMEM = "red";
+static const char P_ORANGE[] PROGMEM = "orange";
+static const char P_YELLOW[] PROGMEM = "yellow";
 static const char P_GREEN[] PROGMEM = "green";
+static const char P_BLUE[] PROGMEM = "blue";
+static const char P_GRAY[] PROGMEM = "gray";
+static const char P_BLACK[] PROGMEM = "black";
 
 // System configuration variables
 static const char P_cfgfile[] PROGMEM = "/config.json";
@@ -50,6 +53,7 @@ static const char P_APpwd[] PROGMEM = "APpwd";          // AccessPoint password
 static const char P_TZSET[] PROGMEM = "TZSET";          // TimeZone rule variable
 static const char P_userntp[] PROGMEM = "userntp";      // user-defined NTP server
 static const char P_DTIME[] PROGMEM = "datetime";
+static const char P_DEVDTTIME[] PROGMEM = "devdtime";   // hidden field for browser's date
 static const char P_LANGUAGE[] PROGMEM = "lang";        // UI language
 
 // WiFi vars

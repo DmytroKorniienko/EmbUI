@@ -13,14 +13,19 @@
 #ifdef ESP8266
  #include <ESPAsyncTCP.h>
  #include <LittleFS.h>
+ #define FORMAT_LITTLEFS_IF_FAILED
 #endif
 
 #ifdef ESP32
  #include <AsyncTCP.h>
  #include <LITTLEFS.h>
- #define FORMAT_LITTLEFS_IF_FAILED true
+ #ifndef FORMAT_LITTLEFS_IF_FAILED
+  #define FORMAT_LITTLEFS_IF_FAILED true
+ #endif
  #define LittleFS LITTLEFS
+ #define U_FS   U_SPIFFS
 #endif
+
 
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
@@ -185,13 +190,14 @@ class EmbUI
         mqtt_remotecontrol = false;
         mqtt_enable = false;
         LED_INVERT = false;
-        cfgCorrupt = false;
+        cfgCorrupt = false;     // todo: убрать из конфига
         LED_PIN = 31; // [0...30]
         asave = AUTOSAVE_TIMEOUT; // defaul timeout 2*10 sec
     }
     } BITFIELDS;
     //#pragma pack(pop)
 
+    bool fsDirty = false;   // флаг поврежденной FS (ошибка монтирования)
     typedef void (*buttonCallback) (Interface *interf, JsonObject *data);
     typedef void (*mqttCallback) ();
 
@@ -238,7 +244,9 @@ class EmbUI
     void begin();
     void handle();
     void save(const char *_cfg = nullptr, bool force = false);
-    void load(const char *_cfg = nullptr);
+    void load(const char *cfgfile = nullptr);   // if null, than default cfg file is used
+    //  * tries to load json file from FS and deserialize it into provided DynamicJsonDocument, returns false on error
+    bool loadjson(const char *filepath, DynamicJsonDocument &obj);
     void udp(const String &message);
     void udp();
 
