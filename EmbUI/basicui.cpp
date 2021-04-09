@@ -241,15 +241,6 @@ void BasicUI::set_settings_mqtt(Interface *interf, JsonObject *data){
 void BasicUI::set_settings_time(Interface *interf, JsonObject *data){
     if (!data) return;
 
-    String datetime=(*data)[FPSTR(P_DTIME)];
-    if (datetime.length())
-        embui.timeProcessor.setTime(datetime);
-    else if(!embui.sysData.wifi_sta) {
-        datetime=(*data)[FPSTR(P_DEVDTTIME)].as<String>();
-        if (datetime.length())
-            embui.timeProcessor.setTime(datetime);
-    }
-
     // Save and apply timezone rules
     String tzrule = (*data)[FPSTR(P_TZSET)];
     if (!tzrule.isEmpty()){
@@ -258,6 +249,17 @@ void BasicUI::set_settings_time(Interface *interf, JsonObject *data){
     }
 
     SETPARAM(FPSTR(P_userntp), embui.timeProcessor.setcustomntp((*data)[FPSTR(P_userntp)]));
+
+    LOG(printf_P,PSTR("UI: devicedatetime=%s\n"),(*data)[FPSTR(P_DEVICEDATETIME)].as<String>().c_str());
+
+    String datetime=(*data)[FPSTR(P_DTIME)];
+    if (datetime.length())
+        embui.timeProcessor.setTime(datetime);
+    else if(!embui.sysData.wifi_sta) {
+        datetime=(*data)[FPSTR(P_DEVICEDATETIME)].as<String>();
+        if (datetime.length())
+            embui.timeProcessor.setTime(datetime);
+    }
 
     section_settings_frame(interf, data);
 }
