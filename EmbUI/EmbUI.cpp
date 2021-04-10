@@ -345,6 +345,17 @@ void EmbUI::send_pub(){
     delete interf;
 }
 
+void EmbUI::section_handle_remove(const String &name)
+{
+    for(int i=0; i<section_handle.size(); i++){
+        if(section_handle.get(i)->name==name){
+            delete section_handle.get(i);
+            section_handle.remove(i);
+            LOG(printf_P, PSTR("UI UNREGISTER: %s\n"), name.c_str());
+            break;
+        }
+    }
+}
 
 
 void EmbUI::section_handle_add(const String &name, buttonCallback response)
