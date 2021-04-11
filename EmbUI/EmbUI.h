@@ -366,6 +366,16 @@ class EmbUI
     void taskRecycle(Task *t);
 
 
+    // WiFi-related
+    /**
+      * устанавлием режим WiFi в AP
+      */
+    void wifi_switchtoAP() {
+        LOG(println, F("UI WiFi: Force AP mode"));
+        WiFi.enableAP(true);    // включаю AP
+        WiFi.enableSTA(false);  // отключаю STA
+    }
+
   private:
     /**
      * call to create system-dependent variables,

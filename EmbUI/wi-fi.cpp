@@ -33,6 +33,9 @@ void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
     LOG(printf_P, PSTR("UI WiFi: Disconnected from SSID: %s, reason: %d\n"), event_info.ssid.c_str(), event_info.reason);
     sysData.wifi_sta = false;       // to be removed and replaced with API-method
 
+    if(param(FPSTR(P_APonly)) == "1")
+        return;
+
     if (embuischedw.isEnabled())
         return;
 

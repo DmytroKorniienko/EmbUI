@@ -191,9 +191,13 @@ void BasicUI::set_settings_wifi(Interface *interf, JsonObject *data){
     const char *ssid = (*data)[FPSTR(P_WCSSID)];    // переменные доступа в конфиге не храним
     const char *pwd = (*data)[FPSTR(P_WCPASS)];     // фреймворк хранит последнюю доступную точку самостоятельно
 
+    WiFi.disconnect();
     if(ssid){
+        embui.var(FPSTR(P_APonly),"0"); // сборосим режим принудительного AP, при попытке подключения к роутеру
+        embui.save();
         embui.wifi_connect(ssid, pwd);
     } else {
+        embui.wifi_connect();           // иницируем WiFi-подключение с новыми параметрами
         LOG(println, F("UI WiFi: No SSID defined!"));
     }
 
@@ -211,8 +215,12 @@ void BasicUI::set_settings_wifiAP(Interface *interf, JsonObject *data){
     SETPARAM(FPSTR(P_APpwd));
 
     embui.save();
-    embui.wifi_connect();           // иницируем WiFi-подключение с новыми параметрами
-
+    bool isAPmode = embui.param(FPSTR(P_APonly))=="1";
+    if(isAPmode){
+        embui.wifi_switchtoAP();
+    } else {
+        embui.wifi_connect(); 
+    }
     section_settings_frame(interf, data);   // переходим в раздел "настройки"
 }
 
