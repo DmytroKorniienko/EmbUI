@@ -2,6 +2,7 @@
 
 uint8_t lang;            // default language for text resources
 
+
 /**
  * Define configuration variables and controls handlers
  * 
@@ -288,3 +289,6 @@ void BasicUI::embuistatus(Interface *interf){
     interf->value(F("pUptime"), millis()/1000, true);
     interf->json_frame_flush();
 }
+
+// stub function - переопределяется в пользовательском коде при необходимости добавить доп. пункты в меню настройки
+void user_settings_frame(Interface *interf, JsonObject *data){};
