@@ -1,5 +1,29 @@
 ## Changelog
 
+### v2.4.0  Release
+Added:
+  - Optimizations:
+    - frameSend Class now can serialize json directly to the ws buffer
+    - ws post data processing
+    - no data echo on single ws client
+    - config file save/load optimization
+  - method allows actions unregistering
+  - ws packet 'xload' triggers ajax request for block: object
+  - Ticker has been replaced with TaskScheduler lib
+  - cpp templates for html elements
+  - custom named section mapped to <div> template
+  - websocket rawdata packet type
+  - Time Zones list loading via ajax
+
+
+Fixes:
+  - ws post dangling pointer fix
+  - mqtt
+  - range int/float overloads
+  - WiFi ap/sta switching
+  - sending current date/time from browser
+
+
 ### v2.2.0  Release
 
 ##### WEB/HTML:
