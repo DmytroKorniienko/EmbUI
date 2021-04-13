@@ -90,7 +90,8 @@ var render = function(){
 			}
 			out.lockhist = false;
 		},
-		// обработка значений в полученных блоках
+		// обработка данных, полученных в пакете "pkg":"value"
+		// блок разбирается на объекты по id и их value применяются к элементам шаблона на html странице  
 		value: function(obj){
 			var frame = obj.block;
 			if (!obj.block) return;
@@ -105,7 +106,8 @@ var render = function(){
 						if (el[0].type == "range") go("#"+el[0].id+"-val").html(": "+el[0].value);
 						// проверяем чекбоксы на значение вкл/выкл
 						if (el[0].type == "checkbox") {
-							el[0].checked = (frame[i].value == "true" || frame[i].value == "1");	// checkbox is 'checked' if it's value == "1" || "true"
+							// allow multiple types of TRUE value for checkboxes
+							el[0].checked = (frame[i].value == "1" || frame[i].value == 1 || frame[i].value == true || frame[i].value == "true" );
 							//console.debug("processing checkbox num: ", i, "val: ", frame[i].value);
 						}
 					}
@@ -116,9 +118,106 @@ var render = function(){
 	return out;
 };
 
+/**
+ * rawdata callback - Stub function to handle rawdata messages from controller
+ * Data could be sent from the controller via json_frame_custom(String("rawdata")) method
+ * and handled in a custom user js script via redefined function
+ */
+function rawdata_cb(msg){
+    console.log('Got raw data, redefine rawdata_cb(msg) func to handle it.', msg);
+}
+
+/**
+ * @brief - Loads JSON objects via http request
+ * @param {*} url - URI to load
+ * @param {*} ok - callback on success
+ * @param {*} err - callback on error
+ */
+function ajaxload(url, ok, err){
+	var xhr = new XMLHttpRequest();
+	xhr.overrideMimeType("application/json");
+	xhr.responseType = 'json';
+	xhr.open('GET', url, true);
+	xhr.onreadystatechange = function(){
+		if (xhr.readyState == 4 && xhr.status == "200") {
+			ok && ok(xhr.response);
+		} else if (xhr.status != "200"){
+			err && err(xhr.status)
+		}
+	};
+	xhr.send(null);
+}
+
+/**
+ * 	"pkg":"xload" messages are used to make ajax requests for external JSON objects that could be used as data/interface templates
+ * используется для загрузки контента/шаблонов из внешних источников - "флеш" контроллера, интернет ресурсы с погодой и т.п.,
+ * объекты должны сохранять структуру как если бы они пришли от контроллера. Просмариваются рекурсивно все секции у которых есть ключ 'url',
+ * этот урл запрашивается и результат записывается в ключ 'block' текущей секции. Ожидается что по URL будет доступен корректный JSON.
+ * Результат передается в рендерер и встраивается в страницу /Vortigont/
+ * @param { * } msg - framework content/interface object
+ * @returns
+ */
+function xload(msg){
+    if (!msg.block){
+        console.log('Message has no data block!');
+        return;
+    }
+
+	console.log('Run deepfetch');
+	deepfetch(msg.block).then(() => {
+		 var rdr = this.rdr = render();	// Interface rederer to pass updated objects to
+		 console.log(msg);
+		 rdr.make(msg);
+	})
+}
+
+/**
+ * async function to traverse object and fetch all 'url' in sections,
+ * this must be done in async mode till the last end, since there could be multiple recursive ajax requests
+ * including in sections that were just fetched /Vortigont/
+ * @param {*} obj - EmbUI data object
+ */
+async function deepfetch (obj) {
+	for (let i = 0; i < obj.length; i++) if (typeof obj[i] == "object") {
+		var section = obj[i];
+		if (section.url){
+			console.log('Fetching URL"' + section.url);
+			await new Promise(next=> {
+					ajaxload(section.url,
+						function(response) {
+							section['block'] = response;
+							delete section.url;	// удаляем url из элемента т.к. работает рекурсия
+							// пробегаемся рекурсивно по новым/вложенным объектам
+							if (section.block && typeof section.block == "object") {
+								deepfetch(section.block).then(() => {
+									//console.log("Diving deeper");
+									next();
+							   })
+							} else {
+								next();
+							}
+						},
+						function(errstatus) {
+							//console.log('Error loading external content');
+							next();
+						}
+					);
+			})
+		} else if ( section.block && typeof section.block == "object" ){
+			await new Promise(next=> {
+				deepfetch(section.block).then(() => {
+					next();
+				})
+			})
+		}
+	}
+}
+
+
 window.addEventListener("load", function(ev){
 	var rdr = this.rdr = render();
 	var ws = this.ws = wbs("ws://"+location.host+"/ws");
+	//var ws = this.ws = wbs("ws://embuitst/ws");
 	ws.oninterface = function(msg) {
 		rdr.make(msg);
 	}
@@ -129,6 +228,17 @@ window.addEventListener("load", function(ev){
 		ws.connect();
 	}
 	ws.connect();
+
+	// any messages with "pkg":"rawdata" are handled here bypassing interface/value handlers
+	ws.onrawdata = function(mgs){
+		rawdata_cb(mgs);
+	}
+
+	// "pkg":"xload" messages are used to make ajax requests for external JSON objects that could be used as data/interface templates
+	ws.onxload = function(mgs){
+		xload(mgs);
+	}
+
 
 	var active = false, layout =  go("#layout");
 	go("#menuLink").bind("click", function(){

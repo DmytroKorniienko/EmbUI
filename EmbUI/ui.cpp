@@ -5,7 +5,6 @@
 
 #include "ui.h"
 
-#define IFACE_STA_JSON_SIZE 256
 
 void Interface::custom(const String &id, const String &type, const String &value, const String &label, const JsonObject &param){
     StaticJsonDocument<IFACE_STA_JSON_SIZE*2> obj; // по этот контрол выделяем IFACE_STA_JSON_SIZE*2 т.к. он может быть большой...
@@ -24,7 +23,7 @@ void Interface::custom(const String &id, const String &type, const String &value
 
 void Interface::frame(const String &id, const String &value){
     StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = F("iframe");;
+    obj[FPSTR(P_html)] = F("iframe");
     obj[FPSTR(P_type)] = F("frame");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -77,165 +76,24 @@ void Interface::constant(const String &id, const String &label){
     constant(id, embui->param(id), label);
 }
 
-void Interface::text(const String &id, const String &value, const String &label, bool directly){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = F("text");
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-
-    if (directly) obj[FPSTR(P_directly)] = true;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        text(id, value, label, directly);
-    }
-}
-
 void Interface::text(const String &id, const String &label, bool directly){
     text(id, embui->param(id), label, directly);
-}
-
-void Interface::number(const String &id, int value, const String &label, int min, int max){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = FPSTR(P_number);
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-    obj[FPSTR(P_min)] = min;
-    if (max) obj[FPSTR(P_max)] = max;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        number(id, value, label, min, max);
-    }
-}
-
-void Interface::number(const String &id, const String &label, int min, int max){
-    number(id, (int)embui->param(id).toInt(), label, min, max);
-}
-
-void Interface::number(const String &id, float value, const String &label, float step, int min, int max){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = FPSTR(P_number);
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-    obj[FPSTR(P_min)] = min;
-    if (max) obj[FPSTR(P_max)] = max;
-    if (step) obj[FPSTR(P_step)] = step;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        number(id, value, label, step, min, max);
-    }
-}
-
-void Interface::number(const String &id, const String &label, float step, int min, int max){
-    number(id, embui->param(id).toFloat(), label, step);
-}
-
-void Interface::time(const String &id, const String &value, const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = FPSTR(P_time);
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        time(id, value, label);
-    }
 }
 
 void Interface::time(const String &id, const String &label){
     time(id, embui->param(id), label);
 }
 
-void Interface::date(const String &id, const String &value, const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = FPSTR(P_date);
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        date(id, value, label);
-    }
-}
-
 void Interface::date(const String &id, const String &label){
     time(id, embui->param(id), label);
-}
-
-void Interface::datetime(const String &id, const String &value, const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = F("datetime-local");
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        datetime(id, value, label);
-    }
 }
 
 void Interface::datetime(const String &id, const String &label){
     datetime(id, embui->param(id), label);
 }
 
-void Interface::range(const String &id, int value, int min, int max, float step, const String &label, bool directly){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = F("range");
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-    if (directly) obj[FPSTR(P_directly)] = true;
-
-    obj[FPSTR(P_min)] = min;
-    obj[FPSTR(P_max)] = max;
-    obj[FPSTR(P_step)] = step;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        range(id, value, min, max, step, label, directly);
-    }
-}
-
-void Interface::range(const String &id, int min, int max, float step, const String &label, bool directly){
-    range(id, (int)embui->param(id).toInt(), min, max, step, label, directly);
-}
-
-void Interface::email(const String &id, const String &value, const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = F("email");
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        email(id, value, label);
-    }
-}
-
 void Interface::email(const String &id, const String &label){
     email(id, embui->param(id), label);
-}
-
-void Interface::password(const String &id, const String &value, const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = FPSTR(P_password);
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        password(id, value, label);
-    }
 }
 
 void Interface::password(const String &id, const String &label){
@@ -252,55 +110,12 @@ void Interface::option(const String &value, const String &label){
     }
 }
 
-void Interface::select(const String &id, const String &value, const String &label, bool directly, bool skiplabel){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = F("select");
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = skiplabel ? "" : label;
-    if (directly) obj[FPSTR(P_directly)] = true;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        select(id, value, label, directly);
-        return;
-    }
-    section_stack.end()->idx--;
-    json_section_begin(FPSTR(P_options), "", false, false, false, section_stack.end()->block.getElement(section_stack.end()->idx));
-}
-
 void Interface::select(const String &id, const String &label, bool directly, bool skiplabel){
     select(id, embui->param(id), label, directly, skiplabel);
 }
 
-void Interface::checkbox(const String &id, const String &value, const String &label, bool directly){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = F("checkbox");
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-    if (directly) obj[FPSTR(P_directly)] = true;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        checkbox(id, value, label, directly);
-    }
-}
-
 void Interface::checkbox(const String &id, const String &label, bool directly){
     checkbox(id, embui->param(id), label, directly);
-}
-
-void Interface::color(const String &id, const String &value, const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = FPSTR(P_input);
-    obj[FPSTR(P_type)] = FPSTR(P_color);
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        color(id, value, label);
-    }
 }
 
 void Interface::color(const String &id, const String &label){
@@ -376,31 +191,8 @@ void Interface::comment(const String &label){
     }
 }
 
-void Interface::textarea(const String &id, const String &value, const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_html)] = F("textarea");
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = value;
-    obj[FPSTR(P_label)] = label;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        textarea(id, label);
-    }
-}
-
 void Interface::textarea(const String &id, const String &label){
     textarea(id, embui->param(id), label);
-}
-
-void Interface::value(const String &id, const String &val, bool html){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
-    obj[FPSTR(P_id)] = id;
-    obj[FPSTR(P_value)] = val;
-    if (html) obj[FPSTR(P_html)] = true;
-
-    if (!json_frame_add(obj.as<JsonObject>())) {
-        value(id, val, html);
-    }
 }
 
 void Interface::value(const String &id, bool html){
@@ -412,7 +204,7 @@ void Interface::json_frame_value(){
     json[F("pkg")] = FPSTR(P_value);
     json[FPSTR(P_final)] = false;
 
-    json_section_begin("root" + String(rand()));
+    json_section_begin("root" + String(micros()));
 }
 
 void Interface::json_frame_interface(const String &name){
@@ -424,17 +216,21 @@ void Interface::json_frame_interface(const String &name){
     }
     json[FPSTR(P_final)] = false;
 
-    json_section_begin("root" + String(rand()));
+    json_section_begin("root" + String(micros()));
 }
 
-bool Interface::json_frame_add(JsonObject obj) {
-    //LOGF(printf_P, PSTR("json_frame_add: %u = %u "), obj.memoryUsage(), json.capacity() - json.memoryUsage());
-    if (json.capacity() - json.memoryUsage() > obj.memoryUsage() + 40 && section_stack.end()->block.add(obj)) {
+bool Interface::json_frame_add(JsonObjectConst obj) {
+    if (!obj.memoryUsage()) // пустышки не передаем
+        return false;
+
+    LOG(printf_P, PSTR("UI: Frame add obj %u b, storage %d/%d"), obj.memoryUsage(), json.memoryUsage(), json.capacity());
+
+    if (json.capacity() - json.memoryUsage() > obj.memoryUsage() + 16 && section_stack.end()->block.add(obj)) {
         section_stack.end()->idx++;
-        LOGF(printf_P, PSTR("UI: OK [%u]\tMEM: %u\n"), section_stack.end()->idx, ESP.getFreeHeap());
+        LOG(printf_P, PSTR("...OK [%u]\tMEM: %u\n"), section_stack.end()->idx, ESP.getFreeHeap());
         return true;
     }
-    LOGF(printf_P, PSTR("UI: Frame full, mem: %u\n"), ESP.getFreeHeap());
+    LOG(printf_P, PSTR(" - Frame full! Heap: %u\n"), ESP.getFreeHeap());
 
     json_frame_send();
     json_frame_next();
@@ -448,10 +244,10 @@ void Interface::json_frame_next(){
         if (i) obj = section_stack[i - 1]->block.createNestedObject();
         obj[FPSTR(P_section)] = section_stack[i]->name;
         obj[F("idx")] = section_stack[i]->idx;
-        LOGF(printf_P, PSTR("UI: section %u %s %u\n"), i, section_stack[i]->name.c_str(), section_stack[i]->idx);
+        LOG(printf_P, PSTR("UI: section %u %s %u\n"), i, section_stack[i]->name.c_str(), section_stack[i]->idx);
         section_stack[i]->block = obj.createNestedArray(FPSTR(P_block));
     }
-    LOGF(printf_P, PSTR("json_frame_next: [%u] %u = %u\n"), section_stack.size(), obj.memoryUsage(), json.capacity() - json.memoryUsage());
+    LOG(printf_P, PSTR("json_frame_next: [%u], used %u, free %u\n"), section_stack.size(), obj.memoryUsage(), json.capacity() - json.memoryUsage());
 }
 
 void Interface::json_frame_clear(){
@@ -464,19 +260,25 @@ void Interface::json_frame_clear(){
 
 void Interface::json_frame_flush(){
     if (!section_stack.size()) return;
-    LOGF(println, F("json_frame_flush"));
+    LOG(println, F("json_frame_flush"));
     json[FPSTR(P_final)] = true;
     json_section_end();
     json_frame_send();
     json_frame_clear();
 }
 
-void Interface::json_frame_send(){
-    String buff;
-    serializeJson(json, buff);
-    LOGF(println, buff.c_str());
-    if (send_hndl) send_hndl->send(buff);
+/**
+ * @brief - begin custom UI secton
+ * открывает секцию с указаным типом 'pkg', может быть обработан на клиенсткой стороне отлично от
+ * интерфейсных пакетов 
+ */
+void Interface::json_frame_custom(const String &type){
+    json[F("pkg")] = type;
+    json[FPSTR(P_final)] = false;
+
+    json_section_begin("root" + String(micros()));
 }
+
 
 void Interface::json_section_menu(){
     json_section_begin(FPSTR(P_menu));
@@ -520,7 +322,7 @@ void Interface::json_section_begin(const String &name, const String &label, bool
     section->block = obj.createNestedArray(FPSTR(P_block));
     section->idx = 0;
     section_stack.add(section);
-    LOGF(printf_P, PSTR("UI: section begin %s [%u] %u\n"), name.c_str(), section_stack.size(), json.capacity() - json.memoryUsage());
+    LOG(printf_P, PSTR("UI: section begin %s [%u] %u free\n"), name.c_str(), section_stack.size(), json.capacity() - json.memoryUsage());
 }
 
 void Interface::json_section_end(){
@@ -530,6 +332,32 @@ void Interface::json_section_end(){
     if (section_stack.size()) {
         section_stack.end()->idx++;
     }
-    LOGF(printf_P, PSTR("UI: section end %s [%u] MEM: %u\n"), section->name.c_str(), section_stack.size(), ESP.getFreeHeap());
+    LOG(printf_P, PSTR("UI: section end %s [%u] MEM: %u\n"), section->name.c_str(), section_stack.size(), ESP.getFreeHeap());
     delete section;
 }
+
+/**
+ * @brief - serialize and send json obj directly to the ws buffer
+ */
+void frameSendAll::send(const JsonObject& data){
+    size_t length = measureJson(data);
+    AsyncWebSocketMessageBuffer * buffer = ws->makeBuffer(length);
+    if (!buffer)
+        return;
+
+    serializeJson(data, (char*)buffer->get(), ++length);
+    ws->textAll(buffer);
+};
+
+/**
+ * @brief - serialize and send json obj directly to the ws buffer
+ */
+void frameSendClient::send(const JsonObject& data){
+    size_t length = measureJson(data);
+    AsyncWebSocketMessageBuffer * buffer = cl->server()->makeBuffer(length);
+    if (!buffer)
+        return;
+
+    serializeJson(data, (char*)buffer->get(), ++length);
+    cl->text(buffer);
+};

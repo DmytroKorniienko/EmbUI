@@ -24,6 +24,7 @@ static const char P_null[] PROGMEM = "null";
 static const char P_number[] PROGMEM = "number";
 static const char P_options[] PROGMEM = "options";
 static const char P_password[] PROGMEM = "password";
+static const char P_pkg[] PROGMEM = "pkg";
 static const char P_section[] PROGMEM = "section";
 static const char P_step[] PROGMEM = "step";
 static const char P_submit[] PROGMEM = "submit";
@@ -34,7 +35,13 @@ static const char P_value[] PROGMEM = "value";
 static const char P_wifi[] PROGMEM = "wifi";
 
 // UI colors
+static const char P_RED[] PROGMEM = "red";
+static const char P_ORANGE[] PROGMEM = "orange";
+static const char P_YELLOW[] PROGMEM = "yellow";
+static const char P_GREEN[] PROGMEM = "green";
+static const char P_BLUE[] PROGMEM = "blue";
 static const char P_GRAY[] PROGMEM = "gray";
+static const char P_BLACK[] PROGMEM = "black";
 
 // System configuration variables
 static const char P_cfgfile[] PROGMEM = "/config.json";
@@ -47,6 +54,7 @@ static const char P_TZSET[] PROGMEM = "TZSET";          // TimeZone rule variabl
 static const char P_userntp[] PROGMEM = "userntp";      // user-defined NTP server
 static const char P_DTIME[] PROGMEM = "datetime";
 static const char P_LANGUAGE[] PROGMEM = "lang";        // UI language
+static const char P_DEVICEDATETIME[] PROGMEM = "devicedatetime"; // hidden field for browser's date
 
 // WiFi vars
 static const char P_WCSSID[] PROGMEM = "wcssid";        // WiFi-Client SSID
@@ -71,3 +79,6 @@ static const char PGmimetxt[] PROGMEM  = "text/plain";
 static const char PGmimexml[] PROGMEM  = "text/xml";
 static const char PGnocache[] PROGMEM = "no-cache, no-store, must-revalidate";
 static const char PG404[] PROGMEM  = "Not found";
+
+// LOG Messages
+static const char P_ERR_obj2large[] PROGMEM  = "UI: ERORR - can't add object to frame, too large!";

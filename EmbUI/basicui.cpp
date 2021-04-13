@@ -1,5 +1,7 @@
 #include "basicui.h"
 
+uint8_t lang;            // default language for text resources
+
 /**
  * Define configuration variables and controls handlers
  * 
@@ -11,11 +13,12 @@
  * 
  */
 void BasicUI::add_sections(){
-    LOGF(println, F("UI: Creating webui vars"));
+    LOG(println, F("UI: Creating webui vars"));
 
     // variable for UI language (specific to basicui translations)
-    embui.var_create(FPSTR(P_LANGUAGE), String((uint8_t)lang));
+    embui.var_create(FPSTR(P_LANGUAGE), LANG::RU);
 
+    lang = embui.param(FPSTR(P_LANGUAGE)).toInt();
     /**
      * обработчики действий
      */ 
@@ -57,14 +60,17 @@ void BasicUI::section_settings_frame(Interface *interf, JsonObject *data){
     interf->json_section_main(FPSTR(T_SETTINGS), FPSTR(T_DICT[lang][TD::D_SETTINGS]));
 
     interf->select(FPSTR(P_LANGUAGE), String(lang), String(FPSTR(T_DICT[lang][TD::D_LANG])), true);
-    interf->option("0", "Rus");
-    interf->option("1", "Eng");
+    interf->option("0", F("Rus"));
+    interf->option("1", F("Eng"));
     interf->json_section_end();
 
     interf->spacer();
 
     interf->button(FPSTR(T_SH_NETW), FPSTR(T_DICT[lang][TD::D_WIFI_MQTT]));  // кнопка перехода в настройки сети
     interf->button(FPSTR(T_SH_TIME), FPSTR(T_DICT[lang][TD::D_Time]));       // кнопка перехода в настройки времени
+
+    // call for user_defined function that may add more elements to the "settings page"
+    user_settings_frame(interf, data);
 
     interf->spacer();
     block_settings_update(interf, data);                                     // добавляем блок интерфейса "обновления ПО"
@@ -142,16 +148,36 @@ void BasicUI::block_settings_time(Interface *interf, JsonObject *data){
     interf->json_section_main(FPSTR(T_SET_TIME), FPSTR(T_DICT[lang][TD::D_DATETIME]));
 
     interf->comment(FPSTR(T_DICT[lang][TD::D_MSG_TZSet01]));     // комментарий-описание секции
+
+    // сперва рисуем простое поле с текущим значением правил временной зоны из конфига
     interf->text(FPSTR(P_TZSET), FPSTR(T_DICT[lang][TD::D_MSG_TZONE]));
+
+    // user-defined NTP server
     interf->text(FPSTR(P_userntp), FPSTR(T_DICT[lang][TD::D_NTP_Secondary]));
-    interf->text(FPSTR(P_DTIME), "", FPSTR(T_DICT[lang][TD::D_MSG_DATETIME]), false);
+    // manual date and time setup
+    interf->comment(FPSTR(T_DICT[lang][TD::D_MSG_DATETIME]));
+    interf->text(FPSTR(P_DTIME), "", "", false);
+    interf->hidden(FPSTR(P_DEVICEDATETIME),""); // скрытое поле для получения времени с устройства
     interf->button_submit(FPSTR(T_SET_TIME), FPSTR(T_DICT[lang][TD::D_SAVE]), FPSTR(P_GRAY));
 
     interf->spacer();
+
+    // exit button
     interf->button(FPSTR(T_SETTINGS), FPSTR(T_DICT[lang][TD::D_EXIT]));
 
+    // close and send frame
     interf->json_section_end();
     interf->json_frame_flush();
+
+    // формируем и отправляем кадр с запросом подгрузки внешнего ресурса со списком правил временных зон
+    // полученные данные заместят предыдущее поле выпадающим списком с данными о всех временных зонах
+    interf->json_frame_custom(F("xload"));
+    interf->json_section_content();
+                    //id            val                         label   direct  skipl URL for external data
+    interf->select(FPSTR(P_TZSET), embui.param(FPSTR(P_TZSET)), "",     false,  true, F("/js/tz.json"));
+    interf->json_section_end();
+    interf->json_frame_flush();
+
 }
 
 /**
@@ -165,10 +191,14 @@ void BasicUI::set_settings_wifi(Interface *interf, JsonObject *data){
     const char *ssid = (*data)[FPSTR(P_WCSSID)];    // переменные доступа в конфиге не храним
     const char *pwd = (*data)[FPSTR(P_WCPASS)];     // фреймворк хранит последнюю доступную точку самостоятельно
 
+    WiFi.disconnect();
     if(ssid){
+        embui.var(FPSTR(P_APonly),"0"); // сборосим режим принудительного AP, при попытке подключения к роутеру
+        embui.save();
         embui.wifi_connect(ssid, pwd);
     } else {
-        LOGF(println, F("UI WiFi: No SSID defined!"));
+        embui.wifi_connect();           // иницируем WiFi-подключение с новыми параметрами
+        LOG(println, F("UI WiFi: No SSID defined!"));
     }
 
     section_settings_frame(interf, data);           // переходим в раздел "настройки"
@@ -185,8 +215,12 @@ void BasicUI::set_settings_wifiAP(Interface *interf, JsonObject *data){
     SETPARAM(FPSTR(P_APpwd));
 
     embui.save();
-    embui.wifi_connect();           // иницируем WiFi-подключение с новыми параметрами
-
+    bool isAPmode = embui.param(FPSTR(P_APonly))=="1";
+    if(isAPmode){
+        embui.wifi_switchtoAP();
+    } else {
+        embui.wifi_connect(); 
+    }
     section_settings_frame(interf, data);   // переходим в раздел "настройки"
 }
 
@@ -215,11 +249,25 @@ void BasicUI::set_settings_mqtt(Interface *interf, JsonObject *data){
 void BasicUI::set_settings_time(Interface *interf, JsonObject *data){
     if (!data) return;
 
+    // Save and apply timezone rules
+    String tzrule = (*data)[FPSTR(P_TZSET)];
+    if (!tzrule.isEmpty()){
+        SETPARAM(FPSTR(P_TZSET));
+        embui.timeProcessor.tzsetup(tzrule.substring(4).c_str());   // cutoff '000_' prefix key
+    }
+
+    SETPARAM(FPSTR(P_userntp), embui.timeProcessor.setcustomntp((*data)[FPSTR(P_userntp)]));
+
+    LOG(printf_P,PSTR("UI: devicedatetime=%s\n"),(*data)[FPSTR(P_DEVICEDATETIME)].as<String>().c_str());
+
     String datetime=(*data)[FPSTR(P_DTIME)];
     if (datetime.length())
         embui.timeProcessor.setTime(datetime);
-    SETPARAM(FPSTR(P_TZSET), embui.timeProcessor.tzsetup((*data)[FPSTR(P_TZSET)]));
-    SETPARAM(FPSTR(P_userntp), embui.timeProcessor.setcustomntp((*data)[FPSTR(P_userntp)]));
+    else if(!embui.sysData.wifi_sta) {
+        datetime=(*data)[FPSTR(P_DEVICEDATETIME)].as<String>();
+        if (datetime.length())
+            embui.timeProcessor.setTime(datetime);
+    }
 
     section_settings_frame(interf, data);
 }
@@ -227,9 +275,8 @@ void BasicUI::set_settings_time(Interface *interf, JsonObject *data){
 void BasicUI::set_language(Interface *interf, JsonObject *data){
         if (!data) return;
 
-    //lang = (*data)[FPSTR(P_LANGUAGE)].as<unsigned char>();
-    SETPARAM(FPSTR(P_LANGUAGE), lang = (*data)[FPSTR(P_LANGUAGE)].as<unsigned char>() );
-
+    //String _l= (*data)[FPSTR(P_LANGUAGE)];
+    SETPARAM(FPSTR(P_LANGUAGE), lang = (*data)[FPSTR(P_LANGUAGE)].as<unsigned short>(); );
     section_settings_frame(interf, data);
 }
 
@@ -237,7 +284,7 @@ void BasicUI::embuistatus(Interface *interf){
     if (!interf) return;
     interf->json_frame_value();
     interf->value(F("pTime"), embui.timeProcessor.getFormattedShortTime(), true);
-    interf->value(F("pMem"), String(ESP.getFreeHeap()), true);
-    interf->value(F("pUptime"), String(millis()/1000), true);
+    interf->value(F("pMem"), ESP.getFreeHeap(), true);
+    interf->value(F("pUptime"), millis()/1000, true);
     interf->json_frame_flush();
 }

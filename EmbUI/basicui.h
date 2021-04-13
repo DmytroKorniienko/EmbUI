@@ -14,7 +14,7 @@ enum LANG : uint8_t {
     EN = (1U),
 };
 
-static uint8_t lang = LANG::RU;   // default language for text resources
+extern uint8_t lang;
 
 // UI blocks
 static const char T_SETTINGS[] PROGMEM = "settings";
@@ -29,6 +29,12 @@ static const char T_SET_TIME[] PROGMEM = "set_time";
 
 static const char T_SH_NETW[] PROGMEM = "sh_netw";
 static const char T_SH_TIME[] PROGMEM = "sh_time";
+
+/*
+    перенакрываемая функция для добавления пользовательских пунктов в меню "Настройки"
+    вызывается в конце section_settings_frame()
+*/
+void __attribute__((weak)) user_settings_frame(Interface *interf, JsonObject *data);
 
 /*
     A class with static functions to handle basic WebUI interface
