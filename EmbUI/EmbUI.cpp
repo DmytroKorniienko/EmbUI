@@ -296,9 +296,7 @@ void EmbUI::begin(){
 
     server.begin();
 
-    tValPublisher.set(PUB_PERIOD * TASK_SECOND, TASK_FOREVER, [this](){ send_pub(); } );
-    ts.addTask(tValPublisher);
-    tValPublisher.enableDelayed();
+    setPubInterval(PUB_PERIOD);
 
     tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
             ws.cleanupClients(MAX_WS_CLIENTS);
@@ -492,11 +490,11 @@ void EmbUI::create_sysvars(){
  * 0 - will disable periodic task
  */
 void EmbUI::setPubInterval(uint16_t _t){
+    if(tValPublisher)
+        tValPublisher->cancel(); // cancel & delete
+
     if (_t){
-        tValPublisher.setInterval(_t * TASK_SECOND);
-        tValPublisher.enableIfNot();
-    } else {
-        tValPublisher.disable();
+        tValPublisher = new Task(_t * TASK_SECOND, TASK_FOREVER, [this](){ send_pub(); }, &ts, true, nullptr, [this](){TASK_RECYCLE; tValPublisher=nullptr;});
     }
 }
 

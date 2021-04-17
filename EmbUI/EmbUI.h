@@ -221,7 +221,7 @@ class EmbUI
 
     ~EmbUI(){
         ts.deleteTask(tAutoSave);
-        ts.deleteTask(tValPublisher);
+        ts.deleteTask(*tValPublisher);
         ts.deleteTask(tHouseKeeper);
     }
 
@@ -393,7 +393,7 @@ class EmbUI
 
     // Scheduler tasks
     Task embuischedw;       // WiFi reconnection helper
-    Task tValPublisher;     // Status data publisher
+    Task *tValPublisher;     // Status data publisher
     Task tHouseKeeper;     // Maintenance task, runs every second
     Task tAutoSave;          // config autosave timer
     std::vector<Task*> *taskTrash = nullptr;    // ptr to a vector container with obsolete tasks
