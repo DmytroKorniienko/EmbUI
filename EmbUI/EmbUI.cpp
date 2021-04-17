@@ -494,7 +494,7 @@ void EmbUI::setPubInterval(uint16_t _t){
         tValPublisher->cancel(); // cancel & delete
 
     if (_t){
-        tValPublisher = new Task(_t * TASK_SECOND, TASK_FOREVER, [this](){ send_pub(); }, &ts, true, nullptr, [this](){TASK_RECYCLE; tValPublisher=nullptr;});
+        tValPublisher = new Task(_t * TASK_SECOND, TASK_FOREVER, [this](){ if(ws.count()) send_pub(); }, &ts, true, nullptr, [this](){TASK_RECYCLE; tValPublisher=nullptr;});
     }
 }
 

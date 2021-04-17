@@ -252,6 +252,7 @@ class EmbUI
     void udp();
 
     // MQTT
+    bool isMQTTconected() { return sysData.mqtt_connected; }
     void pub_mqtt(const String &key, const String &value);
     void mqtt_handle();
     void subscribeAll(bool isOnlyGetSet=true);
