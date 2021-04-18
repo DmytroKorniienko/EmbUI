@@ -46,7 +46,7 @@
     ],
     "build": {
         "flags": [
-            "-DEMBUIVER=2.4.0",
+            "-DEMBUIVER=2.4.1",
             "-DCONFIG_LITTLEFS_FOR_IDF_3_2"
         ],
         "srcDir": "EmbUI"
