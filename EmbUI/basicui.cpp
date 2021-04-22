@@ -35,6 +35,7 @@ void BasicUI::add_sections(){
     embui.section_handle_add(FPSTR(T_SET_MQTT), set_settings_mqtt);         // обработка настроек MQTT
     embui.section_handle_add(FPSTR(T_SET_TIME), set_settings_time);         // установки даты/времени
     embui.section_handle_add(FPSTR(P_LANGUAGE), set_language);              // смена языка интерфейса
+    embui.section_handle_add(FPSTR(T_REBOOT), set_reboot);              // смена языка интерфейса
 
     //embui.section_handle_add(FPSTR(T_004B), set_settings_other);
 }
@@ -136,6 +137,7 @@ void BasicUI::block_settings_update(Interface *interf, JsonObject *data){
     interf->json_section_hidden(FPSTR(T_DO_OTAUPD), FPSTR(T_DICT[lang][TD::D_Update]));
     interf->spacer(FPSTR(T_DICT[lang][TD::D_FWLOAD]));
     interf->file(FPSTR(T_DO_OTAUPD), FPSTR(T_DO_OTAUPD), FPSTR(T_DICT[lang][TD::D_UPLOAD]));
+    interf->button(FPSTR(T_REBOOT), FPSTR(T_DICT[lang][TD::D_REBOOT]),!data?String(FPSTR(P_RED)):String(""));       // кнопка перехода в настройки времени
 }
 
 /**
@@ -288,6 +290,17 @@ void BasicUI::embuistatus(Interface *interf){
     interf->value(F("pMem"), ESP.getFreeHeap(), true);
     interf->value(F("pUptime"), millis()/1000, true);
     interf->json_frame_flush();
+}
+
+void BasicUI::set_reboot(Interface *interf, JsonObject *data){
+    if (!data) return;
+    Task *t = new Task(TASK_SECOND*5, TASK_ONCE, nullptr, &ts, false, nullptr, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); });
+    t->enableDelayed();
+    if(interf){
+        interf->json_frame_interface();
+        block_settings_update(interf, nullptr);
+        interf->json_frame_flush();
+    }
 }
 
 // stub function - переопределяется в пользовательском коде при необходимости добавить доп. пункты в меню настройки

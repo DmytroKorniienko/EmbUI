@@ -193,7 +193,8 @@ void EmbUI::begin(){
 */
     // postponed reboot
     server.on(PSTR("/restart"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        new Task(TASK_SECOND, TASK_ONCE, nullptr, &ts, true, nullptr, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); });
+        Task *t = new Task(TASK_SECOND*5, TASK_ONCE, nullptr, &ts, false, nullptr, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); });
+        t->enableDelayed();
         request->redirect(F("/"));
     });
 
@@ -523,10 +524,10 @@ void EmbUI::taskGC(){
     if (!taskTrash || taskTrash->empty())
         return;
 
-    //size_t heapbefore = ESP.getFreeHeap();
+    size_t heapbefore = ESP.getFreeHeap();
     for(auto& _t : *taskTrash) { delete _t; }
 
     delete taskTrash;
     taskTrash = nullptr;
-    //LOG(printf_P, PSTR("UI: task garbage collect: released %d bytes\n"), ESP.getFreeHeap() - heapbefore);
+    LOG(printf_P, PSTR("UI: task garbage collect: released %d bytes\n"), ESP.getFreeHeap() - heapbefore);
 }

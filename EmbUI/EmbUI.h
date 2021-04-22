@@ -107,7 +107,7 @@ class Interface;
 
 #define CALL_INTF(key, val, call) { \
     obj[key] = val; \
-    Interface *interf = embui.ws.count()? new Interface(&embui, &embui.ws, 1000) : nullptr; \
+    Interface *interf = embui.ws.count()? new Interface(&embui, &embui.ws, 512) : nullptr; \
     call(interf, &obj); \
     if (interf) { \
         interf->json_frame_value(); \
@@ -118,7 +118,7 @@ class Interface;
 }
 
 #define CALL_INTF_OBJ(call) { \
-    Interface *interf = embui.ws.count()? new Interface(&embui, &embui.ws, 1000) : nullptr; \
+    Interface *interf = embui.ws.count()? new Interface(&embui, &embui.ws, 768) : nullptr; \
     call(interf, &obj); \
     if (interf) { \
         interf->json_frame_value(); \

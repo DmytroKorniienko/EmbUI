@@ -29,6 +29,7 @@ static const char T_SET_TIME[] PROGMEM = "set_time";
 
 static const char T_SH_NETW[] PROGMEM = "sh_netw";
 static const char T_SH_TIME[] PROGMEM = "sh_time";
+static const char T_REBOOT[] PROGMEM = "reboot";
 
 /*
     перенакрываемая функция для добавления пользовательских пунктов в меню "Настройки"
@@ -72,6 +73,7 @@ class BasicUI {
     static void set_settings_time(Interface *interf, JsonObject *data);
     static void set_language(Interface *interf, JsonObject *data);
     static void embuistatus(Interface *interf);
+    static void set_reboot(Interface *interf, JsonObject *data);
 
     //uint8_t uploadProgress(size_t len, size_t total);
 };

@@ -9,11 +9,19 @@
 #include "EmbUI.h"
 
 #ifdef ESP8266
-  #define IFACE_DYN_JSON_SIZE 3072
-  #define POST_DYN_JSON_SIZE  1024
+#ifndef IFACE_DYN_JSON_SIZE
+  #define IFACE_DYN_JSON_SIZE 2048
+#endif
+#ifndef SMALL_JSON_SIZE
+  #define SMALL_JSON_SIZE  512
+#endif
 #elif defined ESP32
+#ifndef IFACE_DYN_JSON_SIZE
   #define IFACE_DYN_JSON_SIZE 8192
-  #define POST_DYN_JSON_SIZE  2048
+#endif
+#ifndef SMALL_JSON_SIZE
+  #define SMALL_JSON_SIZE  1024
+#endif
 #endif
 
 // static json doc size
