@@ -13,7 +13,7 @@
   #define IFACE_DYN_JSON_SIZE 2048
 #endif
 #ifndef SMALL_JSON_SIZE
-  #define SMALL_JSON_SIZE  512
+  #define SMALL_JSON_SIZE  768
 #endif
 #elif defined ESP32
 #ifndef IFACE_DYN_JSON_SIZE
@@ -25,7 +25,7 @@
 #endif
 
 // static json doc size
-#define IFACE_STA_JSON_SIZE 256
+#define IFACE_STA_JSON_SIZE SMALL_JSON_SIZE
 #define FRAME_ADD_RETRY 5
 
 class frameSend {

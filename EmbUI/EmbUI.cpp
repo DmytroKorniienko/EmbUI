@@ -339,7 +339,7 @@ void EmbUI::post(JsonObject data){
 
 void EmbUI::send_pub(){
     if (!ws.count()) return;
-    Interface *interf = new Interface(this, &ws, 512);
+    Interface *interf = new Interface(this, &ws, SMALL_JSON_SIZE);
     pubCallback(interf);
     delete interf;
 }
