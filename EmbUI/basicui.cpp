@@ -294,7 +294,7 @@ void BasicUI::embuistatus(Interface *interf){
 
 void BasicUI::set_reboot(Interface *interf, JsonObject *data){
     if (!data) return;
-    Task *t = new Task(TASK_SECOND*5, TASK_ONCE, nullptr, &ts, false, nullptr, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); });
+    Task *t = new Task(TASK_SECOND*5, TASK_ONCE, nullptr, &ts, false, nullptr, [](){ LOG(println, F("Rebooting...")); ESP.restart(); });
     t->enableDelayed();
     if(interf){
         interf->json_frame_interface();

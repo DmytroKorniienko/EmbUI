@@ -97,6 +97,12 @@ class Interface {
     frameSend *send_hndl;
     EmbUI *embui;
 
+    /**
+     * @brief - add object to frame with mem overflow protection 
+     */
+    void frame_add_safe(const JsonObjectConst &jobj);
+
+
     public:
         Interface(EmbUI *j, AsyncWebSocket *server, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             embui = j;
@@ -143,8 +149,6 @@ class Interface {
         void json_section_begin(const String &name, const String &label, bool main, bool hidden, bool line, JsonObject obj);
         void json_section_end();
 
-        void custom(const String &id, const String &type, const String &value, const String &label, const JsonObject &param = JsonObject());
-
         void frame(const String &id, const String &value);
         void frame2(const String &id, const String &value);
 
@@ -158,9 +162,7 @@ class Interface {
             obj[FPSTR(P_value)] = val;
             if (html) obj[FPSTR(P_html)] = true;
 
-            if (!json_frame_add(obj.as<JsonObject>())) {
-                value(id, val, html);
-            }
+            frame_add_safe(obj.as<JsonObject>());
         };
 
         void value(const String &id, bool html = false);
@@ -170,14 +172,7 @@ class Interface {
          * actualy it is a copy-object method used to echo back the data to the WebSocket in one-to-many scenarios
          */
         inline void value(JsonObjectConst data){
-            size_t _cnt = FRAME_ADD_RETRY;
-            do {
-                --_cnt;
-                #ifdef EMBUI_DEBUG
-                    if (!_cnt)
-                        LOG(println, FPSTR(P_ERR_obj2large));
-                #endif
-            } while (!json_frame_add(data) && _cnt);
+            frame_add_safe(data);
         }
 
         void hidden(const String &id);
@@ -347,16 +342,44 @@ class Interface {
             obj[FPSTR(P_label)] = label;
             if (direct) obj[FPSTR(P_directly)] = true;
 
-            size_t _cnt = FRAME_ADD_RETRY;
-
-            do {
-                --_cnt;
-                #ifdef EMBUI_DEBUG
-                    if (!_cnt)
-                        LOG(println, FPSTR(P_ERR_obj2large));
-                #endif
-            } while (!json_frame_add(obj.as<JsonObject>()) && _cnt );
+            frame_add_safe(obj.as<JsonObject>());
         };
+
+        /**
+         * @brief - create "display" div with custom css selector
+         * could be used for making all kinds of "sensor" outputs on the page with live-updated values without the need to redraw interface element
+         * @param id - element/div DOM id
+         * @param value  - element value (treated as text)
+         * @param class - base css class for Display, full css seletor created as "class id" to allow many sensors inherit base class
+         * @param params - additional parameters (reserved for future use)
+         */
+        template <typename T>
+        void display(const String &id, const T &value, const String &css = String(), const JsonObject &params = JsonObject() ){
+            String cssclass(css);   // make css slector like "class id", id used as a secondary distinguisher 
+            if (!css.length())
+                cssclass += F("display");
+            cssclass += F(" ");
+            cssclass += id;
+            custom(id, F("txt"), value, cssclass, params);
+        };
+
+        /**
+         * @brief - Creates html element with cutomized type and arbitrary parameters
+         * used to create user-defined interface elements with custom css/js handlers
+         */
+        template <typename T>
+        void custom(const String &id, const String &type, const T &value, const String &label, const JsonObject &param = JsonObject()){
+            StaticJsonDocument<IFACE_STA_JSON_SIZE*2> obj; // по этот контрол выделяем IFACE_STA_JSON_SIZE*2 т.к. он может быть большой...
+            obj[FPSTR(P_html)] = F("custom");;
+            obj[FPSTR(P_type)] = type;
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_value)] = value;
+            obj[FPSTR(P_label)] = label;
+            JsonObject nobj = obj.createNestedObject(String(F("param")));
+            nobj.set(param);
+            frame_add_safe(obj.as<JsonObject>());
+        }
+
 };
 
 #endif

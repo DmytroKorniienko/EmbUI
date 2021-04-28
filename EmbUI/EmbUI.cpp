@@ -142,15 +142,6 @@ void EmbUI::begin(){
     ssdp_begin(); LOG(println, F("Start SSDP"));
 #endif
 
-/*
-#ifdef ESP32
-  server.addHandler(new SPIFFSEditor(LittleFS, http_username,http_password));
-#elif defined(ESP8266)
-  //server.addHandler(new SPIFFSEditor(http_username,http_password, LittleFS));
-  server.addHandler(new SPIFFSEditor(F("esp8266"),F("esp8266"), LittleFS));
-#endif
-*/
-
     server.on(PSTR("/version"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
         request->send(200, FPSTR(PGmimetxt), F("EmbUI ver: " TOSTRING(EMBUIVER)));
     });
@@ -491,11 +482,16 @@ void EmbUI::create_sysvars(){
  * 0 - will disable periodic task
  */
 void EmbUI::setPubInterval(uint16_t _t){
-    if(tValPublisher)
-        tValPublisher->cancel(); // cancel & delete
+    if (!_t && tValPublisher){
+        ts.deleteTask(*tValPublisher);
+        tValPublisher = nullptr;
+        return;
+    }
 
-    if (_t){
-        tValPublisher = new Task(_t * TASK_SECOND, TASK_FOREVER, [this](){ if(ws.count()) send_pub(); }, &ts, true, nullptr, [this](){TASK_RECYCLE; tValPublisher=nullptr;});
+    if(tValPublisher){
+        tValPublisher->setInterval(_t * TASK_SECOND);
+    } else {
+        tValPublisher = new Task(_t * TASK_SECOND, TASK_FOREVER, [this](){ send_pub(); }, &ts, true );
     }
 }
 
