@@ -24,6 +24,31 @@ void mqtt_emptyFunction(const String &, const String &);
 
 EmbUI embui;
 
+class PostTask : public Task {
+    DynamicJsonDocument *_data = nullptr;
+public:
+    INLINE DynamicJsonDocument *getData() {return _data;}
+    INLINE void setNewData(DynamicJsonDocument *newData) {if(_data) delete _data; _data=newData;} 
+    bool checkIsSame(DynamicJsonDocument *post) {
+        // сравниваем предыдущий и текущий ответы на совпадение пар
+        bool same=true;
+        JsonObject data = (*getData())[F("data")];
+        for (JsonPair kv : data) {
+            if(!(*post)[F("data")].containsKey(kv.key())){
+                same=false;
+                break;
+            }
+        }
+        return same;
+    }
+
+    INLINE PostTask(DynamicJsonDocument *data = nullptr, unsigned long aInterval=0, long aIterations=0, TaskCallback aCallback=NULL, Scheduler* aScheduler=NULL, bool aEnable=false, TaskOnEnable aOnEnable=NULL, TaskOnDisable aOnDisable=NULL)
+    : Task(aInterval, aIterations, aCallback, aScheduler, aEnable, aOnEnable, aOnDisable), _data(data){}
+    ~PostTask() {if(_data) delete _data;}
+};
+
+PostTask *lastPostTask = nullptr;
+
 void section_main_frame(Interface *interf, JsonObject *data) {}
 void pubCallback(Interface *interf){}
 String httpCallback(const String &param, const String &value, bool isSet) { return String(); }
@@ -53,41 +78,58 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         if(info->final && info->index == 0 && info->len == len){
             LOG(printf_P, PSTR("UI: =POST= LEN: %u\n"), len);
 
-            DynamicJsonDocument *doc = new DynamicJsonDocument(2*len + 32);
+            DynamicJsonDocument *doc = new DynamicJsonDocument(2*len + 32); // освобождение памяти по выполнению таска!
+            if(!doc) return; // не смогли выделить память, на выход
+
             DeserializationError error = deserializeJson((*doc), (const char*)data, info->len); // deserialize via copy to prevent dangling pointers in action()'s
             if (error){
                 LOG(printf_P, PSTR("UI: Post deserialization err: %d\n"), error.code());
                 return;
             }
 
-            if ((*doc)[FPSTR(P_pkg)] && (*doc)[FPSTR(P_pkg)] == F("post")) {
-                doc->shrinkToFit();      // this doc should not grow anyway
+            if ((*doc)[FPSTR(P_pkg)] == F("post")) {
                 //LOG(printf_P, PSTR("UI: =POST= MEM_1: %u\n"), doc->memoryUsage());
-
-                if (embui.ws.count()>1 && (*doc)[F("data")]){   // if there are multiple ws cliens connected, we must echo back data section, to reflect any changes
-                    DynamicJsonDocument *echo = new DynamicJsonDocument(len+32);
-                    DeserializationError error = deserializeJson((*echo), data, info->len); // deserialize via zero-copy, it will be released once data copied to ws buffer
-                    if (error){
-                        LOG(printf_P, PSTR("UI: Echo deserialization err: %d\n"), error.code());
-                    } else {
-                        JsonObject _d = (*echo)[F("data")];
-                        LOG(printf_P, PSTR("UI: =ECHO= MEM_1: %u\n"), _d.memoryUsage());
-                        Interface *interf = new Interface(&embui, &embui.ws, len+128);      // about 128 bytes requred for section structs
-                        interf->json_frame_value();
-                        interf->value(_d);
-                        interf->json_frame_flush();
-                        delete interf;
-                        delete echo;
+                // Проверка на спам данными, если совпадают, то подменяются и реальное изменение откладывается
+                if(lastPostTask){
+                    if(lastPostTask->checkIsSame(doc)){
+                        lastPostTask->setNewData(doc);
+                        lastPostTask->restartDelayed();
+                        return;            
                     }
-                } // else { LOG(println, F("NO DATA or less than 1 ws client")); }
+                }
 
-                // откладываем обработку и освобождаем буфера ws
-                new Task(100, TASK_ONCE, nullptr, &ts, true, nullptr, [doc](){
-                    JsonObject data = (*doc)[F("data")];
+                // откладываем обработку и отправку данных
+                // тут идея такая - последний созданный таск сохраняем и далее сравниваем его хранилище с вновь поступившими данными,
+                // если это спам одними и теми же данными (например прокручивается колесиком мышки на контроле),
+                // то новый таск не будет создан, а будут подмененны данные в предыдущем таске, если же отличаются -
+                // будет создан новый таск и он же станет последним
+                // Если последний и освобождаемый таск одно и то же, то указатель на последний - обнуляется
+                lastPostTask = new PostTask(doc, 100, TASK_ONCE, [](){
+                    PostTask *task = (PostTask *)ts.getCurrentTask();
+                    JsonObject data = (*task->getData())[F("data")];
                     embui.post(data);
-                    delete doc;
+
+                    // Отправка эхо клиентам тут
+                    if (embui.ws.count()>1 && data){   // if there are multiple ws cliens connected, we must echo back data section, to reflect any changes
+                        JsonObject &_d = data;
+                        //JsonObject _d = (*doc)[F("data")];
+                        LOG(printf_P, PSTR("UI: =ECHO= MEM_1: %u\n"), _d.memoryUsage());
+                        Interface *interf = new Interface(&embui, &embui.ws, _d.memoryUsage() + 256);  // about 256 bytes requred for section structs
+                        if(interf){
+                            interf->json_frame_value();
+                            for (JsonPair kv : _d) {
+                                interf->value(kv.key().c_str(),kv.value());
+                            }
+                            interf->json_frame_flush();
+                            delete interf;
+                        }
+                    } // else { LOG(println, F("NO DATA or less than 1 ws client")); }
+
                     TASK_RECYCLE;
-                });
+                    if(lastPostTask==task) lastPostTask=nullptr;
+                }, &ts, false
+                );
+                lastPostTask->enableDelayed();
             }
         }
     }
@@ -314,7 +356,7 @@ void EmbUI::begin(){
  * @brief - process posted data for the registered action
  * looks for registered action for the section name and calls the action with post data if found
  */
-void EmbUI::post(JsonObject data){
+void EmbUI::post(JsonObject &data){
     section_handle_t *section = nullptr;
 
     for (JsonPair kv : data) {
