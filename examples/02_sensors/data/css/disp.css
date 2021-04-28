@@ -1,0 +1,9 @@
+#temp:before {
+    content: 'Temp.:';
+  }
+#temp:after {
+    content: '℃';
+}
+#clk:before {
+    content: 'Clock';
+  }  
