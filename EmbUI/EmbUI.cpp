@@ -138,8 +138,8 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
                     if(lastPostTask==task)
                         lastPostTask=nullptr;
-                    TASK_RECYCLE;
-                    //delete task;
+                    //TASK_RECYCLE;
+                    delete task;
                 }, &ts, false
                 );
                 lastPostTask->enableDelayed();
