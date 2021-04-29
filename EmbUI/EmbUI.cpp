@@ -25,25 +25,45 @@ void mqtt_emptyFunction(const String &, const String &);
 EmbUI embui;
 
 class PostTask : public Task {
+private:
     DynamicJsonDocument *_data = nullptr;
-public:
-    INLINE DynamicJsonDocument *getData() {return _data;}
     INLINE void setNewData(DynamicJsonDocument *newData) {if(_data) delete _data; _data=newData;} 
-    bool checkIsSame(DynamicJsonDocument *post) {
+    INLINE JsonObject getData(DynamicJsonDocument *post) {return (post ? (*post)[F("data")] : JsonObject());}
+    INLINE DynamicJsonDocument *makeDoc(uint8_t *data=nullptr, size_t len=0) {
+        DynamicJsonDocument *res;
+        res = new DynamicJsonDocument(2*len + 32);
+        if(!res) return res;
+        DeserializationError error = deserializeJson((*res), (const char*)data, len); // deserialize via copy to prevent dangling pointers in action()'s
+        if (error){
+            LOG(printf_P, PSTR("UI: Post deserialization err: %d\n"), error.code());
+            return nullptr;
+        }
+        return res;
+    }
+public:
+    INLINE JsonObject getData() {return (_data ? (*_data)[F("data")] : JsonObject());}
+    bool replaceIfSame(uint8_t *data=nullptr, size_t len=0) {
         // сравниваем предыдущий и текущий ответы на совпадение пар
-        bool same=true;
-        JsonObject data = (*getData())[F("data")];
-        for (JsonPair kv : data) {
-            if(!(*post)[F("data")].containsKey(kv.key())){
+        DynamicJsonDocument *post = makeDoc(data, len);
+        if(!post) return false;
+        JsonObject obj = getData();
+        bool same=!obj.isNull();
+        for (JsonPair kv : obj) {
+            if(!(getData(post)).containsKey(kv.key())){
                 same=false;
                 break;
             }
         }
+        if(same){
+            setNewData(post);
+        }
         return same;
     }
 
-    INLINE PostTask(DynamicJsonDocument *data = nullptr, unsigned long aInterval=0, long aIterations=0, TaskCallback aCallback=NULL, Scheduler* aScheduler=NULL, bool aEnable=false, TaskOnEnable aOnEnable=NULL, TaskOnDisable aOnDisable=NULL)
-    : Task(aInterval, aIterations, aCallback, aScheduler, aEnable, aOnEnable, aOnDisable), _data(data){}
+    INLINE PostTask(uint8_t *data=nullptr, size_t len=0, unsigned long aInterval=0, long aIterations=0, TaskCallback aCallback=NULL, Scheduler* aScheduler=NULL, bool aEnable=false, TaskOnEnable aOnEnable=NULL, TaskOnDisable aOnDisable=NULL)
+    : Task(aInterval, aIterations, aCallback, aScheduler, aEnable, aOnEnable, aOnDisable){
+        _data = makeDoc(data, len);
+    }
     ~PostTask() {if(_data) delete _data;}
 };
 
@@ -76,27 +96,18 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     if(type == WS_EVT_DATA){
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
         if(info->final && info->index == 0 && info->len == len){
-            LOG(printf_P, PSTR("UI: =POST= LEN: %u\n"), len);
+            if (!strncmp_P((const char *)data+1, PSTR("\"pkg\":\"post\""), 12)) {
+                LOG(printf_P, PSTR("UI: =POST= LEN: %u\n"), len);
 
-            DynamicJsonDocument *doc = new DynamicJsonDocument(2*len + 32); // освобождение памяти по выполнению таска!
-            if(!doc) return; // не смогли выделить память, на выход
-
-            DeserializationError error = deserializeJson((*doc), (const char*)data, info->len); // deserialize via copy to prevent dangling pointers in action()'s
-            if (error){
-                LOG(printf_P, PSTR("UI: Post deserialization err: %d\n"), error.code());
-                return;
-            }
-
-            if ((*doc)[FPSTR(P_pkg)] == F("post")) {
-                //LOG(printf_P, PSTR("UI: =POST= MEM_1: %u\n"), doc->memoryUsage());
-                // Проверка на спам данными, если совпадают, то подменяются и реальное изменение откладывается
-                if(lastPostTask){
-                    if(lastPostTask->checkIsSame(doc)){
-                        lastPostTask->setNewData(doc);
-                        lastPostTask->restartDelayed();
-                        return;            
-                    }
-                }
+                // //LOG(printf_P, PSTR("UI: =POST= MEM_1: %u\n"), doc->memoryUsage());
+                // // Проверка на спам данными, если совпадают, то подменяются и реальное изменение откладывается
+                // // ломает логику рисовалки, пока отключаю...
+                // if(lastPostTask){
+                //     if(lastPostTask->replaceIfSame(data, len)){
+                //         lastPostTask->restartDelayed();
+                //         return;            
+                //     }
+                // }
 
                 // откладываем обработку и отправку данных
                 // тут идея такая - последний созданный таск сохраняем и далее сравниваем его хранилище с вновь поступившими данными,
@@ -104,9 +115,9 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
                 // то новый таск не будет создан, а будут подмененны данные в предыдущем таске, если же отличаются -
                 // будет создан новый таск и он же станет последним
                 // Если последний и освобождаемый таск одно и то же, то указатель на последний - обнуляется
-                lastPostTask = new PostTask(doc, 100, TASK_ONCE, [](){
+                lastPostTask = new PostTask(data, len, 100, TASK_ONCE, [](){
                     PostTask *task = (PostTask *)ts.getCurrentTask();
-                    JsonObject data = (*task->getData())[F("data")];
+                    JsonObject data = task->getData();
                     embui.post(data);
 
                     // Отправка эхо клиентам тут
@@ -125,8 +136,10 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
                         }
                     } // else { LOG(println, F("NO DATA or less than 1 ws client")); }
 
+                    if(lastPostTask==task)
+                        lastPostTask=nullptr;
                     TASK_RECYCLE;
-                    if(lastPostTask==task) lastPostTask=nullptr;
+                    //delete task;
                 }, &ts, false
                 );
                 lastPostTask->enableDelayed();
