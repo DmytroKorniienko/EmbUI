@@ -67,6 +67,9 @@ body {
 	margin: 15px;
 	display: flex;
 	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	padding: 10px;
   }
   .display > div {
 	display: inline-block;
@@ -76,12 +79,13 @@ body {
 	line-height: 1em;
 	text-align: center;
 	font-family: 'Courier Prime';
-	font-size: 50px;
+	font-size: 45px;
 	background: linear-gradient(0deg, rgba(220,220,255,1) 25%, rgba(180,80,80,1) 50%, rgba(220,220,255,1) 75%);
+	-webkit-background-clip: text;
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
   }
-  
+
   .display > div::before {
 	font-family: sans-serif;
 	font-size: 0.5em;
