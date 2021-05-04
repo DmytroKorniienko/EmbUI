@@ -52,8 +52,13 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
         if(info->final && info->index == 0 && info->len == len){
             if (!strncmp_P((const char *)data+1, PSTR("\"pkg\":\"post\""), 12)) {
-                LOG(printf_P, PSTR("UI: =POST= LEN: %u\n"), len);
-                DynamicJsonDocument *res = new DynamicJsonDocument(len + JSON_OBJECT_SIZE(4)); // https://arduinojson.org/v6/assistant/
+                uint16_t objCnt = 2, tmpCnt=0; // минимально резервируем под 2 штуки
+                for(uint16_t i=0; i<len; i++)
+                    if(data[i]=='"')
+                        tmpCnt++;
+                objCnt += tmpCnt/4; // по кол-ву кавычек/4, т.к. "key":"value"
+                LOG(printf_P, PSTR("UI: =POST= LEN: %u, obj: %u\n"), len, tmpCnt/4);
+                DynamicJsonDocument *res = new DynamicJsonDocument(len + JSON_OBJECT_SIZE(objCnt)); // https://arduinojson.org/v6/assistant/
                 if(!res) return;
                 DeserializationError error = deserializeJson((*res), (const char*)data, len); // deserialize via copy to prevent dangling pointers in action()'s
                 if (error){
