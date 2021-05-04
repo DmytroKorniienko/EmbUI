@@ -145,8 +145,7 @@ void EmbUI::mqtt(void (*mqttFunction) (const String &topic, const String &payloa
 }
 
 void EmbUI::mqtt_handle(){
-    String host = cfg[FPSTR(P_m_host)];
-    if (!sysData.wifi_sta || host.isEmpty()) return;
+    if (!sysData.wifi_sta || cfg[FPSTR(P_m_host)].as<String>().isEmpty()) return;
     if (sysData.mqtt_connect) onMqttConnect();
     mqtt_reconnect();
 }
@@ -215,7 +214,8 @@ void EmbUI::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProp
     } else if (embui.sysData.mqtt_remotecontrol && tpc.startsWith(F("embui/jsset/"))) {
         DynamicJsonDocument doc(1024);
         deserializeJson(doc, payload, len);
-        embui.post(doc.as<JsonObject>());
+        JsonObject obj = doc.as<JsonObject>();
+        embui.post(obj);
     } else {
         mqt(tpc, String(buffer));
     }

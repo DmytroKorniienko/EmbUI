@@ -10,4 +10,4 @@
 #define _TASK_SCHEDULING_OPTIONS
 #include <TaskSchedulerDeclarations.h>
 
-#define TASK_RECYCLE embui.taskRecycle(&ts.currentTask())
+#define TASK_RECYCLE embui.taskRecycle(ts.getCurrentTask())

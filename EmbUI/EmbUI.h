@@ -282,7 +282,7 @@ class EmbUI
      * if post came from some other place - sends data to the WebUI
      * looks for registered action for the section name and calls the action with post data if found
      */
-    void post(JsonObject data);
+    void post(JsonObject &data);
 
     void send_pub();
     String id(const String &tpoic);

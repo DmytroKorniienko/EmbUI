@@ -51,43 +51,34 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     if(type == WS_EVT_DATA){
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
         if(info->final && info->index == 0 && info->len == len){
-            LOG(printf_P, PSTR("UI: =POST= LEN: %u\n"), len);
+            if (!strncmp_P((const char *)data+1, PSTR("\"pkg\":\"post\""), 12)) {
+                LOG(printf_P, PSTR("UI: =POST= LEN: %u\n"), len);
+                DynamicJsonDocument *res = new DynamicJsonDocument(len + JSON_OBJECT_SIZE(4)); // https://arduinojson.org/v6/assistant/
+                if(!res) return;
+                DeserializationError error = deserializeJson((*res), (const char*)data, len); // deserialize via copy to prevent dangling pointers in action()'s
+                if (error){
+                    LOG(printf_P, PSTR("UI: Post deserialization err: %d\n"), error.code());
+                    delete res;
+                    return;
+                }
+                JsonObject data = (*res)[F("data")]; // ссылка на интересующую часть документа, документ обязан существовать до конца использования!
+                embui.post(data);
 
-            DynamicJsonDocument *doc = new DynamicJsonDocument(2*len + 32);
-            DeserializationError error = deserializeJson((*doc), (const char*)data, info->len); // deserialize via copy to prevent dangling pointers in action()'s
-            if (error){
-                LOG(printf_P, PSTR("UI: Post deserialization err: %d\n"), error.code());
-                return;
-            }
-
-            if ((*doc)[FPSTR(P_pkg)] && (*doc)[FPSTR(P_pkg)] == F("post")) {
-                doc->shrinkToFit();      // this doc should not grow anyway
-                //LOG(printf_P, PSTR("UI: =POST= MEM_1: %u\n"), doc->memoryUsage());
-
-                if (embui.ws.count()>1 && (*doc)[F("data")]){   // if there are multiple ws cliens connected, we must echo back data section, to reflect any changes
-                    DynamicJsonDocument *echo = new DynamicJsonDocument(len+32);
-                    DeserializationError error = deserializeJson((*echo), data, info->len); // deserialize via zero-copy, it will be released once data copied to ws buffer
-                    if (error){
-                        LOG(printf_P, PSTR("UI: Echo deserialization err: %d\n"), error.code());
-                    } else {
-                        JsonObject _d = (*echo)[F("data")];
-                        LOG(printf_P, PSTR("UI: =ECHO= MEM_1: %u\n"), _d.memoryUsage());
-                        Interface *interf = new Interface(&embui, &embui.ws, len+128);      // about 128 bytes requred for section structs
+                // Отправка эхо клиентам тут
+                if (embui.ws.count()>1 && data){   // if there are multiple ws cliens connected, we must echo back data section, to reflect any changes
+                    JsonObject &_d = data;
+                    LOG(printf_P, PSTR("UI: =ECHO= MEM_1: %u\n"), _d.memoryUsage());
+                    Interface *interf = new Interface(&embui, &embui.ws, _d.memoryUsage() + 256);  // about 256 bytes requred for section structs
+                    if(interf){
                         interf->json_frame_value();
-                        interf->value(_d);
+                        for (JsonPair kv : _d) {
+                            interf->value(kv.key().c_str(),kv.value());
+                        }
                         interf->json_frame_flush();
                         delete interf;
-                        delete echo;
                     }
                 } // else { LOG(println, F("NO DATA or less than 1 ws client")); }
-
-                // откладываем обработку и освобождаем буфера ws
-                new Task(100, TASK_ONCE, nullptr, &ts, true, nullptr, [doc](){
-                    JsonObject data = (*doc)[F("data")];
-                    embui.post(data);
-                    delete doc;
-                    TASK_RECYCLE;
-                });
+                delete res;
             }
         }
     }
@@ -314,7 +305,7 @@ void EmbUI::begin(){
  * @brief - process posted data for the registered action
  * looks for registered action for the section name and calls the action with post data if found
  */
-void EmbUI::post(JsonObject data){
+void EmbUI::post(JsonObject &data){
     section_handle_t *section = nullptr;
 
     for (JsonPair kv : data) {
