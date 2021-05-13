@@ -46,6 +46,8 @@ if freshtag ${tzcsv} ; then
     python tzgen.py
     cat ./data/tz.json | gzip -9 > ./data/js/tz.json.gz
     rm -f ./data/tz.json ./data/zones.csv
+else
+    unzip -o -d ./data/ data.zip "js/tz.json.gz"
 fi
 
 
