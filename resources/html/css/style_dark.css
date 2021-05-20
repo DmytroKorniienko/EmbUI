@@ -53,3 +53,7 @@ body {
 .checkbox {
   display : none;
 }
+.theme-button {
+	background-color: #777;
+	font-weight: bold;
+  }
