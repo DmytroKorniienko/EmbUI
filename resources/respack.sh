@@ -32,6 +32,7 @@ cat html/css/*_dark.css | gzip -9 > ./data/css/style_dark.css.gz
 
 cp html/css/*.jpg ./data/css/
 cp html/css/*.webp ./data/css/
+cp html/css/*.svg ./data/css/
 
 cat html/js/*.js | gzip -9 > ./data/js/embui.js.gz
 cat html/index.html | gzip -9 > ./data/index.html.gz
@@ -46,6 +47,8 @@ if freshtag ${tzcsv} ; then
     python tzgen.py
     cat ./data/tz.json | gzip -9 > ./data/js/tz.json.gz
     rm -f ./data/tz.json ./data/zones.csv
+else
+    unzip -o -d ./data/ data.zip "js/tz.json.gz"
 fi
 
 
