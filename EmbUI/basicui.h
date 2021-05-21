@@ -54,7 +54,7 @@ class BasicUI {
    * this method owerrides weak definition in framework
    * 
    */
-  static void add_sections();
+  static void add_sections(bool skipBack=false);
 
   /**
    * This code adds "Settings" section to the MENU

@@ -1,7 +1,7 @@
 #include "basicui.h"
 
 uint8_t lang;            // default language for text resources
-
+bool isBackOn = true;    // is returning to main settings? default=true
 
 /**
  * Define configuration variables and controls handlers
@@ -13,13 +13,15 @@ uint8_t lang;            // default language for text resources
  * this method owerrides weak definition in framework
  * 
  */
-void BasicUI::add_sections(){
+void BasicUI::add_sections(bool skipBack){ // is returning to main settings skipped?
     LOG(println, F("UI: Creating webui vars"));
 
     // variable for UI language (specific to basicui translations)
     embui.var_create(FPSTR(P_LANGUAGE), LANG::RU);
 
     lang = embui.param(FPSTR(P_LANGUAGE)).toInt();
+    isBackOn = !skipBack;
+
     /**
      * обработчики действий
      */ 
@@ -35,7 +37,7 @@ void BasicUI::add_sections(){
     embui.section_handle_add(FPSTR(T_SET_MQTT), set_settings_mqtt);         // обработка настроек MQTT
     embui.section_handle_add(FPSTR(T_SET_TIME), set_settings_time);         // установки даты/времени
     embui.section_handle_add(FPSTR(P_LANGUAGE), set_language);              // смена языка интерфейса
-    embui.section_handle_add(FPSTR(T_REBOOT), set_reboot);              // смена языка интерфейса
+    embui.section_handle_add(FPSTR(T_REBOOT), set_reboot);                  // перезагрузка
 
     //embui.section_handle_add(FPSTR(T_004B), set_settings_other);
 }
@@ -137,7 +139,7 @@ void BasicUI::block_settings_update(Interface *interf, JsonObject *data){
     interf->json_section_hidden(FPSTR(T_DO_OTAUPD), FPSTR(T_DICT[lang][TD::D_Update]));
     interf->spacer(FPSTR(T_DICT[lang][TD::D_FWLOAD]));
     interf->file(FPSTR(T_DO_OTAUPD), FPSTR(T_DO_OTAUPD), FPSTR(T_DICT[lang][TD::D_UPLOAD]));
-    interf->button(FPSTR(T_REBOOT), FPSTR(T_DICT[lang][TD::D_REBOOT]),!data?String(FPSTR(P_RED)):String(""));       // кнопка перехода в настройки времени
+    interf->button(FPSTR(T_REBOOT), FPSTR(T_DICT[lang][TD::D_REBOOT]),!data?String(FPSTR(P_RED)):String("")); // кнопка перезагрузки
 }
 
 /**
@@ -180,7 +182,6 @@ void BasicUI::block_settings_time(Interface *interf, JsonObject *data){
     interf->select(FPSTR(P_TZSET), embui.param(FPSTR(P_TZSET)), "",     false,  true, F("/js/tz.json"));
     interf->json_section_end();
     interf->json_frame_flush();
-
 }
 
 /**
@@ -204,7 +205,7 @@ void BasicUI::set_settings_wifi(Interface *interf, JsonObject *data){
         LOG(println, F("UI WiFi: No SSID defined!"));
     }
 
-    section_settings_frame(interf, data);           // переходим в раздел "настройки"
+    if(isBackOn) section_settings_frame(interf, data);            // переходим в раздел "настройки"
 }
 
 /**
@@ -224,7 +225,7 @@ void BasicUI::set_settings_wifiAP(Interface *interf, JsonObject *data){
     } else {
         embui.wifi_connect(); 
     }
-    section_settings_frame(interf, data);   // переходим в раздел "настройки"
+    if(isBackOn) section_settings_frame(interf, data);    // переходим в раздел "настройки"
 }
 
 /**
@@ -243,7 +244,7 @@ void BasicUI::set_settings_mqtt(Interface *interf, JsonObject *data){
 
     embui.save();
 
-    section_settings_frame(interf, data);
+    if(isBackOn) section_settings_frame(interf, data); 
 }
 
 /**
@@ -272,7 +273,7 @@ void BasicUI::set_settings_time(Interface *interf, JsonObject *data){
             embui.timeProcessor.setTime(datetime);
     }
 
-    section_settings_frame(interf, data);
+    if(isBackOn) section_settings_frame(interf, data); 
 }
 
 void BasicUI::set_language(Interface *interf, JsonObject *data){
@@ -280,7 +281,7 @@ void BasicUI::set_language(Interface *interf, JsonObject *data){
 
     //String _l= (*data)[FPSTR(P_LANGUAGE)];
     SETPARAM(FPSTR(P_LANGUAGE), lang = (*data)[FPSTR(P_LANGUAGE)].as<unsigned short>(); );
-    section_settings_frame(interf, data);
+    if(isBackOn) section_settings_frame(interf, data); 
 }
 
 void BasicUI::embuistatus(Interface *interf){
