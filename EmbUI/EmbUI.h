@@ -135,6 +135,7 @@ void __attribute__((weak)) pubCallback(Interface *interf);
 String __attribute__((weak)) httpCallback(const String &param, const String &value, bool isset);
 uint8_t __attribute__((weak)) uploadProgress(size_t len, size_t total);
 void __attribute__((weak)) create_parameters();
+bool __attribute__((weak)) notfound_handle(AsyncWebServerRequest *request, const String& req);
 
 //----------------------
 

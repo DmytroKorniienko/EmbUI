@@ -1,7 +1,7 @@
 #include "basicui.h"
 
-uint8_t lang;            // default language for text resources
-bool isBackOn = true;    // is returning to main settings? default=true
+    uint8_t BasicUI::lang = 0;        // default language for text resources
+    bool BasicUI::isBackOn = true;    // is returning to main settings? default=true
 
 /**
  * Define configuration variables and controls handlers
@@ -9,8 +9,6 @@ bool isBackOn = true;    // is returning to main settings? default=true
  * Variables has literal names and are kept within json-configuration file on flash
  * Control handlers are bound by literal name with a particular method. This method is invoked
  * by manipulating controls
- * 
- * this method owerrides weak definition in framework
  * 
  */
 void BasicUI::add_sections(bool skipBack){ // is returning to main settings skipped?

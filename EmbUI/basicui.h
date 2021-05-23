@@ -14,8 +14,6 @@ enum LANG : uint8_t {
     EN = (1U),
 };
 
-extern uint8_t lang;
-
 // UI blocks
 static const char T_SETTINGS[] PROGMEM = "settings";
 static const char T_OPT_NETW[] PROGMEM = "networking";
@@ -41,7 +39,9 @@ void __attribute__((weak)) user_settings_frame(Interface *interf, JsonObject *da
     A class with static functions to handle basic WebUI interface
 */
 class BasicUI {
-
+  private:
+    static uint8_t lang;            // default language for text resources
+    static bool isBackOn;           // is returning to main settings? default=true
   public:
 
   /**
@@ -50,8 +50,6 @@ class BasicUI {
    * Variables has literal names and are kept within json-configuration file on flash
    * Control handlers are bound by literal name with a particular method. This method is invoked
    * by manipulating controls
-   * 
-   * this method owerrides weak definition in framework
    * 
    */
   static void add_sections(bool skipBack=false);

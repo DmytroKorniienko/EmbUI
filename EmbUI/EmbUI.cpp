@@ -89,7 +89,14 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     }
 }
 
+//custom HTTP API request parser, weak function
+bool notfound_handle(AsyncWebServerRequest *request, const String& req)
+{
+    return false; // override this in user code if necessary
+}
+
 void notFound(AsyncWebServerRequest *request) {
+    if(notfound_handle(request, request->url())) return;
     request->send(404, FPSTR(PGmimetxt), FPSTR(PG404));
 }
 
@@ -351,7 +358,6 @@ void EmbUI::section_handle_remove(const String &name)
         }
     }
 }
-
 
 void EmbUI::section_handle_add(const String &name, buttonCallback response)
 {
