@@ -48,7 +48,7 @@ The content `<div>` is where all your content goes.
     padding: 0 2em;
     max-width: 800px;
     margin-bottom: 50px;
-    line-height: 1.6em;
+    line-height: 1.1em;
 }
 
 .header {
@@ -69,7 +69,6 @@ The content `<div>` is where all your content goes.
         padding: 0;
         margin-top: 0;
 }
-
 
 .content-subhead {
     margin: 50px 0 20px 0;
@@ -93,6 +92,7 @@ appears on the left side of the page.
     bottom: 0;
     z-index: 1000; /* so the menu or its navicon stays above all content */
     background: #dbd4d4;
+    background-image: url('menu-light.webp');
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }

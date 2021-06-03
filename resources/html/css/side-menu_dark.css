@@ -70,7 +70,6 @@ The content `<div>` is where all your content goes.
         margin-top: 0;
 }
 
-
 .content-subhead {
     margin: 50px 0 20px 0;
     font-weight: 300;
@@ -93,7 +92,7 @@ appears on the left side of the page.
     bottom: 0;
     z-index: 1000; /* so the menu or its navicon stays above all content */
     background: #000;
-	background-image: url('menu.jpg');
+	background-image: url('menu-dark.webp');
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
