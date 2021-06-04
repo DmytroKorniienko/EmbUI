@@ -6,11 +6,6 @@
 #include "EmbUI.h"
 #include "ui.h"
 
-#ifdef EMBUI_DEBUG
- #include "MemoryInfo.h"
-#endif
-
-
 // Update defs
 #ifndef ESP_IMAGE_HEADER_MAGIC
  #define ESP_IMAGE_HEADER_MAGIC 0xE9
@@ -205,7 +200,7 @@ void EmbUI::begin(){
         String out = String(F("Heap: "))+String(ESP.getFreeHeap());
 #ifdef EMBUI_DEBUG
     #ifdef ESP8266
-        out += String(F("\nFrac: ")) + String(getFragmentation());
+        out += String(F("\nFrac: ")) + String(ESP.getHeapFragmentation());
     #endif
         out += String(F("\nClient: ")) + String(ws.count());
 #endif

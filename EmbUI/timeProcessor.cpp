@@ -10,6 +10,10 @@
  #include <TZ.h>                        // TZ declarations https://github.com/esp8266/Arduino/blob/master/cores/esp8266/TZ.h
  #include <sntp.h>
  #include <ESP8266HTTPClient.h>
+
+extern "C" {
+    #include <sys/_tz_structs.h>
+};
 #endif
 
 #ifdef ESP32
@@ -31,7 +35,8 @@ TimeProcessor::TimeProcessor()
     //configTzTime(); for esp32 https://github.com/espressif/arduino-esp32/blob/master/cores/esp32/esp32-hal-time.c
 
 #ifdef ESP8266
-    settimeofday_cb(std::bind(&TimeProcessor::timeavailable, this));
+//    settimeofday_cb(std::bind(&TimeProcessor::timeavailable, this));
+    settimeofday_cb( [this]{ timeavailable();} );
 #endif
 
 /*
