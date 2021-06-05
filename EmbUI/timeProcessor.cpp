@@ -11,9 +11,11 @@
  #include <sntp.h>
  #include <ESP8266HTTPClient.h>
 
+#if ARDUINO_ESP8266_GIT_VER>=0xefb0341a
 extern "C" {
     #include <sys/_tz_structs.h>
 };
+#endif
 #endif
 
 #ifdef ESP32
