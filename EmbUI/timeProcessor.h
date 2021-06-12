@@ -14,9 +14,9 @@
 
 #include "wi-fi.h"
 
-#ifdef CONTRY
-    #define NTP2ADDRESS        COUNTRY "." "pool.ntp.org"    // пул серверов времени для NTP
-    #define NTP1ADDRESS        "ntp3.vniiftri.ru"
+#ifdef COUNTRY
+    #define NTP1ADDRESS        TOSTRING(COUNTRY) "." "pool.ntp.org"    // пул серверов времени для NTP
+    #define NTP2ADDRESS        "ntp3.vniiftri.ru"
 #else
     #define NTP1ADDRESS        "ntp3.vniiftri.ru"
     #define NTP2ADDRESS        ("pool.ntp.org")
