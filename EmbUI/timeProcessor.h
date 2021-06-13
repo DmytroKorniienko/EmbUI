@@ -16,13 +16,16 @@
 
 #ifdef COUNTRY
     #define NTP1ADDRESS        TOSTRING(COUNTRY) "." "pool.ntp.org"    // пул серверов времени для NTP
-    #define NTP2ADDRESS        "ntp3.vniiftri.ru"
+    #define NTP2ADDRESS        "pool.ntp.org"
 #else
     #define NTP1ADDRESS        "ntp3.vniiftri.ru"
     #define NTP2ADDRESS        ("pool.ntp.org")
 #endif
 
+#ifndef CUSTOM_NTP_INDEX
 #define CUSTOM_NTP_INDEX    2
+#endif
+
 #define TIMEAPI_BUFSIZE     600
 #define TM_BASE_YEAR        1900
 #define DAYSECONDS          (86400U)
@@ -51,6 +54,7 @@ private:
      * запускает планировщик для автокоррекции временной зоны ежесуточно в 3 часа ночи
      */
     void getTimeHTTP();
+    bool sntpIsSynced(); // проверка получения данных через sntp
     unsigned int getHttpData(String &payload, const String &url);
     /**
      * функция установки планировщика обновления временной зоны
@@ -62,6 +66,7 @@ private:
 protected:
     callback_function_t _timecallback = nullptr;
 
+    String ntp;              // хранилище для ntp-сервера
     String tzone;            // строка зоны для http-сервиса как она задана в https://raw.githubusercontent.com/nayarsystems/posix_tz_db/master/zones.csv
 #ifdef ESP8266
     bool isSynced = false;      // флаг, означает что время было синхронизированно

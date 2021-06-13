@@ -361,10 +361,36 @@ void TimeProcessor::setcustomntp(const char* ntp){
     if (!ntp || !*ntp)
              return;
 
-    sntp_setservername(CUSTOM_NTP_INDEX, (char*)ntp);
-    LOG(printf_P, PSTR("Set custom NTP to: %s\n"), ntp);
+    sntp_stop();
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    //sntp_setservername(CUSTOM_NTP_INDEX, (char*)ntp);
+    this->ntp = ntp;
+    sntp_setservername(CUSTOM_NTP_INDEX, this->ntp.c_str());
+    LOG(printf_P, PSTR("Set custom NTP[%d] to: %s\n"), CUSTOM_NTP_INDEX, this->ntp.c_str());
+    sntp_init();
+    // sntp_restart();
 }
 
 void TimeProcessor::attach_callback(callback_function_t callback){
     _timecallback = std::move(callback);
+}
+
+bool TimeProcessor::sntpIsSynced()
+{
+    time_t now;
+    tm *timeinfo;
+    bool rc;
+
+    time(&now);
+    timeinfo = localtime(&now);
+
+    if (timeinfo->tm_year < (2000 - 1900))
+    {
+        rc = false;
+    }
+    else
+    {
+        rc = true;
+    }
+    return rc;
 }
