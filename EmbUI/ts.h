@@ -9,5 +9,5 @@
 #define _TASK_STD_FUNCTION   // Compile with support for std::function.
 #define _TASK_SCHEDULING_OPTIONS
 #include <TaskSchedulerDeclarations.h>
-
+extern Scheduler ts;
 #define TASK_RECYCLE embui.taskRecycle(ts.getCurrentTask())

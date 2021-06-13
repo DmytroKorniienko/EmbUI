@@ -16,14 +16,14 @@
 
 #ifdef COUNTRY
     #define NTP1ADDRESS        TOSTRING(COUNTRY) "." "pool.ntp.org"    // пул серверов времени для NTP
-    #define NTP2ADDRESS        "pool.ntp.org"
+    #define NTP2ADDRESS        ("pool.ntp.org")
 #else
     #define NTP1ADDRESS        "ntp3.vniiftri.ru"
     #define NTP2ADDRESS        ("pool.ntp.org")
 #endif
 
 #ifndef CUSTOM_NTP_INDEX
-#define CUSTOM_NTP_INDEX    0
+#define CUSTOM_NTP_INDEX    2
 #endif
 
 #define TIMEAPI_BUFSIZE     600
@@ -66,7 +66,10 @@ private:
 protected:
     callback_function_t _timecallback = nullptr;
 
-    String ntp;              // хранилище для ntp-сервера
+    uint8_t ntpcnt = 0;
+    String ntp0 = NTP1ADDRESS;              // хранилище для ntp-сервера0
+    String ntp1 = NTP2ADDRESS;              // хранилище для ntp-сервера1
+    String ntp2;              // хранилище для ntp-сервера2 (резервный, задается с UI)
     String tzone;            // строка зоны для http-сервиса как она задана в https://raw.githubusercontent.com/nayarsystems/posix_tz_db/master/zones.csv
 #ifdef ESP8266
     bool isSynced = false;      // флаг, означает что время было синхронизированно
@@ -183,7 +186,7 @@ public:
     /**
      * возвращает true если врямя еще не было синхронизированно каким либо из доступных источников
      */
-    bool isDirtyTime() {return !isSynced;}
+    bool isDirtyTime() {return !isSynced || !sntpIsSynced();}
 
     /**
      * функция допечатывает в переданную строку заданный таймстамп в дату/время в формате "9999-99-99T99:99"

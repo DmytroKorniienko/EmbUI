@@ -4,6 +4,7 @@
 // and others people
 
 #include "timeProcessor.h"
+#include "ts.h"
 
 #ifdef ESP8266
  #include <coredecls.h>                 // settimeofday_cb()
@@ -49,10 +50,10 @@ TimeProcessor::TimeProcessor()
 */
 
     #ifdef TZONE
-          configTzTime(TZONE, NTP1ADDRESS, NTP2ADDRESS);
+          configTzTime(TZONE, ntp0.c_str(), ntp1.c_str());
         LOG(print, F("TIME: Time Zone set to: "));      LOG(print, TZONE);
     #else
-          configTzTime(TZ_DEFAULT, NTP1ADDRESS, NTP2ADDRESS);
+          configTzTime(TZ_DEFAULT, ntp0.c_str(), ntp1.c_str());
     #endif
 
     sntp_stop();    // отключаем ntp пока нет подключения к AP
@@ -271,6 +272,33 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
 void TimeProcessor::onSTAGotIP(const WiFiEventStationModeGotIP ipInfo)
 {
     sntp_init();
+    if(!sntpIsSynced()){
+        Task *t = new Task(TASK_SECOND*30, TASK_ONCE, nullptr, &ts, false, nullptr, [this](){
+            if(!sntpIsSynced()){
+                const char *to;
+                switch(ntpcnt){
+                    case 0: to = ntp1.c_str(); break;
+                    case 1: to = ntp2.c_str(); break;
+                    case 2: to = ntp0.c_str(); break;
+                    default: to = ntp0.c_str(); break;
+                }
+                LOG(printf_P, PSTR("NTP: switching NTP[%d] server from %s to %s\n"), ntpcnt, sntp_getservername(0), to);
+                ntpcnt++;
+                ntpcnt%=3;
+                sntp_stop();
+                sntp_setservername(0, to);
+                sntp_init();
+                ts.getCurrentTask()->restartDelayed(TASK_SECOND*30);
+                return;
+            }
+            LOG(printf_P, PSTR("NTP: time synced from %s\n"), sntp_getservername(0));
+            //delete ts.getCurrentTask();
+            //TASK_RECYCLE;
+        });
+        t->enableDelayed();
+    } else {
+        LOG(printf_P, PSTR("NTP: time synced from %s\n"), sntp_getservername(0));
+    }
     #ifndef TZONE
         // отложенный запрос смещения зоны через http-сервис
         httprefreshtimer(HTTPSYNC_DELAY);
@@ -339,7 +367,7 @@ void TimeProcessor::setOffset(const int val){
         sntp_set_timezone_in_seconds(val);
     #elif defined ESP32
         //setTimeZone((long)val, 0);    // this breaks linker in some weird way
-        configTime((long)val, 0, NTP1ADDRESS, NTP2ADDRESS, "");
+        configTime((long)val, 0, ntp0.c_str(), ntp1.c_str(), "");
     #endif
 
     // в правилах TZSET смещение имеет обратный знак (TZ-OffSet=UTC)
@@ -364,9 +392,9 @@ void TimeProcessor::setcustomntp(const char* ntp){
     sntp_stop();
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     //sntp_setservername(CUSTOM_NTP_INDEX, (char*)ntp);
-    this->ntp = ntp;
-    sntp_setservername(CUSTOM_NTP_INDEX, this->ntp.c_str());
-    LOG(printf_P, PSTR("Set custom NTP[%d] to: %s\n"), CUSTOM_NTP_INDEX, this->ntp.c_str());
+    this->ntp2 = ntp;
+    sntp_setservername(CUSTOM_NTP_INDEX, this->ntp2.c_str());
+    LOG(printf_P, PSTR("Set custom NTP[%d] to: %s\n"), CUSTOM_NTP_INDEX, this->ntp2.c_str());
     sntp_init();
     // sntp_restart();
 }
