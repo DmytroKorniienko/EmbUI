@@ -23,7 +23,7 @@
 #endif
 
 #ifndef CUSTOM_NTP_INDEX
-#define CUSTOM_NTP_INDEX    2
+#define CUSTOM_NTP_INDEX    0
 #endif
 
 #define TIMEAPI_BUFSIZE     600
