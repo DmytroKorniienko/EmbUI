@@ -66,7 +66,8 @@ private:
 protected:
     callback_function_t _timecallback = nullptr;
 
-    uint8_t ntpcnt = 0;
+    uint8_t ntpcnt = 1;
+    Task *_ntpTask = nullptr;
     String ntp0 = NTP1ADDRESS;              // хранилище для ntp-сервера0
     String ntp1 = NTP2ADDRESS;              // хранилище для ntp-сервера1
     String ntp2;              // хранилище для ntp-сервера2 (резервный, задается с UI)
@@ -89,7 +90,7 @@ protected:
      * Timesync callback
      */
     virtual void timeavailable();       // колбэк установки времени
-
+    void ntpReSync();
 
 public:
     TimeProcessor();

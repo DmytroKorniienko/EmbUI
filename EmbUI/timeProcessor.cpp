@@ -264,6 +264,41 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
 }
 #endif
 
+void TimeProcessor::ntpReSync(){
+    if(!sntpIsSynced()){
+        sntp_setoperatingmode(SNTP_OPMODE_POLL);
+        if(!_ntpTask){
+            _ntpTask = new Task(TASK_SECOND*30, TASK_ONCE, nullptr, &ts, false, nullptr, [this](){
+                if(!sntpIsSynced()){
+                    const char *to;
+                    switch(ntpcnt){
+                        case 0: to = ntp0.c_str(); break;
+                        case 1: to = ntp1.c_str(); break;
+                        case 2: to = ntp2.c_str(); break;
+                        default: to = ntp0.c_str(); break;
+                    }
+                    LOG(printf_P, PSTR("NTP: switching NTP[%d] server from %s to %s\n"), ntpcnt, sntp_getservername(0), to);
+                    ntpcnt++;
+                    ntpcnt%=3;
+                    sntp_stop();
+                    sntp_setservername(0, to);
+                    sntp_init();
+                    ts.getCurrentTask()->restartDelayed(TASK_SECOND*30);
+                    return;
+                }
+                LOG(printf_P, PSTR("NTP: time synced from %s\n"), sntp_getservername(0));
+                //delete ts.getCurrentTask();
+                //TASK_RECYCLE;
+            });
+            _ntpTask->enableDelayed();
+        } else {
+            _ntpTask->restartDelayed();
+        }
+    } else {
+        LOG(printf_P, PSTR("NTP: time already synced from %s\n"), sntp_getservername(0));
+    }
+}
+
 /**
  * обратный вызов при подключении к WiFi точке доступа
  * запускает синхронизацию времени
@@ -272,33 +307,7 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
 void TimeProcessor::onSTAGotIP(const WiFiEventStationModeGotIP ipInfo)
 {
     sntp_init();
-    if(!sntpIsSynced()){
-        Task *t = new Task(TASK_SECOND*30, TASK_ONCE, nullptr, &ts, false, nullptr, [this](){
-            if(!sntpIsSynced()){
-                const char *to;
-                switch(ntpcnt){
-                    case 0: to = ntp1.c_str(); break;
-                    case 1: to = ntp2.c_str(); break;
-                    case 2: to = ntp0.c_str(); break;
-                    default: to = ntp0.c_str(); break;
-                }
-                LOG(printf_P, PSTR("NTP: switching NTP[%d] server from %s to %s\n"), ntpcnt, sntp_getservername(0), to);
-                ntpcnt++;
-                ntpcnt%=3;
-                sntp_stop();
-                sntp_setservername(0, to);
-                sntp_init();
-                ts.getCurrentTask()->restartDelayed(TASK_SECOND*30);
-                return;
-            }
-            LOG(printf_P, PSTR("NTP: time synced from %s\n"), sntp_getservername(0));
-            //delete ts.getCurrentTask();
-            //TASK_RECYCLE;
-        });
-        t->enableDelayed();
-    } else {
-        LOG(printf_P, PSTR("NTP: time synced from %s\n"), sntp_getservername(0));
-    }
+    ntpReSync();
     #ifndef TZONE
         // отложенный запрос смещения зоны через http-сервис
         httprefreshtimer(HTTPSYNC_DELAY);
@@ -389,14 +398,13 @@ void TimeProcessor::setcustomntp(const char* ntp){
     if (!ntp || !*ntp)
              return;
 
-    sntp_stop();
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    //sntp_setservername(CUSTOM_NTP_INDEX, (char*)ntp);
     this->ntp2 = ntp;
     sntp_setservername(CUSTOM_NTP_INDEX, this->ntp2.c_str());
-    LOG(printf_P, PSTR("Set custom NTP[%d] to: %s\n"), CUSTOM_NTP_INDEX, this->ntp2.c_str());
-    sntp_init();
+    LOG(printf_P, PSTR("NTP: Set custom NTP[%d] to: %s\n"), CUSTOM_NTP_INDEX, this->ntp2.c_str());
+    this->ntpcnt = CUSTOM_NTP_INDEX;
+
     // sntp_restart();
+    ntpReSync();
 }
 
 void TimeProcessor::attach_callback(callback_function_t callback){
@@ -411,6 +419,8 @@ bool TimeProcessor::sntpIsSynced()
 
     time(&now);
     timeinfo = localtime(&now);
+
+    //LOG(printf_P, PSTR("NTP: timeinfo->tm_year=%d\n"), timeinfo->tm_year);
 
     if (timeinfo->tm_year < (2000 - 1900))
     {
