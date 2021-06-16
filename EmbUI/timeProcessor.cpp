@@ -281,7 +281,14 @@ void TimeProcessor::ntpReSync(){
                     ntpcnt++;
                     ntpcnt%=3;
                     sntp_stop();
+                    #ifdef ESP32
+                    char *to2;
+                    sprintf(to2, to);
+                    sntp_setservername(0, to2);
+                    #endif
+                    #ifdef ESP8266
                     sntp_setservername(0, to);
+                    #endif
                     sntp_init();
                     ts.getCurrentTask()->restartDelayed(TASK_SECOND*30);
                     return;
@@ -399,8 +406,16 @@ void TimeProcessor::setcustomntp(const char* ntp){
              return;
 
     this->ntp2 = ntp;
+    #ifdef ESP8266
     sntp_setservername(CUSTOM_NTP_INDEX, this->ntp2.c_str());
     LOG(printf_P, PSTR("NTP: Set custom NTP[%d] to: %s\n"), CUSTOM_NTP_INDEX, this->ntp2.c_str());
+    #endif
+    #ifdef ESP32
+    char *ntpc;
+    sprintf(ntpc, this->ntp2.c_str());
+    sntp_setservername(CUSTOM_NTP_INDEX, ntpc);
+    LOG(printf_P, PSTR("NTP: Set custom NTP[%d] to: %s\n"), CUSTOM_NTP_INDEX, ntpc);
+    #endif
     this->ntpcnt = CUSTOM_NTP_INDEX;
 
     // sntp_restart();
