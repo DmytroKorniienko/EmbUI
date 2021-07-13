@@ -1,5 +1,14 @@
 ## Changelog
 
+### v2.4.5  Release
+Added:
+  - RTC time for AP mode
+  - Custom CSS display mode (Vortigont)
+Fixes:
+  - NTP ring for (no features mode)
+  - cpp templates for html elements removed due issues
+  - etc...
+
 ### v2.4.0  Release
 Added:
   - Optimizations:

@@ -1,8 +1,7 @@
-
 input[type=range] {
     height: 27px;
     -webkit-appearance: none;
-    margin: 10px 0;
+    margin: 5px 0;
     width: 100%;
     background: transparent;
   }
@@ -20,12 +19,12 @@ input[type=range] {
     border: 0px solid #000000;
   }
   input[type=range]::-webkit-slider-thumb {
+    width: 15px;
+    height: 20px;
+    border-radius: 30px;
+    background: #F0F0F0;
     box-shadow: 0px 0px 0px #000000;
     border: 1px solid rgb(148, 148, 148);
-    height: 20px;
-    width: 20px;
-    border-radius: 40px;
-    background: #F0F0F0;
     cursor: pointer;
     -webkit-appearance: none;
     margin-top: -8.5px;
@@ -46,8 +45,8 @@ input[type=range] {
   input[type=range]::-moz-range-thumb {
     box-shadow: 0px 0px 0px #000000;
     border: 1px solid #2497E3;
+    width: 15px;
     height: 20px;
-    width: 20px;
     border-radius: 30px;
     background: #A1D0FF;
     cursor: pointer;
@@ -75,12 +74,12 @@ input[type=range] {
   }
   input[type=range]::-ms-thumb {
     margin-top: 1px;
-    box-shadow: 0px 0px 0px #000000;
-    border: 1px solid #2497E3;
+    width: 15px;
     height: 20px;
-    width: 20px;
-    border-radius: 40px;
+    border-radius: 30px;
     background: #A1D0FF;
+    border: 1px solid #2497E3;
+    box-shadow: 0px 0px 0px #000000;
     cursor: pointer;
   }
   input[type=range]:focus::-ms-fill-lower {

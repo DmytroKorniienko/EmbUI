@@ -8,6 +8,7 @@
 	<title>EmbUI</title>
 	<link rel="stylesheet" href="css/pure.css">
 	<link id="dyncss" rel="stylesheet" type="text/css" href="css/style.css">
+	<link rel="stylesheet" href="css/disp.css">
 </head>
 <body>
 	<div id="layout">
@@ -93,7 +94,7 @@
 			<input type="hidden" id="{{id}}" name="{{id}}" value="{{value}}">
 		{{/if}}
 		{{#if html == "button"}}
-			<div id="{{id}}" class="pure-u-1 pure-button pure-button-primary mr" {{#if2 top_margine!=10 || color}}style="{{/if2}} {{#if2 top_margine!=10}} margin-top: {{top_margine}}px !important;{{/if2}} {{#if2 color}} background-color: {{color}};{{/if2}} {{#if2 top_margine!=10 || color}}"{{/if2}}
+			<div id="{{id}}" {{#if2 color}}style="background-color: {{color}}"{{/if2}} class="pure-u-1 pure-button pure-button-primary mr"
 				{{#if2 submit}}{{onevent "click", "on_submit", submit, value}}{{/if2}}
 				{{#if2 !submit}}{{onevent "click", "on_change", id}}{{/if2}}
 			>
@@ -119,18 +120,13 @@
 		{{/if}}
 		{{#if html == "select"}}
 			<span>{{label}}</span>
-			{{#if2 editable}}<div class="select-editable">{{/if2}}
-			<select id="{{id}}" name="{{id}}" value="{{value}}" class="pure-u-1" {{#if2 editable}} onchange="this.nextElementSibling.value=this.value"{{/if2}}
+			<select id="{{id}}" name="{{id}}" value="{{value}}" class="pure-u-1"
 				{{#if2 directly}}{{onevent "change", "on_change", id}}{{/if2}}
 			>
 			{{#block}}
 				<option value="{{value}}" {{#if2 value == _this.value}}selected{{/if2}}>{{label}}</option>
 			{{/block}}
 			</select>
-			{{#if2 editable}}
-			<input type="text" id="{{id}}" name="{{id}}" value="{{value}}">
-		</div>
-			{{/if2}}
 		{{/if}}
 		{{#if type == "checkbox"}}
 			<div class="switch-block">

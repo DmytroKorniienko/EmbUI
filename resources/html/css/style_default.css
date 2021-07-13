@@ -3,10 +3,10 @@ label {white-space: nowrap;}
 .left-block div {display: flex; padding: 5px 10px 5px 5px; justify-content: space-between;}
 .menu-value {color: #fff;}
 .checkbox-label{margin-left: 3em; position: relative; top: -2px;}
-.switch-block {margin: 20px 0px 15px 0px;}
+.switch-block {margin: 16px 0px 11px 0px;}
 .header-block {color: #777;}
 .nested {padding: 0px 10px 0px 10px; border: 1px solid #777;}
-.mr {margin: 15px 0px 15px 0px !important;}
+.mr {margin: 10px 0px 10px 0px !important;}
 .spacer {text-align: center; font-weight: 300; color: #777; padding-bottom: 10px; margin: 15px 0px 15px 0px; border-bottom: 1px solid #777;}
 .comment {margin: 1em 0;}
 .frame {width: 100%; height: 480px; min-height: 50px; resize: vertical;}
@@ -18,7 +18,7 @@ label {white-space: nowrap;}
   width: 40px;
   height: 20px;
   background-color: rgba(0, 0, 0, 0.25);
-  border-radius: 20px;
+  border-radius: 12px;
   transition: all 0.3s;
 }
 .switch::after {
@@ -26,7 +26,7 @@ label {white-space: nowrap;}
   position: absolute;
   width: 18px;
   height: 18px;
-  border-radius:50%;
+  border-radius:30px;
   background-color: white;
   top: 1px;
   left: 1px;
@@ -41,4 +41,96 @@ label {white-space: nowrap;}
 }
 .checkbox {
   display : none;
+}
+
+.pure-form input[type=color],
+.pure-form input[type=date],
+.pure-form input[type=datetime-local],
+.pure-form input[type=datetime],
+.pure-form input[type=email],
+.pure-form input[type=month],
+.pure-form input[type=number],
+.pure-form input[type=password],
+.pure-form input[type=search],
+.pure-form input[type=tel],
+.pure-form input[type=text],
+.pure-form input[type=time],
+.pure-form input[type=url],
+.pure-form input[type=week],
+.pure-form select,
+.pure-form textarea {
+  padding: .33757em .6em;
+}
+/* Sensor displays
+ style inspired by https://github.com/viperet/esp8266-power-monitor */
+.display {
+  text-align: center;
+  background: #000;
+  border-radius: 10px;
+  border: 1px solid rgb(100, 100, 255);
+  box-shadow: 0px 0px 2px 6px rgba(0,0,0,0.5);
+  margin: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 10px;
+}
+.display > div {
+  display: inline-block;
+  margin: 0 auto;
+  padding: 0.15em 0.1em 0 0.1em;
+  color: #FFF;
+  line-height: 1em;
+  text-align: center;
+  font-family: 'Courier Prime';
+  font-size: 45px;
+  background: linear-gradient(0deg, rgba(220,220,255,1) 25%, rgba(180,80,80,1) 50%, rgba(220,220,255,1) 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.display > div::before {
+  font-family: sans-serif;
+  font-size: 0.5em;
+  padding: 0 1em 0 0.5em;
+  display: inline-flex;
+  -webkit-text-fill-color: rgb(220, 223, 93);
+}
+
+.display > div::after {
+  font-family: sans-serif;
+  font-size: 0.5em;
+  height: 3vh;
+  padding: 0 0 0 0.5em;
+  -webkit-text-fill-color: rgb(192, 178, 178);
+}
+
+/*
+example of additional styles for display divs
+#vcc:before {
+  content: 'Vcc:';
+}
+#vcc:after {
+  content: 'V';
+}
+*/
+
+.select-editable {
+  position:relative;
+}
+.select-editable select {
+  position:relative;
+}
+.select-editable input {
+  position: absolute;
+  bottom: 0px;
+  left: 1px;
+  width: 85%;
+  border: none !important;
+  padding: .45em .8em .3em .8em !important;
+}
+.select-editable select:focus, .select-editable input:focus {
+  outline:none;
 }
