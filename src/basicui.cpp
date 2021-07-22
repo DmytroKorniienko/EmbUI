@@ -36,11 +36,14 @@ void BasicUI::add_sections(bool skipBack){ // is returning to main settings skip
     embui.section_handle_add(FPSTR(T_SET_WIFI), set_settings_wifi);         // обработка настроек WiFi Client
     embui.section_handle_add(FPSTR(T_SET_WIFIAP), set_settings_wifiAP);     // обработка настроек WiFi AP
     embui.section_handle_add(FPSTR(T_SET_MQTT), set_settings_mqtt);         // обработка настроек MQTT
-    embui.section_handle_add(FPSTR(T_SET_SCAN), set_scan_wifi);         // обработка сканирования WiFi
+    embui.section_handle_add(FPSTR(T_SET_SCAN), set_scan_wifi);             // обработка сканирования WiFi
     embui.section_handle_add(FPSTR(T_SET_TIME), set_settings_time);         // установки даты/времени
     embui.section_handle_add(FPSTR(P_LANGUAGE), set_language);              // смена языка интерфейса
     embui.section_handle_add(FPSTR(T_REBOOT), set_reboot);                  // перезагрузка
 
+#ifdef EMBUI_USE_FTP
+    embui.section_handle_add(FPSTR(T_SET_FTP), set_ftp);                    // обработка настроек FTP
+#endif
     //embui.section_handle_add(FPSTR(T_004B), set_settings_other);
 }
 
@@ -133,11 +136,20 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
     interf->text(FPSTR(P_m_host), FPSTR(T_DICT[lang][TD::D_MQTT_Host]));
     interf->number(FPSTR(P_m_port), FPSTR(T_DICT[lang][TD::D_MQTT_Port]));
     interf->text(FPSTR(P_m_user), FPSTR(T_DICT[lang][TD::D_User]));
-    interf->text(FPSTR(P_m_pass), FPSTR(T_DICT[lang][TD::D_Password]));
+    interf->password(FPSTR(P_m_pass), FPSTR(T_DICT[lang][TD::D_Password]));
     interf->text(FPSTR(P_m_pref), FPSTR(T_DICT[lang][TD::D_MQTT_Topic]));
     interf->number(FPSTR(P_m_tupd), FPSTR(T_DICT[lang][TD::D_MQTT_Interval]));
     interf->button_submit(FPSTR(T_SET_MQTT), FPSTR(T_DICT[lang][TD::D_CONNECT]), FPSTR(P_GRAY));
     interf->json_section_end();
+
+#ifdef EMBUI_USE_FTP
+    // форма настроек FTP
+    interf->json_section_hidden(FPSTR(T_SET_FTP), FPSTR(T_DICT[lang][TD::D_FTP]));
+    interf->text(FPSTR(P_ftpuser), FPSTR(T_DICT[lang][TD::D_User]));
+    interf->password(FPSTR(P_ftppass), FPSTR(T_DICT[lang][TD::D_Password]));
+    interf->button_submit(FPSTR(T_SET_FTP), FPSTR(T_DICT[lang][TD::D_SAVE]), FPSTR(P_GRAY));
+    interf->json_section_end();
+#endif
 
     interf->spacer();
     interf->button(FPSTR(T_SETTINGS), FPSTR(T_DICT[lang][TD::D_EXIT]));
@@ -362,6 +374,22 @@ void BasicUI::embuistatus(Interface *interf){
     interf->value(F("pUptime"), String(millis()/1000), true);
     interf->json_frame_flush();
 }
+
+#ifdef EMBUI_USE_FTP
+void BasicUI::set_ftp(Interface *interf, JsonObject *data){
+    if (!data) return;
+
+    String user = (*data)[FPSTR(P_ftpuser)];
+    String pass = (*data)[FPSTR(P_ftppass)];
+
+    SETPARAM(FPSTR(P_ftpuser));
+    SETPARAM(FPSTR(P_ftppass));
+    embui.ftpSrv.stop();
+    embui.ftpSrv.begin(user, pass);
+    embui.save();
+    if(isBackOn) section_settings_frame(interf, data); 
+}
+#endif
 
 void BasicUI::set_reboot(Interface *interf, JsonObject *data){
     if (!data) return;

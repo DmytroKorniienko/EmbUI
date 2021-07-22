@@ -80,12 +80,7 @@ protected:
     // String ntp1 = NTP2ADDRESS;              // хранилище для ntp-сервера1
     String ntp2;              // хранилище для ntp-сервера2 (резервный, задается с UI)
     String tzone;            // строка зоны для http-сервиса как она задана в https://raw.githubusercontent.com/nayarsystems/posix_tz_db/master/zones.csv
-#ifdef ESP8266
     bool isSynced = false;      // флаг, означает что время было синхронизированно
-#endif
-#ifdef ESP32            // временная затыка для ESP32, всегда будет считать время синхронизированным
-    bool isSynced = true;      // флаг, означает что время было синхронизированно
-#endif
 
     // используем http-сервис для смещени TZ
     #ifdef TZONE

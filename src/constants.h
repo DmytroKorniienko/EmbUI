@@ -85,3 +85,11 @@ static const char PG404[] PROGMEM  = "Not found";
 
 // LOG Messages
 static const char P_ERR_obj2large[] PROGMEM  = "UI: ERORR - can't add object to frame, too large!";
+
+#ifdef EMBUI_USE_FTP
+// FTP support
+static const char P_ftpuser[] PROGMEM  = "ftp_user";
+static const char P_ftppass[] PROGMEM  = "ftp_pass";
+static const char P_FTP_USER_DEFAULT[] PROGMEM  = "ftp";
+static const char P_FTP_PASS_DEFAULT[] PROGMEM  = "ftp";
+#endif

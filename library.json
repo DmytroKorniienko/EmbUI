@@ -6,13 +6,13 @@
     "url": "https://github.com/DmytroKorniienko/EmbUI",
     "authors": [
         {
-            "name": "Anton Zolotarev",
-            "url": "https://github.com/anton-zolotarev"
-        },
-        {
             "name": "Dmytro Korniienko",
             "url": "https://github.com/DmytroKorniienko",
             "maintainer": true
+        },
+        {
+            "name": "Anton Zolotarev",
+            "url": "https://github.com/anton-zolotarev"
         },
         {
             "name": "Emil Muratov",
@@ -26,7 +26,7 @@
         "url": "https://github.com/DmytroKorniienko/EmbUI.git"
     },
     "platforms": ["espressif8266", "espressif32"],
-    "version": "2.4.5",
+    "version": "2.4.6",
     "dependencies":
     [
         {"owner": "bblanchon",
@@ -42,11 +42,14 @@
          "version": "*"},
         {"name": "LITTLEFS",
          "version": "https://github.com/lorol/LITTLEFS.git",
-         "platforms": ["espressif32"]}
+         "platforms": ["espressif32"]},
+         {"owner": "charno",
+            "name": "FTPClientServer",
+            "version": "https://github.com/charno/FTPClientServer"}
     ],
     "build": {
         "flags": [
-            "-DEMBUIVER=2.4.5",
+            "-DEMBUIVER=2.4.6",
             "-DCONFIG_LITTLEFS_FOR_IDF_3_2"
         ],
         "srcDir": "src"
@@ -54,17 +57,30 @@
     "examples": [
         {
             "name": "Generic UI",
-            "base": "examples/ex_generic",
+            "base": "examples/01_ex_generic",
             "files": [
                 "platformio.ini",
                 "src/globals.h",
-                "src/i18n.h",
                 "src/interface.cpp",
                 "src/interface.h",
                 "src/main.cpp",
                 "src/main.h",
                 "src/uistrings.h",
-                "README.md"
+                "src/src.ino"
+            ]
+        },
+        {
+            "name": "Generic UI sensors",
+            "base": "examples/02_sensors",
+            "files": [
+                "platformio.ini",
+                "src/globals.h",
+                "src/interface.cpp",
+                "src/interface.h",
+                "src/main.cpp",
+                "src/main.h",
+                "src/uistrings.h",
+                "src/src.ino"
             ]
         }
     ]

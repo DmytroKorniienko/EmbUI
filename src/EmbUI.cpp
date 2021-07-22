@@ -222,12 +222,14 @@ void EmbUI::begin(){
             AsyncWebServerResponse *response = request->beginResponse(500, FPSTR(PGmimetxt), F("UPDATE FAILED"));
             response->addHeader(F("Connection"), F("close"));
             request->send(response);
+            setPubInterval(PUB_PERIOD);
         } else {
             Task *t = new Task(TASK_SECOND, TASK_ONCE, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); }, &ts, false);
             t->enableDelayed();
             request->redirect(F("/"));
         }
-    },[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+    },[this](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+        setPubInterval(0); // отключить публикацию на время обновления
         if (!index) {
             #ifdef ESP8266
         	int type = (data[0] == ESP_IMAGE_HEADER_MAGIC || data[0] == GZ_HEADER)? U_FLASH : U_FS;
@@ -256,6 +258,7 @@ void EmbUI::begin(){
             } else {
                 Update.printError(Serial);
             }
+            setPubInterval(PUB_PERIOD);
         }
         uploadProgress(index + len, request->contentLength());
     });
@@ -311,6 +314,13 @@ void EmbUI::begin(){
         } );
     ts.addTask(tHouseKeeper);
     tHouseKeeper.enableDelayed();
+
+#ifdef EMBUI_USE_FTP
+  /////FTP Setup, ensure LittleFS is started before ftp;  /////////
+  if (LittleFS.begin()) {
+    ftpSrv.begin(param(FPSTR(P_ftpuser)), param(FPSTR(P_ftppass))); //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
+  }
+#endif
 }
 
 /**
@@ -423,6 +433,9 @@ void EmbUI::handle(){
     mqtt_handle();
     udpLoop();
     ts.execute();           // run task scheduler
+#ifdef EMBUI_USE_FTP
+    ftpSrv.handleFTP();     //make sure in loop you call handleFTP()!!  
+#endif
     //btn();
     //led_handle();
 }
@@ -462,15 +475,19 @@ void EmbUI::create_sysvars(){
     var_create(FPSTR(P_APonly),  FPSTR(P_false));     // режим AP-only (только точка доступа), не трогать
     var_create(FPSTR(P_APpwd), "");                   // пароль внутренней точки доступа
     // параметры подключения к MQTT
-    var_create(FPSTR(P_m_host), "");                   // MQTT server hostname
-    var_create(FPSTR(P_m_port), "");                   // MQTT port
-    var_create(FPSTR(P_m_user), "");                   // MQTT login
-    var_create(FPSTR(P_m_pass), "");                   // MQTT pass
-    var_create(FPSTR(P_m_pref), embui.mc);             // MQTT topic == use ESP MAC address
+    var_create(FPSTR(P_m_host), "");                  // MQTT server hostname
+    var_create(FPSTR(P_m_port), "");                  // MQTT port
+    var_create(FPSTR(P_m_user), "");                  // MQTT login
+    var_create(FPSTR(P_m_pass), "");                  // MQTT pass
+    var_create(FPSTR(P_m_pref), embui.mc);            // MQTT topic == use ESP MAC address
     var_create(FPSTR(P_m_tupd), TOSTRING(MQTT_PUB_PERIOD));              // интервал отправки данных по MQTT в секундах
     // date/time related vars
     var_create(FPSTR(P_TZSET), "");                   // TimeZone/DST rule (empty value == GMT/no DST)
     var_create(FPSTR(P_userntp), "");                 // Backup NTP server
+#ifdef EMBUI_USE_FTP
+    var_create(FPSTR(P_ftpuser), FPSTR(P_FTP_USER_DEFAULT));                 // ftp user
+    var_create(FPSTR(P_ftppass), FPSTR(P_FTP_PASS_DEFAULT));                 // ftp password
+#endif
 }
 
 /**

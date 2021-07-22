@@ -24,6 +24,9 @@ static const char T_UPROGRESS[] PROGMEM = "uprogress";
 static const char T_SET_WIFI[] PROGMEM = "set_wifi";
 static const char T_SET_WIFIAP[] PROGMEM = "set_wifiAP";
 static const char T_SET_MQTT[] PROGMEM = "set_mqtt";
+#ifdef EMBUI_USE_FTP
+static const char T_SET_FTP[] PROGMEM = "set_ftp";
+#endif
 static const char T_SET_TIME[] PROGMEM = "set_time";
 static const char T_SET_SCAN[] PROGMEM = "set_scan";
 
@@ -79,6 +82,9 @@ class BasicUI {
     static void embuistatus(Interface *interf);
     static void show_progress(Interface *interf, JsonObject *data);
     static void set_reboot(Interface *interf, JsonObject *data);
+#ifdef EMBUI_USE_FTP
+    static void set_ftp(Interface *interf, JsonObject *data);
+#endif
 
     static void scan_complete(int n);
 

@@ -34,10 +34,18 @@
 #define TZ_DEFAULT PSTR("GMT0")         // default Time-Zone
 static const char P_LOC[] PROGMEM = "LOC";
 
+#ifndef ESP8266
+namespace RTC_MEM_32 {
+    RTC_DATA_ATTR RTC_DATA rtcTime;
+};
+
+using namespace RTC_MEM_32;
+#endif
+
 unsigned long RTC_Worker(unsigned long _storage=0){
 #ifdef ESP8266
     RTC_DATA rtcTime;
-    uint32 rtc_time = system_get_rtc_time();
+    uint32_t rtc_time = system_get_rtc_time();
     if(rtc_time<500000){
         rtcTime.timeBase = rtc_time;
         rtcTime.timeAcc = 0;
@@ -50,7 +58,7 @@ unsigned long RTC_Worker(unsigned long _storage=0){
         system_rtc_mem_read(192-sizeof(RTC_DATA), &rtcTime, sizeof(RTC_DATA));
         rtc_time = system_get_rtc_time();
         uint32_t cal = system_rtc_clock_cali_proc();
-        rtcTime.timeAcc += ((uint64)(rtc_time - rtcTime.timeBase) * (((uint64)cal * 1000) >> 12));
+        rtcTime.timeAcc += ((uint64_t)(rtc_time - rtcTime.timeBase) * (((uint64_t)cal * 1000) >> 12));
         //LOG(printf_P, PSTR("%d - %d - %lld - %d\n"), rtc_time, rtcTime.timeBase, rtcTime.timeAcc, (rtcTime.timeAcc / 1000000) / 1000);
         rtcTime.timeBase = rtc_time;
         if(_storage)
@@ -58,10 +66,30 @@ unsigned long RTC_Worker(unsigned long _storage=0){
         //ESP.rtcUserMemoryWrite(128-sizeof(RTC_DATA), (uint32_t*)&rtcTime, sizeof(RTC_DATA));
         system_rtc_mem_write(192-sizeof(RTC_DATA), &rtcTime, sizeof(RTC_DATA));
     }
-    LOG(printf_P, PSTR("TIME: RTC time = %d sec (%d)\n"), (uint32)(rtcTime.timeAcc / 1000000) / 1000, rtcTime.storage);
+    LOG(printf_P, PSTR("TIME: RTC time = %d sec (%d)\n"), (uint32_t)(rtcTime.timeAcc / 1000000) / 1000, rtcTime.storage);
     return rtcTime.storage+(rtcTime.timeAcc / 1000000) / 1000;
 #else
-    return 0;
+    struct timeval tv = { .tv_sec = 0, .tv_usec = 0 };   /* btw settimeofday() is helpfull here too*/
+    // uint64_t sec, us;
+    gettimeofday(&tv, NULL);
+    // (sec) = tv.tv_sec;
+    // (us) = tv.tv_usec;
+    uint32_t rtc_time = tv.tv_sec;
+
+    if(rtc_time<500000){
+        rtcTime.timeBase = rtc_time;
+        rtcTime.timeAcc = 0;
+        rtcTime.storage = 0;
+        //LOG(printf_P, PSTR("%d - %d - %lld\n"), rtc_time, rtcTime.timeBase, rtcTime.timeAcc);
+    } else {
+        rtcTime.timeAcc += (uint64_t)(rtc_time - rtcTime.timeBase);
+        //LOG(printf_P, PSTR("%d - %d - %lld\n"), rtc_time, rtcTime.timeBase, rtcTime.timeAcc);
+        rtcTime.timeBase = rtc_time;
+        if(_storage)
+            rtcTime.storage = _storage - rtcTime.timeAcc;
+    }
+    LOG(printf_P, PSTR("TIME: RTC time = %lld sec (%ld)\n"), rtcTime.timeAcc, rtcTime.storage);
+    return rtcTime.storage+rtcTime.timeAcc;
 #endif
 }
 
@@ -307,16 +335,14 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
 
 void TimeProcessor::ntpReSync(){
     if(!sntpIsSynced() || !isSynced){
+#ifndef ESP32
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
+#endif
         if(!_ntpTask){
             _ntpTask = new Task(TASK_SECOND*10, TASK_ONCE, nullptr, &ts, false, nullptr, [this](){
                 if((!sntpIsSynced() || !isSynced) && ntpcnt){
                     const char *to;
                     switch(ntpcnt){
-                        // case 1: to = ntp0.c_str(); break;
-                        // case 2: to = ntp1.c_str(); break;
-                        // case 3: to = ntp2.c_str(); break;
-                        // default: to = ntp0.c_str(); break;
                         case 1: to = NTP1ADDRESS; break;
                         case 2: to = NTP2ADDRESS; break;
                         case 3: to = ntp2.c_str(); break;
@@ -379,6 +405,7 @@ void TimeProcessor::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
     {
     case SYSTEM_EVENT_STA_GOT_IP:
         sntp_init();
+        ntpReSync();
         #ifndef TZONE
             // отложенный запрос смещения зоны через http-сервис
             httprefreshtimer(HTTPSYNC_DELAY);

@@ -83,7 +83,8 @@ enum TD : uint8_t {
     D_W_FRI,
     D_W_SAT,
     D_LANG,
-    D_Scan
+    D_Scan,
+    D_FTP
 };
 
 
@@ -145,7 +146,12 @@ static const char T_EN_WiFiAPOpts[] PROGMEM = "WiFi AP setup";
 static const char T_EN_WiFiAP[] PROGMEM = "WiFi AP";
 static const char T_EN_WiFiClientOpts[] PROGMEM = "WiFi-client setup";
 static const char T_EN_WiFiClient[] PROGMEM = "WiFi Client";
+#ifdef EMBUI_USE_FTP
+static const char T_EN_WIFI_MQTT[] PROGMEM = "WiFi, MQTT & FTP";
+#else
 static const char T_EN_WIFI_MQTT[] PROGMEM = "WiFi & MQTT";
+#endif
+static const char T_EN_FTP[] PROGMEM = "FTP";
 static const char T_EN_WiFi[] PROGMEM = "WiFi";
 static const char T_EN_WiFiSSID[] PROGMEM = "WiFi SSID";
 static const char T_EN_Scan[] PROGMEM = "Scan";
@@ -294,7 +300,9 @@ static const char *const T_DICT[][DICT_SIZE] PROGMEM = {
     T_RU_W_FRI,
     T_RU_W_SAT,
     T_RU_LANG,
-    T_RU_Scan},
+    T_RU_Scan,
+    T_EN_FTP
+    },
 
 
 // Index 1 - English lang
@@ -364,6 +372,7 @@ static const char *const T_DICT[][DICT_SIZE] PROGMEM = {
     T_EN_W_FRI,
     T_EN_W_SAT,
     T_EN_LANG,
-    T_EN_Scan
+    T_EN_Scan,
+    T_EN_FTP
   }
 };

@@ -26,6 +26,9 @@
  #define U_FS   U_SPIFFS
 #endif
 
+#ifdef EMBUI_USE_FTP
+#include <FTPServer.h>
+#endif
 
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
@@ -212,7 +215,11 @@ class EmbUI
     AsyncMqttClient mqttClient;
 
   public:
-    EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws(F("/ws")){
+    EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws(F("/ws"))
+#ifdef EMBUI_USE_FTP
+    , ftpSrv(LittleFS)
+#endif
+    {
         memset(mc,0,sizeof(mc));
 
         ts.addTask(embuischedw);    // WiFi helper
@@ -231,6 +238,10 @@ class EmbUI
     AsyncWebSocket ws;
     mqttCallback onConnect;
     TimeProcessor timeProcessor;
+
+#ifdef EMBUI_USE_FTP
+    FTPServer ftpSrv;
+#endif
 
     char mc[7]; // id из последних 3 байт mac-адреса "ffffff"
 
