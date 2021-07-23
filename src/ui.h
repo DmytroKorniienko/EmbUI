@@ -254,6 +254,14 @@ class Interface {
         void display(const String &id, const String &value, const String &css = String(), const JsonObject &params = JsonObject());
 
         /**
+         * @brief - Creates html element with image type
+         * could be used for display image and animation from intertal or external storage
+         * @param id elevent/div DOM id
+         * @param value - element value (source destination, example - "/image/myimage.svg" or "https://example.com/image/myimage.jpg")
+         */
+        void image(const String &id, const String &value);
+
+        /**
          * @brief - Creates html element with cutomized type and arbitrary parameters
          * used to create user-defined interface elements with custom css/js handlers
          */

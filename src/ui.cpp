@@ -118,6 +118,20 @@ void Interface::display(const String &id, const String &value, const String &css
 }
 
 /**
+ * @brief - Creates html element with image type
+ * could be used for display image and animation from intertal or external storage
+ * @param id elevent/div DOM id
+ * @param value - element value (source destination, example - "/image/myimage.svg" or "https://example.com/image/myimage.jpg")
+ */
+void Interface::image(const String &id, const String &value){
+    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    obj[FPSTR(P_html)] = F("img");
+    obj[FPSTR(P_id)] = id;
+    obj[FPSTR(P_value)] = value;
+    frame_add_safe(obj.as<JsonObject>());
+}
+
+/**
  * @brief - Creates html element with cutomized type and arbitrary parameters
  * used to create user-defined interface elements with custom css/js handlers
  */

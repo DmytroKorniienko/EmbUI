@@ -117,3 +117,13 @@ body {
 .select-editable select:focus, .select-editable input:focus {
   outline:none;
 }
+.image {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+  }
+  
+  .image img {
+	height: 100%;
+	width: auto;
+  }

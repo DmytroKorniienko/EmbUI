@@ -323,6 +323,8 @@ void BasicUI::set_scan_wifi(Interface *interf, JsonObject *data){
     interf->json_frame_custom(F("xload"));
     interf->json_section_content();
     interf->select_edit(FPSTR(P_WCSSID), String(WiFi.SSID()), String(""), false, true);
+    if (WiFi.SSID() == "")
+        interf->option("", "");
     for (int i = 0; i < WiFi.scanComplete(); i++) {
         interf->option(WiFi.SSID(i), WiFi.SSID(i));
         LOG(printf_P, PSTR("UI WiFi: WiFi Net %s\n"), WiFi.SSID(i).c_str());
