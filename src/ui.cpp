@@ -290,6 +290,7 @@ void Interface::button_submit(const String &section, const String &label, const 
     obj[FPSTR(P_submit)] = section;
     obj[FPSTR(P_color)] = color;
     obj[FPSTR(P_label)] = label;
+    obj[FPSTR(P_top_margine)] = top_margine;
     frame_add_safe(obj.as<JsonObject>());
 }
 
@@ -300,6 +301,7 @@ void Interface::button_submit_value(const String &section, const String &value, 
     obj[FPSTR(P_color)] = color;
     obj[FPSTR(P_label)] = label;
     obj[FPSTR(P_value)] = value;
+    obj[FPSTR(P_top_margine)] = top_margine;
     frame_add_safe(obj.as<JsonObject>());
 }
 
