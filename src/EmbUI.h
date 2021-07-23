@@ -133,6 +133,14 @@ class Interface;
     } \
 }
 
+#define CALL_INTF_EMPTY(call) { \
+    Interface *interf = embui.ws.count()? new Interface(&embui, &embui.ws, SMALL_JSON_SIZE*1.5) : nullptr; \
+    call(interf, nullptr); \
+    if (interf) { \
+        delete interf; \
+    } \
+}
+
 void __attribute__((weak)) section_main_frame(Interface *interf, JsonObject *data);
 void __attribute__((weak)) pubCallback(Interface *interf);
 String __attribute__((weak)) httpCallback(const String &param, const String &value, bool isset);
@@ -201,6 +209,17 @@ class EmbUI
     } BITFIELDS;
     //#pragma pack(pop)
 
+    //#pragma pack(push,1)
+    typedef union _EMBUICFG {
+    struct {
+        bool isftp:1;       // флаг использования FTP
+    };
+    uint32_t flags;         // набор битов для конфига (сохраняются в json)
+    _EMBUICFG() {
+        isftp = true;
+    }
+    } EMBUICFG;
+    //#pragma pack(pop)
 
     typedef void (*buttonCallback) (Interface *interf, JsonObject *data);
     typedef void (*mqttCallback) ();
@@ -234,6 +253,7 @@ class EmbUI
     }
 
     BITFIELDS sysData;
+    EMBUICFG cfgData;
     AsyncWebServer server;
     AsyncWebSocket ws;
     mqttCallback onConnect;

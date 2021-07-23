@@ -26,6 +26,7 @@ static const char T_SET_WIFIAP[] PROGMEM = "set_wifiAP";
 static const char T_SET_MQTT[] PROGMEM = "set_mqtt";
 #ifdef EMBUI_USE_FTP
 static const char T_SET_FTP[] PROGMEM = "set_ftp";
+static const char T_CHK_FTP[] PROGMEM = "chk_ftp";
 #endif
 static const char T_SET_TIME[] PROGMEM = "set_time";
 static const char T_SET_SCAN[] PROGMEM = "set_scan";
@@ -84,6 +85,7 @@ class BasicUI {
     static void set_reboot(Interface *interf, JsonObject *data);
 #ifdef EMBUI_USE_FTP
     static void set_ftp(Interface *interf, JsonObject *data);
+    static void set_chk_ftp(Interface *interf, JsonObject *data);
 #endif
 
     static void scan_complete(int n);

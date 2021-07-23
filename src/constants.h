@@ -93,3 +93,6 @@ static const char P_ftppass[] PROGMEM  = "ftp_pass";
 static const char P_FTP_USER_DEFAULT[] PROGMEM  = "ftp";
 static const char P_FTP_PASS_DEFAULT[] PROGMEM  = "ftp";
 #endif
+
+// Bitmap for EmbUI
+static const char P_cfgData[] PROGMEM  = "EmbUIData";

@@ -43,6 +43,7 @@ void BasicUI::add_sections(bool skipBack){ // is returning to main settings skip
 
 #ifdef EMBUI_USE_FTP
     embui.section_handle_add(FPSTR(T_SET_FTP), set_ftp);                    // обработка настроек FTP
+    embui.section_handle_add(FPSTR(T_CHK_FTP), set_chk_ftp);                // обработка переключателя FTP
 #endif
     //embui.section_handle_add(FPSTR(T_004B), set_settings_other);
 }
@@ -95,8 +96,8 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
     if (!interf) return;
     Task *_t = new Task(
         500,
-        TASK_ONCE, [interf](){
-            BasicUI::set_scan_wifi(interf, nullptr);
+        TASK_ONCE, [](){
+            CALL_INTF_EMPTY(BasicUI::set_scan_wifi);
             TASK_RECYCLE; },
         &ts, false);
     _t->enableDelayed();
@@ -144,10 +145,15 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
 
 #ifdef EMBUI_USE_FTP
     // форма настроек FTP
-    interf->json_section_hidden(FPSTR(T_SET_FTP), FPSTR(T_DICT[lang][TD::D_FTP]));
-    interf->text(FPSTR(P_ftpuser), FPSTR(T_DICT[lang][TD::D_User]));
-    interf->password(FPSTR(P_ftppass), FPSTR(T_DICT[lang][TD::D_Password]));
-    interf->button_submit(FPSTR(T_SET_FTP), FPSTR(T_DICT[lang][TD::D_SAVE]), FPSTR(P_GRAY));
+    interf->json_section_hidden("H", FPSTR(T_DICT[lang][TD::D_FTP]));
+        interf->json_section_begin("C", "");
+            interf->checkbox(FPSTR(T_CHK_FTP), String(embui.cfgData.isftp), FPSTR(T_DICT[lang][TD::D_FTP]), true);
+        interf->json_section_end();
+        interf->json_section_begin(FPSTR(T_SET_FTP), "");
+            interf->text(FPSTR(P_ftpuser), FPSTR(T_DICT[lang][TD::D_User]));
+            interf->password(FPSTR(P_ftppass), FPSTR(T_DICT[lang][TD::D_Password]));
+            interf->button_submit(FPSTR(T_SET_FTP), FPSTR(T_DICT[lang][TD::D_SAVE]), FPSTR(P_GRAY));
+        interf->json_section_end();
     interf->json_section_end();
 #endif
 
@@ -282,6 +288,8 @@ void BasicUI::set_settings_mqtt(Interface *interf, JsonObject *data){
  * Обработчик сканирования WiFi
  */
 void BasicUI::set_scan_wifi(Interface *interf, JsonObject *data){
+    if (!interf) return;
+
     if (WiFi.scanComplete() == -2) {
         #ifdef ESP8266
         WiFi.scanNetworksAsync(scan_complete);     // Сканируем с коллбеком, по завершению скана запустится scan_complete()
@@ -293,11 +301,10 @@ void BasicUI::set_scan_wifi(Interface *interf, JsonObject *data){
         if(!_WiFiScan){
             _WiFiScan = new Task(
                 TASK_SECOND,
-                TASK_ONCE, [interf](){
+                TASK_ONCE, [](){
                     LOG(printf_P, PSTR("UI WiFi: Scan task running\n"));
                     if (WiFi.scanComplete() < 0){
                         ts.getCurrentTask()->restartDelayed();
-                        //set_scan_wifi(interf, nullptr);
                     }
                     if (WiFi.scanComplete() >= 0) {
                         scan_complete(WiFi.scanComplete());
@@ -384,10 +391,30 @@ void BasicUI::set_ftp(Interface *interf, JsonObject *data){
 
     SETPARAM(FPSTR(P_ftpuser));
     SETPARAM(FPSTR(P_ftppass));
-    embui.ftpSrv.stop();
-    embui.ftpSrv.begin(user, pass);
-    embui.save();
+
+    BasicUI::set_chk_ftp(interf, data);
+
+    //embui.ftpSrv.stop();
+    //embui.ftpSrv.begin(user, pass);
+    //embui.save();
     if(isBackOn) section_settings_frame(interf, data); 
+}
+
+void BasicUI::set_chk_ftp(Interface *interf, JsonObject *data){
+    if (!data) return;
+
+    if(data->containsKey(FPSTR(T_CHK_FTP))){
+        embui.cfgData.isftp = (*data)[FPSTR(T_CHK_FTP)]=="1";
+    }
+
+    embui.var(FPSTR(P_cfgData), String(embui.cfgData.flags));
+
+    if(embui.cfgData.isftp){
+        embui.ftpSrv.stop();
+        embui.ftpSrv.begin(embui.param(FPSTR(P_ftpuser)), embui.param(FPSTR(P_ftppass)));
+    } else
+        embui.ftpSrv.stop();
+    //embui.save();
 }
 #endif
 
