@@ -202,11 +202,12 @@ void EmbUI::wifi_connect(const char *ssid, const char *pwd)
                     #ifdef ESP32
                         WiFi.disconnect();
                 	    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+                    #else
+                        WiFi.persistent(true); // SDK3.0.0+ ESP8266 == false by default, this cause issue of first connect
+                        LOG(printf_P,PSTR("UI WiFi: WiFi.getAutoConnect()=%d, WiFi.getAutoReconnect()=%d, WiFi.getPersistent()=%d\n"), WiFi.getAutoConnect(), WiFi.getAutoReconnect(), WiFi.getPersistent());
+                        //WiFi.setAutoReconnect(true);
+                        //WiFi.setAutoConnect(true);
                     #endif
-                    WiFi.persistent(true); // SDK3.0.0+ == false by default, this cause issue of first connect
-                    LOG(printf_P,PSTR("UI WiFi: WiFi.getAutoConnect()=%d, WiFi.getAutoReconnect()=%d, WiFi.getPersistent()=%d\n"), WiFi.getAutoConnect(), WiFi.getAutoReconnect(), WiFi.getPersistent());
-                    //WiFi.setAutoReconnect(true);
-                    //WiFi.setAutoConnect(true);
                     WiFi.begin(_ssid.c_str(), _pwd.c_str());
 	                embuischedw.disable();
             });

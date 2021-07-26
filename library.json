@@ -43,6 +43,10 @@
         {"name": "LITTLEFS",
          "version": "https://github.com/lorol/LITTLEFS.git",
          "platforms": ["espressif32"]},
+        {"owner": "Me-No-Dev",
+         "name": "ESP32SSDP",
+         "version": "*",
+         "platforms": ["espressif32"]},
          {"owner": "charno",
             "name": "FTPClientServer",
             "version": "https://github.com/charno/FTPClientServer"}
