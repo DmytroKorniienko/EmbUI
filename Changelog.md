@@ -1,5 +1,13 @@
 ## Changelog
 
+### v2.4.6  Release
+Added:
+  - Image Control
+Fixes:
+  - SDK3.0.0 WiFi fix
+  - WiFi list fix
+  - Examples fix
+
 ### v2.4.5  Release
 Added:
   - RTC time for AP mode
