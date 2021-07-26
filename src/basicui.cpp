@@ -222,22 +222,27 @@ void BasicUI::block_settings_time(Interface *interf, JsonObject *data){
  * Обработчик настроек WiFi в режиме клиента
  */
 void BasicUI::set_settings_wifi(Interface *interf, JsonObject *data){
-    if (!data) return;
+    if (!data || embui.sysData.isWSConnect) return;
 
     SETPARAM(FPSTR(P_hostname));        // сохраняем hostname в конфиг
 
-    const char *ssid = (*data)[FPSTR(P_WCSSID)];    // переменные доступа в конфиге не храним
-    const char *pwd = (*data)[FPSTR(P_WCPASS)];     // фреймворк хранит последнюю доступную точку самостоятельно
+    String ssid = (*data)[FPSTR(P_WCSSID)];    // переменные доступа в конфиге не храним
+    String pwd = (*data)[FPSTR(P_WCPASS)];     // фреймворк хранит последнюю доступную точку самостоятельно
 
-    WiFi.disconnect();
-    if(ssid){
-        embui.var(FPSTR(P_APonly),"0"); // сборосим режим принудительного AP, при попытке подключения к роутеру
-        embui.save();
-        embui.wifi_connect(ssid, pwd);
-    } else {
-        embui.wifi_connect();           // иницируем WiFi-подключение с новыми параметрами
-        LOG(println, F("UI WiFi: No SSID defined!"));
-    }
+    Task *t = new Task(300, TASK_ONCE, nullptr, &ts, false, nullptr, [ssid, pwd](){
+        WiFi.disconnect();
+        if(ssid){
+            LOG(printf_P, PSTR("UI WiFi: Connecting to %s\n"), ssid.c_str());
+            embui.var(FPSTR(P_APonly),"0"); // сборосим режим принудительного AP, при попытке подключения к роутеру
+            embui.save();
+            embui.wifi_connect(ssid.c_str(), pwd.c_str());
+        } else {
+            embui.wifi_connect();           // иницируем WiFi-подключение с новыми параметрами
+            LOG(println, F("UI WiFi: No SSID defined!"));
+        }
+        TASK_RECYCLE;
+    });
+    t->enableDelayed();
 
     if(isBackOn) section_settings_frame(interf, data);            // переходим в раздел "настройки"
 }
@@ -322,13 +327,14 @@ void BasicUI::set_scan_wifi(Interface *interf, JsonObject *data){
     if (WiFi.scanComplete()== -1) return;
     interf->json_frame_custom(F("xload"));
     interf->json_section_content();
-    interf->select_edit(FPSTR(P_WCSSID), String(WiFi.SSID()), String(""), false, true);
-    if (WiFi.SSID() == "")
-        interf->option("", "");
+    String ssid = WiFi.SSID();
+    interf->select_edit(FPSTR(P_WCSSID), ssid, String(""), false, true);
     for (int i = 0; i < WiFi.scanComplete(); i++) {
         interf->option(WiFi.SSID(i), WiFi.SSID(i));
         LOG(printf_P, PSTR("UI WiFi: WiFi Net %s\n"), WiFi.SSID(i).c_str());
     }
+    if(ssid.isEmpty())
+        interf->option("", ""); // at the end of list
     interf->json_section_end();
     interf->json_section_end();
     interf->json_frame_flush();
