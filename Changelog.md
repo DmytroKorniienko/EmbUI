@@ -1,6 +1,6 @@
 ## Changelog
 
-### v2.4.6  Release
+### v2.4.7  Release
 Added:
   - Image Control
 Fixes:

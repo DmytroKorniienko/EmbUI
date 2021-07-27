@@ -1,7 +1,7 @@
 {
     "name": "EmbUI",
     "frameworks": "arduino",
-    "keywords": "embui, arduino",
+    "keywords": "embui, arduino, framework, esp8266, esp32",
     "description": "Embeded Web UI framework for esp8266/esp32 IoT prototyping",
     "url": "https://github.com/DmytroKorniienko/EmbUI",
     "authors": [
@@ -26,7 +26,7 @@
         "url": "https://github.com/DmytroKorniienko/EmbUI.git"
     },
     "platforms": ["espressif8266", "espressif32"],
-    "version": "2.4.6",
+    "version": "2.4.7",
     "dependencies":
     [
         {"owner": "bblanchon",
@@ -43,8 +43,7 @@
         {"name": "LITTLEFS",
          "version": "https://github.com/lorol/LITTLEFS.git",
          "platforms": ["espressif32"]},
-        {"owner": "Me-No-Dev",
-         "name": "ESP32SSDP",
+        {"name": "ESP32SSDP",
          "version": "*",
          "platforms": ["espressif32"]},
          {"owner": "charno",
@@ -53,7 +52,7 @@
     ],
     "build": {
         "flags": [
-            "-DEMBUIVER=2.4.6",
+            "-DEMBUIVER=2.4.7",
             "-DCONFIG_LITTLEFS_FOR_IDF_3_2"
         ],
         "srcDir": "src"
