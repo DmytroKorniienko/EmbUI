@@ -52,6 +52,7 @@ body {
 .checkbox {
   display : none;
 }
+
 /* Sensor displays
  style inspired by https://github.com/viperet/esp8266-power-monitor */
  .display {
@@ -99,7 +100,6 @@ body {
   }
 
 
-
 .select-editable {
   position:relative;
 }
@@ -118,12 +118,12 @@ body {
   outline:none;
 }
 .image {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-  }
-  
-  .image img {
-	height: 100%;
-	width: auto;
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.image img {
+  height: 100%;
+  width: auto;
+  max-width: -webkit-fill-available;
+}

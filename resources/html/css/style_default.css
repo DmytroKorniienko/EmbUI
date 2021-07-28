@@ -139,8 +139,8 @@ example of additional styles for display divs
   justify-content: center;
   align-items: center;
 }
-
 .image img {
   height: 100%;
   width: auto;
+  max-width: -webkit-fill-available;
 }
