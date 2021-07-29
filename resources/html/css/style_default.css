@@ -138,9 +138,9 @@ example of additional styles for display divs
   display: flex;
   justify-content: center;
   align-items: center;
+  width: inherit;
 }
 .image img {
   height: 100%;
-  width: auto;
-  max-width: -webkit-fill-available;
+  width: inherit;
 }
