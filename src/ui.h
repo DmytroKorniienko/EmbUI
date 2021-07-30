@@ -148,8 +148,8 @@ class Interface {
         void json_section_begin(const String &name, const String &label, bool main, bool hidden, bool line, JsonObject obj);
         void json_section_end();
 
-        void frame(const String &id, const String &value);
-        void frame2(const String &id, const String &value);
+        void raw_html(const String &id, const String &value);
+        void iframe(const String &id, const String &value);
 
         /**
          * @brief - Add 'value' object to the Interface frame
