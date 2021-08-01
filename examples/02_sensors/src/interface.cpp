@@ -1,9 +1,13 @@
 #include "main.h"
-
 #include "EmbUI.h"
 #include "interface.h"
-
 #include "uistrings.h"   // non-localized text-strings
+
+#ifdef ESP32
+    extern "C" int rom_phy_get_vdd33();
+#else
+    ADC_MODE(ADC_VCC);  // read internal Vcc
+#endif
 
 /**
  * можно нарисовать свой собственный интефейс/обработчики с нуля, либо
@@ -21,7 +25,6 @@ extern Scheduler ts;
 
 // Periodic task that runs every 5 sec and calls sensor publishing method
 Task tDisplayUpdater(5 * TASK_SECOND, TASK_FOREVER, &sensorPublisher, &ts, true );
-
 
 /**
  * переопределяем метод из фреймворка, регистрирующий необходимы нам в проекте переменные и методы обработки
@@ -125,8 +128,11 @@ void block_demopage(Interface *interf, JsonObject *data){
     interf->json_section_line();             // "Live displays"
 
     // Voltage display, shows ESPs internal voltage
+#ifdef ESP8266
     interf->display(F("vcc"), String(ESP.getVcc()/1000.0));
-
+#else
+    interf->display(F("vcc"), String((float)rom_phy_get_vdd33()/1000.0)); // extern "C" int rom_phy_get_vdd33();
+#endif
     // Fake temperature sensor
     interf->display(F("temp"), String(24));
     interf->json_section_end();     // end of line
@@ -148,8 +154,6 @@ void block_demopage(Interface *interf, JsonObject *data){
     interf->json_section_end();
     interf->json_frame_flush();
 }
-
-
 
 void action_blink(Interface *interf, JsonObject *data){
   if (!data) return;  // здесь обрабатывает только данные
@@ -180,7 +184,11 @@ void sensorPublisher() {
     interf->json_frame_value();
     // Voltage sensor
     //  id, value, html=true
+#ifdef ESP8266
     interf->value(F("vcc"), String((ESP.getVcc() + random(-100,100))/1000.0), true); // html must be set 'true' so this value could be handeled properly for div elements
+#else
+    interf->value(F("vcc"), String(((float)rom_phy_get_vdd33()/1000.0 + random(-100,100))/1000.0), true); // html must be set 'true' so this value could be handeled properly for div elements
+#endif
     interf->value(F("temp"), String(24 + random(-30,30)/10), true);                // add some random spikes to the temperature :)
 
     String clk; embui.timeProcessor.getDateTimeString(clk);

@@ -13,8 +13,6 @@
  #include "ftpSrv.h"
 #endif
 
-ADC_MODE(ADC_VCC);  // read internal Vcc
-
 // MAIN Setup
 void setup() {
   Serial.begin(BAUD_RATE);
