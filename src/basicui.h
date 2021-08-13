@@ -17,6 +17,7 @@ enum LANG : uint8_t {
 // UI blocks
 static const char T_SETTINGS[] PROGMEM = "settings";
 static const char T_OPT_NETW[] PROGMEM = "networking";
+static const char T_LOAD_WIFI[] PROGMEM = "loading_wifi";
 
 // UI handlers
 static const char T_DO_OTAUPD[] PROGMEM = "update";

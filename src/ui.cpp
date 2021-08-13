@@ -175,17 +175,20 @@ void Interface::hidden(const String &id){
     hidden(id, embui->param(id));
 }
 
-void Interface::constant(const String &id, const String &value, const String &label){
+void Interface::constant(const String &id, const String &value, const String &label, bool loading, const String &color, uint8_t top_margine){
     StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("const");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
     obj[FPSTR(P_label)] = label;
+    obj[FPSTR(P_color)] = color;
+    if (loading) obj[FPSTR(P_loading)] = true;
+    obj[FPSTR(P_top_margine)] = top_margine;
     frame_add_safe(obj.as<JsonObject>());
 }
 
-void Interface::constant(const String &id, const String &label){
-    constant(id, embui->param(id), label);
+void Interface::constant(const String &id, const String &label, bool loading, const String &color, uint8_t top_margine){
+    constant(id, embui->param(id), label, loading, color, top_margine);
 }
 
 void Interface::text(const String &id, const String &value, const String &label, bool directly){

@@ -127,3 +127,49 @@ body {
   height: 100%;
   width: inherit;
 }
+
+.button--loading {
+    position: relative;
+    color: #ffffff;
+    text-align: center;
+    line-height: 2.2em;
+    padding: initial;
+    display: flex;
+    justify-content: center;
+}
+
+.button--loading::before {
+  content: "";
+  width: 1.415em;
+  height: 1.415em;
+  display: inline-block;
+  border: 4px solid transparent;
+  border-top-color: #fff;
+  border-radius: 50%;
+  text-align: left;
+  animation: button-loading-spinner 1s linear infinite reverse;
+  margin: 2px;
+}
+
+.button__text {
+    transition: all 0.2s;
+    margin-left: 0.5em;
+}
+
+@-webkit-keyframes button-loading-spinner {
+    from {
+        transform: rotate(0turn);
+    }
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+@keyframes button-loading-spinner {
+    from {
+        transform: rotate(0turn);
+    }
+    to {
+        transform: rotate(1turn);
+    }
+}

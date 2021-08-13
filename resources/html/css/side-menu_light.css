@@ -257,4 +257,7 @@ Hides the menu at `48em`, but modify this based on your app's needs.
         position: relative;
         left: var(--slide);
     }
+    .button--loading .button__text {
+        display: none;
+    }
 }

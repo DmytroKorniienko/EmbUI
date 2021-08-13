@@ -110,7 +110,7 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
     interf->json_section_hidden(FPSTR(T_SET_WIFI), FPSTR(T_DICT[lang][TD::D_WiFiClient]));
     interf->spacer(FPSTR(T_DICT[lang][TD::D_WiFiClientOpts]));
     interf->text(FPSTR(P_hostname), FPSTR(T_DICT[lang][TD::D_Hostname]));
-    interf->json_section_line();
+    interf->json_section_line(FPSTR(T_LOAD_WIFI));
     interf->select_edit(FPSTR(P_WCSSID), String(WiFi.SSID()), String(FPSTR(T_DICT[lang][TD::D_WiFiSSID])));
     interf->json_section_end();
     interf->button(FPSTR(T_SET_SCAN), FPSTR(T_DICT[lang][TD::D_Scan]), FPSTR(P_GREEN), 21);
@@ -251,7 +251,7 @@ void BasicUI::set_settings_wifi(Interface *interf, JsonObject *data){
  * Обработчик настроек WiFi в режиме AP
  */
 void BasicUI::set_settings_wifiAP(Interface *interf, JsonObject *data){
-    if (!data) return;
+    if (!data || embui.sysData.isWSConnect) return;
 
     if (data->containsKey(FPSTR(P_APhostname))){
         embui.var((FPSTR(P_hostname)), (*data)[FPSTR(P_APhostname)]); // для обоих режимов (STA-AP) одно и то же хранилище имени
@@ -324,11 +324,20 @@ void BasicUI::set_scan_wifi(Interface *interf, JsonObject *data){
         #endif
         LOG(printf_P, PSTR("UI WiFi: WiFi scan starting\n"));
     }
-    if (WiFi.scanComplete()== -1) return;
-    interf->json_frame_custom(F("xload"));
-    interf->json_section_content();
+    if (WiFi.scanComplete()== -1) {
+        interf->json_frame_interface();
+        interf->json_section_line(FPSTR(T_LOAD_WIFI));
+        interf->select_edit(FPSTR(P_WCSSID), String(WiFi.SSID()), String(FPSTR(T_DICT[BasicUI::lang][TD::D_WiFiSSID])));
+        interf->json_section_end();
+        interf->constant(FPSTR(T_SET_SCAN), "", true, FPSTR(P_GREEN), 21);
+        interf->json_section_end();
+        interf->json_frame_flush();
+        return;
+    }
+    interf->json_frame_interface();
+    interf->json_section_line(FPSTR(T_LOAD_WIFI));
     String ssid = WiFi.SSID();
-    interf->select_edit(FPSTR(P_WCSSID), ssid, String(""), false, true);
+    interf->select_edit(FPSTR(P_WCSSID), ssid, String(FPSTR(T_DICT[BasicUI::lang][TD::D_WiFiSSID])));
     for (int i = 0; i < WiFi.scanComplete(); i++) {
         interf->option(WiFi.SSID(i), WiFi.SSID(i));
         LOG(printf_P, PSTR("UI WiFi: WiFi Net %s\n"), WiFi.SSID(i).c_str());
@@ -336,6 +345,7 @@ void BasicUI::set_scan_wifi(Interface *interf, JsonObject *data){
     if(ssid.isEmpty())
         interf->option("", ""); // at the end of list
     interf->json_section_end();
+    interf->button(FPSTR(T_SET_SCAN), FPSTR(T_DICT[BasicUI::lang][TD::D_Scan]), FPSTR(P_GREEN), 21);
     interf->json_section_end();
     interf->json_frame_flush();
     if (WiFi.scanComplete() >= 0) {

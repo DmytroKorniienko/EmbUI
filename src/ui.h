@@ -162,8 +162,9 @@ class Interface {
         void hidden(const String &id);
         void hidden(const String &id, const String &value);
 
-        void constant(const String &id, const String &value, const String &label);
-        void constant(const String &id, const String &label);
+        // Can use like non clickable button with loading spinner with label or not
+        void constant(const String &id, const String &value, const String &label, bool loading = false, const String &color = "", uint8_t top_margine = 10);
+        void constant(const String &id, const String &label, bool loading = false, const String &color = "", uint8_t top_margine = 10);
 
         void text(const String &id, const String &value, const String &label, bool directly = false);
         void text(const String &id, const String &label, bool directly = false);

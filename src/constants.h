@@ -35,6 +35,7 @@ static const char P_true[] PROGMEM = "1";
 static const char P_type[] PROGMEM = "type";
 static const char P_value[] PROGMEM = "value";
 static const char P_wifi[] PROGMEM = "wifi";
+static const char P_loading[] PROGMEM = "loading";
 
 // UI colors
 static const char P_RED[] PROGMEM = "red";
