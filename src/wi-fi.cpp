@@ -130,8 +130,12 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         if(_cb_STADisconnected)
             _cb_STADisconnected();        // execule callback
         break;
-
+    case SYSTEM_EVENT_SCAN_DONE:
+        //BasicUI::scan_complete(info.scan_done.number);
+        EmbUI::GetInstance()->pf_wifiscan(info.scan_done.number);
+        break;
     default:
+        LOG(printf_P, PSTR("UI WiFi: Unhandled event\n"));
         break;
     }
     timeProcessor.WiFiEvent(event, info);    // handle network events for timelib

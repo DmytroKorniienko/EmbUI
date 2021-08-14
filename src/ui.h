@@ -95,7 +95,7 @@ class Interface {
     DynamicJsonDocument json;
     LList<section_stack_t*> section_stack;
     frameSend *send_hndl;
-    EmbUI *embui;
+    EmbUI *_embui;
 
     /**
      * @brief - add object to frame with mem overflow protection 
@@ -104,21 +104,21 @@ class Interface {
 
     public:
         Interface(EmbUI *j, AsyncWebSocket *server, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
-            embui = j;
+            _embui = j;
             send_hndl = new frameSendAll(server);
         }
         Interface(EmbUI *j, AsyncWebSocketClient *client, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
-            embui = j;
+            _embui = j;
             send_hndl = new frameSendClient(client);
         }
         Interface(EmbUI *j, AsyncWebServerRequest *request, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
-            embui = j;
+            _embui = j;
             send_hndl = new frameSendHttp(request);
         }
         ~Interface(){
             delete send_hndl;
             send_hndl = nullptr;
-            embui = nullptr;
+            _embui = nullptr;
         }
 
         void json_frame_value();

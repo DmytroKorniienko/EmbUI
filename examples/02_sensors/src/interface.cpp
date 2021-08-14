@@ -180,7 +180,7 @@ void sensorPublisher() {
     if (!embui.ws.count())
       return;
 
-    Interface *interf = new Interface(&embui, &embui.ws, SMALL_JSON_SIZE);
+    Interface *interf = new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, SMALL_JSON_SIZE);
     interf->json_frame_value();
     // Voltage sensor
     //  id, value, html=true

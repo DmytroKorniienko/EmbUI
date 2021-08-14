@@ -98,7 +98,7 @@ class Interface;
 #define TOGLE_STATE(val, curr) (val == "1")? true : (val == "0")? false : !curr;
 
 #define SETPARAM(key, call...) if (data->containsKey(key)) { \
-    embui.var(key, (*data)[key]); \
+    EmbUI::GetInstance()->var(key, (*data)[key]); \
     call; \
 }
 
@@ -110,7 +110,7 @@ class Interface;
 
 #define CALL_INTF(key, val, call) { \
     obj[key] = val; \
-    Interface *interf = embui.ws.count()? new Interface(&embui, &embui.ws, SMALL_JSON_SIZE) : nullptr; \
+    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, SMALL_JSON_SIZE) : nullptr; \
     call(interf, &obj); \
     if (interf) { \
         interf->json_frame_value(); \
@@ -121,7 +121,7 @@ class Interface;
 }
 
 #define CALL_INTF_OBJ(call) { \
-    Interface *interf = embui.ws.count()? new Interface(&embui, &embui.ws, SMALL_JSON_SIZE*1.5) : nullptr; \
+    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, SMALL_JSON_SIZE*1.5) : nullptr; \
     call(interf, &obj); \
     if (interf) { \
         interf->json_frame_value(); \
@@ -134,7 +134,7 @@ class Interface;
 }
 
 #define CALL_INTF_EMPTY(call) { \
-    Interface *interf = embui.ws.count()? new Interface(&embui, &embui.ws, SMALL_JSON_SIZE*1.5) : nullptr; \
+    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, SMALL_JSON_SIZE*1.5) : nullptr; \
     call(interf, nullptr); \
     if (interf) { \
         delete interf; \
@@ -177,21 +177,30 @@ enum CallBack : uint8_t {
 
 class EmbUI
 {
+    static EmbUI *pInstance; // статический экземпляр класса, допускается лишь один экземпляр
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EMBUI)
+
+#else
+    EmbUI(EmbUI &other) = delete;
+    void operator=(const EmbUI&) = delete;
+#endif
+
     friend void mqtt_dummy_connect();
     // оптимизация расхода памяти, все битовые флаги и другие потенциально "сжимаемые" переменные скидываем сюда
     //#pragma pack(push,1)
     typedef union _BITFIELDS {
     struct {
-        bool wifi_sta:1;    // флаг успешного подключения к внешней WiFi-AP, (TODO: переделать на события с коллбеками)
+        bool wifi_sta:1;        // флаг успешного подключения к внешней WiFi-AP, (TODO: переделать на события с коллбеками)
         bool mqtt_connected:1;
         bool mqtt_connect:1;
         bool mqtt_remotecontrol:1;
         bool mqtt_enable:1;
-        bool isWSConnect:1;  // было ли подключение WS в последние 5 секунд 
+        bool isWSConnect:1;     // было ли подключение WS в последние 5 секунд 
         bool LED_INVERT:1;
-        bool fsDirty:1;      // флаг поврежденной FS (ошибка монтирования)
-        uint8_t LED_PIN:5;   // [0...30]
-        uint8_t asave:4;     // 4 бита значения таймера автосохранения конфига (домножается на AUTOSAVE_MULTIPLIER)
+        bool fsDirty:1;         // флаг поврежденной FS (ошибка монтирования)
+        bool isWiFiScanning:1;  // флаг процесса сканирования WiFi
+        uint8_t LED_PIN:5;      // [0...30]
+        uint8_t asave:4;        // 4 бита значения таймера автосохранения конфига (домножается на AUTOSAVE_MULTIPLIER)
     };
     uint32_t flags; // набор битов для конфига
     _BITFIELDS() {
@@ -203,6 +212,7 @@ class EmbUI
         LED_INVERT = false;
         isWSConnect = false;
         fsDirty = false;
+        isWiFiScanning = false;
         LED_PIN = 31; // [0...30]
         asave = AUTOSAVE_TIMEOUT; // defaul timeout 2*10 sec
     }
@@ -233,7 +243,11 @@ class EmbUI
     LList<section_handle_t*> section_handle;
     AsyncMqttClient mqttClient;
 
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EMBUI)
   public:
+#else
+  protected:
+#endif
     EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws(F("/ws"))
 #ifdef EMBUI_USE_FTP
     , ftpSrv(LittleFS)
@@ -244,12 +258,23 @@ class EmbUI
         ts.addTask(embuischedw);    // WiFi helper
         tAutoSave.set(sysData.asave * AUTOSAVE_MULTIPLIER * TASK_SECOND, TASK_ONCE, [this](){LOG(println, F("UI: AutoSave")); save();} );    // config autosave timer
         ts.addTask(tAutoSave);
+        EmbUI::pInstance = this;
     }
+
+  public:
 
     ~EmbUI(){
         ts.deleteTask(tAutoSave);
         ts.deleteTask(*tValPublisher);
         ts.deleteTask(tHouseKeeper);
+        EmbUI::pInstance = nullptr;
+    }
+
+    static EmbUI *GetInstance() {
+        if(pInstance==nullptr){
+            pInstance = new EmbUI();
+        }
+        return pInstance;
     }
 
     BITFIELDS sysData;
@@ -425,7 +450,7 @@ class EmbUI
 
     // Scheduler tasks
     Task embuischedw;       // WiFi reconnection helper
-    Task *tValPublisher;     // Status data publisher
+    Task *tValPublisher = nullptr;     // Status data publisher
     Task tHouseKeeper;     // Maintenance task, runs every second
     Task tAutoSave;          // config autosave timer
 
@@ -445,7 +470,13 @@ class EmbUI
 #endif
 
 #ifdef ESP32
+    typedef void (*WIFISCANCB)(int); // wifi scan completed callback
+public:
+    //WIFISCANCB getWiFiScanCB() {return pf_wifiscan;}
+    void setWiFiScanCB(WIFISCANCB _f) {pf_wifiscan = _f;}
+private:
     void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info);
+    WIFISCANCB pf_wifiscan;
 #endif
 
     // MQTT Private Methods and vars
@@ -565,6 +596,9 @@ class EmbUI
 };
 
 // Глобальный объект фреймворка
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EMBUI)
 extern EmbUI embui;
+#endif
+
 #include "ui.h"
 #endif

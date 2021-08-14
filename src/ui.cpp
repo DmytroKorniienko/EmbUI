@@ -31,7 +31,7 @@ void Interface::html_input(const String &id, const String &type, const String &v
  */
 void Interface::number(const String &id, const String &label)
 {
-    number(id, embui->param(id), label, String(0), String(0), String(0));
+    number(id, EmbUI::GetInstance()->param(id), label, String(0), String(0), String(0));
 }
 
 void Interface::number(const String &id, const String &value, const String &label)
@@ -41,7 +41,7 @@ void Interface::number(const String &id, const String &value, const String &labe
 
 void Interface::number(const String &id, const String &label, const String &step, const String &min, const String &max)
 {
-    number(id, embui->param(id), label, step, min, max);
+    number(id, EmbUI::GetInstance()->param(id), label, step, min, max);
 }
 
 void Interface::number(const String &id, const String &value, const String &label, const String &step, const String &min, const String &max){
@@ -63,7 +63,7 @@ void Interface::number(const String &id, const String &value, const String &labe
  * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
  */
 void Interface::range(const String &id, const String &min, const String &max, const String &step, const String &label, bool directly){
-    range(id, embui->param(id), min, max, step, label, directly);
+    range(id, EmbUI::GetInstance()->param(id), min, max, step, label, directly);
 }
 
 void Interface::range(const String &id, const String &value, const String &min, const String &max, const String &step, const String &label, bool directly){
@@ -172,7 +172,7 @@ void Interface::hidden(const String &id, const String &value){
 }
 
 void Interface::hidden(const String &id){
-    hidden(id, embui->param(id));
+    hidden(id, EmbUI::GetInstance()->param(id));
 }
 
 void Interface::constant(const String &id, const String &value, const String &label, bool loading, const String &color, uint8_t top_margine){
@@ -188,7 +188,7 @@ void Interface::constant(const String &id, const String &value, const String &la
 }
 
 void Interface::constant(const String &id, const String &label, bool loading, const String &color, uint8_t top_margine){
-    constant(id, embui->param(id), label, loading, color, top_margine);
+    constant(id, EmbUI::GetInstance()->param(id), label, loading, color, top_margine);
 }
 
 void Interface::text(const String &id, const String &value, const String &label, bool directly){
@@ -196,7 +196,7 @@ void Interface::text(const String &id, const String &value, const String &label,
 }
 
 void Interface::text(const String &id, const String &label, bool directly){
-    text(id, embui->param(id), label, directly);
+    text(id, EmbUI::GetInstance()->param(id), label, directly);
 }
 
 void Interface::time(const String &id, const String &value, const String &label){
@@ -204,7 +204,7 @@ void Interface::time(const String &id, const String &value, const String &label)
 }
 
 void Interface::time(const String &id, const String &label){
-    time(id, embui->param(id), label);
+    time(id, EmbUI::GetInstance()->param(id), label);
 }
 
 void Interface::date(const String &id, const String &value, const String &label){
@@ -212,7 +212,7 @@ void Interface::date(const String &id, const String &value, const String &label)
 }
 
 void Interface::date(const String &id, const String &label){
-    time(id, embui->param(id), label);
+    time(id, EmbUI::GetInstance()->param(id), label);
 }
 
 void Interface::datetime(const String &id, const String &value, const String &label){
@@ -220,7 +220,7 @@ void Interface::datetime(const String &id, const String &value, const String &la
 }
 
 void Interface::datetime(const String &id, const String &label){
-    datetime(id, embui->param(id), label);
+    datetime(id, EmbUI::GetInstance()->param(id), label);
 }
 
 void Interface::email(const String &id, const String &value, const String &label){
@@ -228,7 +228,7 @@ void Interface::email(const String &id, const String &value, const String &label
 }
 
 void Interface::email(const String &id, const String &label){
-    email(id, embui->param(id), label);
+    email(id, EmbUI::GetInstance()->param(id), label);
 }
 
 void Interface::password(const String &id, const String &value, const String &label){
@@ -236,7 +236,7 @@ void Interface::password(const String &id, const String &value, const String &la
 }
 
 void Interface::password(const String &id, const String &label){
-    password(id, embui->param(id), label);
+    password(id, EmbUI::GetInstance()->param(id), label);
 }
 
 void Interface::option(const String &value, const String &label){
@@ -247,7 +247,7 @@ void Interface::option(const String &value, const String &label){
 }
 
 void Interface::select(const String &id, const String &label, bool directly, bool skiplabel, bool editable){
-    select(id, embui->param(id), label, directly, skiplabel);
+    select(id, EmbUI::GetInstance()->param(id), label, directly, skiplabel);
 }
 
 void Interface::select_edit(const String &id, const String &value, const String &label, bool directly, bool skiplabel, const String &exturl, bool editable){
@@ -255,7 +255,7 @@ void Interface::select_edit(const String &id, const String &value, const String 
 }
 
 void Interface::select_edit(const String &id, const String &label, bool directly, bool skiplabel, bool editable){
-    select(id, embui->param(id), label, directly, skiplabel, "", editable);
+    select(id, EmbUI::GetInstance()->param(id), label, directly, skiplabel, "", editable);
 }
 
 
@@ -269,7 +269,7 @@ void Interface::checkbox(const String &id, const String &value, const String &la
 }
 
 void Interface::checkbox(const String &id, const String &label, bool directly){
-    checkbox(id, embui->param(id), label, directly);
+    checkbox(id, EmbUI::GetInstance()->param(id), label, directly);
 }
 
 void Interface::color(const String &id, const String &value, const String &label){
@@ -277,7 +277,7 @@ void Interface::color(const String &id, const String &value, const String &label
 }
 
 void Interface::color(const String &id, const String &label){
-    color(id, embui->param(id), label);
+    color(id, EmbUI::GetInstance()->param(id), label);
 }
 
 void Interface::file(const String &name, const String &action, const String &label){
@@ -343,7 +343,7 @@ void Interface::textarea(const String &id, const String &value, const String &la
 }
 
 void Interface::textarea(const String &id, const String &label){
-    textarea(id, embui->param(id), label);
+    textarea(id, EmbUI::GetInstance()->param(id), label);
 }
 
 /**
@@ -360,7 +360,7 @@ void Interface::value(const String &id, const String &val, bool html){
 };
 
 void Interface::value(const String &id, bool html){
-    value(id, embui->param(id), html);
+    value(id, EmbUI::GetInstance()->param(id), html);
 }
 
 inline void Interface::value(JsonObjectConst data){
@@ -379,7 +379,7 @@ void Interface::json_frame_interface(const String &name){
     json[F("pkg")] = F("interface");
     if (name != "") {
         json[F("app")] = name;
-        json[F("mc")] = embui->mc;
+        json[F("mc")] = EmbUI::GetInstance()->mc;
         json[F("ver")] = F(TOSTRING(EMBUIVER));
     }
     json[FPSTR(P_final)] = false;

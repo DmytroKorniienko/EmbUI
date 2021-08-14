@@ -21,9 +21,8 @@ json_frame_interface - формирование интерфейса
 json_frame_value - формирование данных
 
 Пример.
-extern EmbUI embui;
 AsyncWebSocket ws("/ws");
-Interface *interf = new Interface(&embui, client);
+Interface *interf = new Interface(EmbUI::GetInstance(), client);
 interf->json_frame_interface("Огненная лампа");
 ...
 interf->json_frame_flush();
