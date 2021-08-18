@@ -512,6 +512,9 @@ bool TimeProcessor::sntpIsSynced()
     }
     else
     {
+#ifdef ESP32
+        isSynced = true;
+#endif        
         rc = true;
     }
     return rc;
