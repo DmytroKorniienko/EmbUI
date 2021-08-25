@@ -191,7 +191,7 @@ void BasicUI::block_settings_time(Interface *interf, JsonObject *data){
     interf->text(FPSTR(P_userntp), FPSTR(T_DICT[lang][TD::D_NTP_Secondary]));
     // manual date and time setup
     interf->comment(FPSTR(T_DICT[lang][TD::D_MSG_DATETIME]));
-    interf->text(FPSTR(P_DTIME), String(""), "", false);
+    interf->datetime(FPSTR(P_DTIME), String(""), true);
     interf->hidden(FPSTR(P_DEVICEDATETIME),""); // скрытое поле для получения времени с устройства
     interf->button_submit(FPSTR(T_SET_TIME), FPSTR(T_DICT[lang][TD::D_SAVE]), FPSTR(P_GRAY));
 

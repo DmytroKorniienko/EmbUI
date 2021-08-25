@@ -13,7 +13,7 @@
  * @param label - element label
  * @param direct - if true, element value in send via ws on-change 
  */
-void Interface::html_input(const String &id, const String &type, const String &value, const String &label, bool direct){
+void Interface::html_input(const String &id, const String &type, const String &value, const String &label, bool direct, bool step){
     StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = type;
@@ -21,6 +21,7 @@ void Interface::html_input(const String &id, const String &type, const String &v
     obj[FPSTR(P_value)] = value;
     obj[FPSTR(P_label)] = label;
     if (direct) obj[FPSTR(P_directly)] = true;
+    if (step) obj[FPSTR(P_step)] = 1;
 
     frame_add_safe(obj.as<JsonObject>());
 }
@@ -215,12 +216,12 @@ void Interface::date(const String &id, const String &label){
     time(id, EmbUI::GetInstance()->param(id), label);
 }
 
-void Interface::datetime(const String &id, const String &value, const String &label){
-    html_input(id, String(F("datetime-local")), value, label);
+void Interface::datetime(const String &id, const String &value, const String &label, bool step){
+    html_input(id, String(F("datetime-local")), value, label, false, step);
 }
 
-void Interface::datetime(const String &id, const String &label){
-    datetime(id, EmbUI::GetInstance()->param(id), label);
+void Interface::datetime(const String &id, const String &label, bool step){
+    datetime(id, EmbUI::GetInstance()->param(id), label, step);
 }
 
 void Interface::email(const String &id, const String &value, const String &label){

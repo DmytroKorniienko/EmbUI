@@ -187,8 +187,9 @@ class Interface {
         void date(const String &id, const String &value, const String &label);
         void date(const String &id, const String &label);
         
-        void datetime(const String &id, const String &value, const String &label);
-        void datetime(const String &id, const String &label);
+        // Step - show seconds 
+        void datetime(const String &id, const String &value, const String &label, bool step = false);
+        void datetime(const String &id, const String &label, bool step = false);
         
         void email(const String &id, const String &value, const String &label);
         void email(const String &id, const String &label);
@@ -241,8 +242,9 @@ class Interface {
          * @param value - element value
          * @param label - element label
          * @param direct - if true, element value in send via ws on-change 
+         * @param step - show seconds for datetime control 
          */
-        void html_input(const String &id, const String &type, const String &value, const String &label, bool direct = false);
+        void html_input(const String &id, const String &type, const String &value, const String &label, bool direct = false, bool step = false);
 
         /**
          * @brief - create "display" div with custom css selector
