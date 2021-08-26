@@ -96,9 +96,14 @@ void Interface::select(const String &id, const String &value, const String &labe
 
     if (!frame_add_safe(obj.as<JsonObject>()))
         return;
-
+    
     section_stack.end()->idx--;
-    json_section_begin(FPSTR(P_options), "", false, false, false, section_stack.end()->block.getElement(section_stack.end()->idx));
+    uint8_t idx = section_stack.end()->idx;
+    do { // после того как было дробление фрейма, индекс может не соответствовать!!!
+        idx--;
+    } while (!section_stack.end()->block.getElement(idx) && idx);
+
+    json_section_begin(FPSTR(P_options), "", false, false, false, section_stack.end()->block.getElement(idx));
 }
 
 /**
@@ -408,6 +413,7 @@ bool Interface::json_frame_add(JsonObjectConst obj) {
 
 void Interface::json_frame_next(){
     json.clear();
+    json.garbageCollect();
     JsonObject obj = json.to<JsonObject>();
     for (int i = 0; i < section_stack.size(); i++) {
         if (i) obj = section_stack[i - 1]->block.createNestedObject();
