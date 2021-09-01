@@ -129,7 +129,7 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
     interf->number(FPSTR(P_m_port), FPSTR(T_DICT[lang][TD::D_MQTT_Port]));
     interf->text(FPSTR(P_m_user), FPSTR(T_DICT[lang][TD::D_User]));
     interf->password(FPSTR(P_m_pass), FPSTR(T_DICT[lang][TD::D_Password]));
-    interf->text(FPSTR(P_m_pref), FPSTR(T_DICT[lang][TD::D_MQTT_Topic]));
+    interf->text(FPSTR(P_m_pref), FPSTR(T_DICT[lang][TD::D_MQTT_Prefix]));
     interf->number(FPSTR(P_m_tupd), FPSTR(T_DICT[lang][TD::D_MQTT_Interval]));
     interf->button_submit(FPSTR(T_SET_MQTT), FPSTR(T_DICT[lang][TD::D_CONNECT]), FPSTR(P_GRAY));
     interf->json_section_end();
