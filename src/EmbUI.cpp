@@ -104,7 +104,6 @@ void notFound(AsyncWebServerRequest *request) {
 }
 
 void EmbUI::begin(){
-
     uint8_t retry_cnt = 3;
 
     // монтируем ФС только один раз при старте
@@ -305,10 +304,6 @@ void EmbUI::begin(){
 
     server.onNotFound(notFound);
 
-    server.begin();
-
-    setPubInterval(PUB_PERIOD);
-
     tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
             ws.cleanupClients(MAX_WS_CLIENTS);
             #ifdef ESP8266
@@ -319,8 +314,12 @@ void EmbUI::begin(){
     ts.addTask(tHouseKeeper);
     tHouseKeeper.enableDelayed();
 
+    server.begin();
+
+    setPubInterval(PUB_PERIOD);
+
 #ifdef EMBUI_USE_FTP
-  /////FTP Setup, ensure LittleFS is started before ftp;  /////////
+  //FTP Setup, ensure LittleFS is started before ftp;
   if (LittleFS.begin() && cfgData.isftp) {
     ftpSrv.begin(param(FPSTR(P_ftpuser)), param(FPSTR(P_ftppass))); //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
   }

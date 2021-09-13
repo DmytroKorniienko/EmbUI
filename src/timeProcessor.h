@@ -7,12 +7,14 @@
 #define __TIMEPROCESSOR_H
 
 #include "globals.h"
-
-//#ifndef TZONE
-    #include "ts.h"
-//#endif
-
+#include "ts.h"
 #include "wi-fi.h"
+
+#ifndef TZONE
+#define DEF_TZONE PSTR("GMT0")         // default Time-Zone
+#else
+#define DEF_TZONE TZONE
+#endif
 
 #ifdef COUNTRY
     #define NTP1ADDRESS        TOSTRING(COUNTRY) "." "pool.ntp.org"    // пул серверов времени для NTP
@@ -49,13 +51,33 @@ typedef struct _RTC_DATA{
 class TimeProcessor
 {
 private:
+    // оптимизация расхода памяти, все битовые флаги и другие потенциально "сжимаемые" переменные скидываем сюда
+    #pragma pack(push,1)
+    typedef union _BITFIELDS {
+    struct {
+        uint8_t ntpcnt:2;
+        bool isSynced:1;      // флаг, означает что время было синхронизированно
+        bool usehttpzone:1;      // флаг, означает что время было синхронизированно
+    };
+    uint32_t flags; // набор битов для конфига
+    _BITFIELDS() {
+        ntpcnt = 1;
+        isSynced = false;      // флаг, означает что время было синхронизированно
+    // используем http-сервис для смещения TZ
+    #ifdef TZONE
+        usehttpzone = false;
+    #else
+        usehttpzone = true;
+    #endif
+    }
+    } BITFIELDS;
+    #pragma pack(pop)
+
     TimeProcessor(const TimeProcessor&);            // noncopyable
     TimeProcessor& operator=(const TimeProcessor&); // noncopyable
 
-    bool sntpIsSynced(); // проверка получения данных через sntp
-
-#ifndef TZONE
-    Task _wrk;
+    Task *_httpTask = nullptr;
+    String tzone;            // строка зоны для http-сервиса как она задана в https://raw.githubusercontent.com/nayarsystems/posix_tz_db/master/zones.csv
     /**
      * Функция обращается к внешнему http-сервису, получает временную зону/летнее время
      * на основании либо установленной переменной tzone, либо на основе IP-адреса
@@ -69,25 +91,22 @@ private:
      * при вызове без параметра выставляет отложенный запуск на HTTP_REFRESH_HRS:HTTP_REFRESH_MIN
      */
     void httprefreshtimer(const uint32_t delay=0);
-#endif
 
+    /**
+     * установка строки с текущей временной зоной в текстовом виде,
+     * влияет, на запрос через http-api за временем в конкретной зоне,
+     * вместо автоопределения по ip
+     * !ВНИМАНИЕ! Никакого отношения к текущей системной часовой зоне эта функция не имеет!!! 
+     */
+    void httpTimezone(const char *var);
+
+    bool sntpIsSynced(); // проверка получения данных через sntp
 protected:
     callback_function_t _timecallback = nullptr;
+    BITFIELDS tpData;
 
-    uint8_t ntpcnt = 1;
     Task *_ntpTask = nullptr;
-    // String ntp0 = NTP1ADDRESS;              // хранилище для ntp-сервера0
-    // String ntp1 = NTP2ADDRESS;              // хранилище для ntp-сервера1
     String ntp2;              // хранилище для ntp-сервера2 (резервный, задается с UI)
-    String tzone;            // строка зоны для http-сервиса как она задана в https://raw.githubusercontent.com/nayarsystems/posix_tz_db/master/zones.csv
-    bool isSynced = false;      // флаг, означает что время было синхронизированно
-
-    // используем http-сервис для смещени TZ
-    #ifdef TZONE
-        bool usehttpzone = false;
-    #else
-        bool usehttpzone = true;
-    #endif
 
     /**
      * Timesync callback
@@ -124,13 +143,6 @@ public:
         return data;
     }
 
-    /**
-     * установка строки с текущей временной зоной в текстовом виде,
-     * влияет, на запрос через http-api за временем в конкретной зоне,
-     * вместо автоопределения по ip
-     * !ВНИМАНИЕ! Никакого отношения к текущей системной часовой зоне эта функция не имеет!!! 
-     */
-    void httpTimezone(const char *var);
 
     /**
      * Функция установки системного времени, принимает в качестве аргумента указатель на строку в формате
@@ -202,7 +214,7 @@ public:
     /**
      * возвращает true если врямя еще не было синхронизированно каким либо из доступных источников
      */
-    bool isDirtyTime() {return !isSynced || !sntpIsSynced();}
+    bool isDirtyTime() {return !tpData.isSynced || !sntpIsSynced();}
 
     /**
      * функция допечатывает в переданную строку заданный таймстамп в дату/время в формате "9999-99-99T99:99"
@@ -229,7 +241,6 @@ public:
         else
           return true;
     }
-
 };
 
 #endif
