@@ -187,7 +187,7 @@ class EmbUI
 
     friend void mqtt_dummy_connect();
     // оптимизация расхода памяти, все битовые флаги и другие потенциально "сжимаемые" переменные скидываем сюда
-    //#pragma pack(push,1)
+    #pragma pack(push,1)
     typedef union _BITFIELDS {
     struct {
         bool wifi_sta:1;        // флаг успешного подключения к внешней WiFi-AP, (TODO: переделать на события с коллбеками)
@@ -217,9 +217,9 @@ class EmbUI
         asave = AUTOSAVE_TIMEOUT; // defaul timeout 2*10 sec
     }
     } BITFIELDS;
-    //#pragma pack(pop)
+    #pragma pack(pop)
 
-    //#pragma pack(push,1)
+    #pragma pack(push,1)
     typedef union _EMBUICFG {
     struct {
         bool isftp:1;       // флаг использования FTP
@@ -229,7 +229,7 @@ class EmbUI
         isftp = true;
     }
     } EMBUICFG;
-    //#pragma pack(pop)
+    #pragma pack(pop)
 
     typedef void (*buttonCallback) (Interface *interf, JsonObject *data);
     typedef void (*mqttCallback) ();

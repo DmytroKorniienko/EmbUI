@@ -5,20 +5,21 @@
 
 #include "timeProcessor.h"
 #include "ts.h"
+#include <ArduinoJson.h>
 
 #ifdef ESP8266
- #include <coredecls.h>                 // settimeofday_cb()
- #include <TZ.h>                        // TZ declarations https://github.com/esp8266/Arduino/blob/master/cores/esp8266/TZ.h
- #include <sntp.h>
- #include <ESP8266HTTPClient.h>
+#include <coredecls.h>                 // settimeofday_cb()
+#include <TZ.h>                        // TZ declarations https://github.com/esp8266/Arduino/blob/master/cores/esp8266/TZ.h
+#include <sntp.h>
+#include <ESP8266HTTPClient.h>
 
- #ifdef __NEWLIB__ 
-  #if __NEWLIB__ >= 4
+#ifdef __NEWLIB__ 
+#if __NEWLIB__ >= 4
     extern "C" {
         #include <sys/_tz_structs.h>
     };
-  #endif
- #endif
+#endif
+#endif
 #endif
 
 #ifdef ESP32
@@ -27,11 +28,6 @@
  #include <HTTPClient.h>
 #endif
 
-#ifndef TZONE
-  #include <ArduinoJson.h>
-#endif
-
-#define TZ_DEFAULT PSTR("GMT0")         // default Time-Zone
 static const char P_LOC[] PROGMEM = "LOC";
 
 #ifndef ESP8266
@@ -107,15 +103,8 @@ TimeProcessor::TimeProcessor()
     sntp_set_time_sync_notification_cb(timeavailable);
 #endif
 */
-
-    #ifdef TZONE
-        //configTzTime(TZONE, ntp0.c_str(), ntp1.c_str());
-        configTzTime(TZONE, NTP1ADDRESS, NTP2ADDRESS);
-        LOG(print, F("TIME: Time Zone set to: "));      LOG(print, TZONE);
-    #else
-        //configTzTime(TZ_DEFAULT, ntp0.c_str(), ntp1.c_str());
-        configTzTime(TZ_DEFAULT, NTP1ADDRESS, NTP2ADDRESS);
-    #endif
+    configTzTime(DEF_TZONE, NTP1ADDRESS, NTP2ADDRESS);
+    //LOG(printf_P, PSTR("TIME: Time Zone set to: %s\n"), DEF_TZONE);
 
     sntp_stop();    // отключаем ntp пока нет подключения к AP
 }
@@ -209,8 +198,8 @@ void TimeProcessor::tzsetup(const char* tz){
 
     tzset();
     tzone = ""; // сбрасываем костыльную зону
-    usehttpzone = false;  // запрещаем использование http
-    LOG(printf_P, PSTR("TIME: TZSET rules changed to: %s\n"), tz);
+    tpData.usehttpzone = false;  // запрещаем использование http
+    LOG(printf_P, PSTR("TIME: TZSET rules changed from: %s to: %s\n"), DEF_TZONE, tz);
 
     unsigned long shift = RTC_Worker();
     //time_t _time = shift;
@@ -220,7 +209,6 @@ void TimeProcessor::tzsetup(const char* tz){
     LOG(printf_P,PSTR("TIME: After reboot time (%lu)-> %s\n"), (unsigned long)shift, dt.c_str());
 }
 
-#ifndef TZONE
 /**
  * берем урл и записываем ответ в переданную строку
  * в случае если в коде ответа ошибка, обнуляем строку
@@ -229,7 +217,7 @@ unsigned int TimeProcessor::getHttpData(String &payload, const String &url)
 {
   WiFiClient client;
   HTTPClient http;
-  LOG(println, F("TimeZone updating via HTTP..."));
+  LOG(printf_P, PSTR("TimeZone updating via HTTP: %s\n"), url.c_str());
   http.begin(client, url);
 
   int httpCode = http.GET();
@@ -244,7 +232,7 @@ unsigned int TimeProcessor::getHttpData(String &payload, const String &url)
 
 void TimeProcessor::getTimeHTTP()
 {
-    if (!usehttpzone)
+    if (!tpData.usehttpzone)
         return;     // выходим если не выставлено разрешение на использование http
 
     String result((char *)0);
@@ -297,9 +285,9 @@ void TimeProcessor::getTimeHTTP()
 }
 
 void TimeProcessor::httprefreshtimer(const uint32_t delay){
-    if (!usehttpzone){
-        _wrk.disable();
-        return;     // выходим если не выставлено разрешение на использование http
+    if (tpData.usehttpzone && _httpTask){
+        _httpTask->disable();
+        return;
     }
 
     time_t timer;
@@ -320,43 +308,36 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
         LOG(printf_P, PSTR("Schedule TZ refresh in %ld\n"), timer);
     }
 
-    _wrk.set(timer * TASK_SECOND, TASK_ONCE, [this](){getTimeHTTP();});
-    _wrk.restartDelayed();
-
-/*
-    #ifdef ESP8266
-        _wrk.once_scheduled(timer, std::bind(&TimeProcessor::getTimeHTTP, this));
-    #elif defined ESP32
-        _wrk.once((float)timer, std::bind(&TimeProcessor::getTimeHTTP, this));
-    #endif
-*/
+    if(!_httpTask){
+        _httpTask = new Task(timer * TASK_SECOND, TASK_ONCE, nullptr, &ts, false, nullptr, [this](){getTimeHTTP(); TASK_RECYCLE; _httpTask=nullptr;});
+    }
+    _httpTask->restartDelayed();
 }
-#endif
 
 void TimeProcessor::ntpReSync(){
-    if(!sntpIsSynced() || !isSynced){
+    if(!sntpIsSynced() || !tpData.isSynced){
 #ifndef ESP32
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
 #endif
         if(!_ntpTask){
             _ntpTask = new Task(TASK_SECOND*10, TASK_ONCE, nullptr, &ts, false, nullptr, [this](){
-                if((!sntpIsSynced() || !isSynced) && ntpcnt){
+                if((!sntpIsSynced() || !tpData.isSynced) && tpData.ntpcnt){
                     const char *to;
-                    switch(ntpcnt){
+                    switch(tpData.ntpcnt){
                         case 1: to = NTP1ADDRESS; break;
                         case 2: to = NTP2ADDRESS; break;
                         case 3: to = ntp2.c_str(); break;
                         default: to = NTP1ADDRESS; break;
                     }
-                    LOG(printf_P, PSTR("NTP: switching NTP[%d] server from %s to %s\n"), ntpcnt, String(sntp_getservername(0)).c_str(), to); // странное преобразование, но почему-то без него бывают ребуты...
+                    LOG(printf_P, PSTR("NTP: switching NTP[%d] server from %s to %s\n"), tpData.ntpcnt, String(sntp_getservername(0)).c_str(), to); // странное преобразование, но почему-то без него бывают ребуты...
                     sntp_stop();
                     sntp_setservername(0, (char *)to);
                     sntp_init();
-                    ntpcnt++; ntpcnt%=4;
+                    tpData.ntpcnt++; tpData.ntpcnt%=4;
                     ts.getCurrentTask()->restartDelayed(TASK_SECOND*10);
                     return;
                 } else {
-                    if(!ntpcnt){
+                    if(!tpData.ntpcnt){
                         unsigned long shift = RTC_Worker();
                         time_t _time = shift;
                         timeval tv = { _time, 0 };
@@ -384,18 +365,18 @@ void TimeProcessor::onSTAGotIP(const WiFiEventStationModeGotIP ipInfo)
 {
     sntp_init();
     ntpReSync();
-    #ifndef TZONE
+    if(tpData.usehttpzone){
         // отложенный запрос смещения зоны через http-сервис
         httprefreshtimer(HTTPSYNC_DELAY);
-    #endif
+    }
 }
 
 void TimeProcessor::onSTADisconnected(const WiFiEventStationModeDisconnected event_info)
 {
-  sntp_stop();
-  #ifndef TZONE
-    _wrk.disable();
-  #endif
+    sntp_stop();
+    if(_httpTask && tpData.usehttpzone){
+        _httpTask->disable();
+    }
 }
 #endif  //ESP8266
 
@@ -406,17 +387,17 @@ void TimeProcessor::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
     case SYSTEM_EVENT_STA_GOT_IP:
         sntp_init();
         ntpReSync();
-        #ifndef TZONE
+        if(tpData.usehttpzone){
             // отложенный запрос смещения зоны через http-сервис
             httprefreshtimer(HTTPSYNC_DELAY);
-        #endif
+        }
         LOG(println, F("UI TIME: Starting sntp sync"));
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
         sntp_stop();
-        #ifndef TZONE
-            _wrk.disable();
-        #endif
+        if(_httpTask && tpData.usehttpzone){
+            _httpTask->disable();
+        }
         break;
     default:
         break;
@@ -432,7 +413,7 @@ void TimeProcessor::timeavailable(){
         time((time_t *)&shift);
         RTC_Worker(shift);
         LOG(printf_P, PSTR("NTP: time synced from %s (%lu)\n"), String(sntp_getservername(0)).c_str(), (unsigned long)shift); // странное преобразование, но почему-то без него бывают ребуты...
-        isSynced = true;
+        tpData.isSynced = true;
         if(_timecallback)
             _timecallback();
     }
@@ -485,7 +466,7 @@ void TimeProcessor::setcustomntp(const char* ntp){
     this->ntp2 = ntp;
     sntp_setservername(CUSTOM_NTP_INDEX, (char *)this->ntp2.c_str());
     LOG(printf_P, PSTR("NTP: Set custom NTP[%d] to: %s\n"), CUSTOM_NTP_INDEX, this->ntp2.c_str());
-    this->ntpcnt = CUSTOM_NTP_INDEX;
+    this->tpData.ntpcnt = CUSTOM_NTP_INDEX;
 
     // sntp_restart();
     ntpReSync();

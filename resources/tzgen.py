@@ -3,14 +3,14 @@ import csv
 import json 
 
 def csv_to_json(csvFilePath, jsonFilePath):
-    jsonArray = []
+    jsonArray = [{"label": "", "value": "000_"}]
 
     #read csv file
     with open(csvFilePath, encoding='utf-8') as csvf:
         #load csv file data using csv library's dictionary reader
         csvReader = csv.DictReader(csvf)
 
-        i = 0
+        i = 1
         #convert each csv row into python dict
         for row in csvReader:
             # reformat values - pad it with index, so that we could use it as a key for dropdown list
