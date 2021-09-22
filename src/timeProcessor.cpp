@@ -26,6 +26,7 @@
  #include <time.h>
  #include <lwip/apps/sntp.h>
  #include <HTTPClient.h>
+ #include "TZ32.h"
 #endif
 
 static const char P_LOC[] PROGMEM = "LOC";
@@ -494,7 +495,7 @@ bool TimeProcessor::sntpIsSynced()
     else
     {
 #ifdef ESP32
-        isSynced = true;
+        tpData.isSynced = true;
 #endif        
         rc = true;
     }

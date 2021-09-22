@@ -36,6 +36,7 @@ static const char T_SH_NETW[] PROGMEM = "sh_netw";
 static const char T_SH_TIME[] PROGMEM = "sh_time";
 static const char T_REBOOT[] PROGMEM = "reboot";
 
+static const char T_XLOAD[] PROGMEM = "xload";
 /*
     перенакрываемая функция для добавления пользовательских пунктов в меню "Настройки"
     вызывается в конце section_settings_frame()

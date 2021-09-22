@@ -206,7 +206,7 @@ void BasicUI::block_settings_time(Interface *interf, JsonObject *data){
 
     // формируем и отправляем кадр с запросом подгрузки внешнего ресурса со списком правил временных зон
     // полученные данные заместят предыдущее поле выпадающим списком с данными о всех временных зонах
-    interf->json_frame_custom(F("xload"));
+    interf->json_frame_custom(FPSTR(T_XLOAD));
     interf->json_section_content();
                     //id            val                         label   direct  skipl URL for external data
     interf->select(FPSTR(P_TZSET), EmbUI::GetInstance()->param(FPSTR(P_TZSET)), "",     false,  true, F("/js/tz.json"));
@@ -293,7 +293,7 @@ void BasicUI::set_scan_wifi(Interface *interf, JsonObject *data){
 
     if (WiFi.scanComplete() == -2) {
         LOG(printf_P, PSTR("UI WiFi: WiFi scan starting\n"));
-        interf->json_frame_custom("xload");
+        interf->json_frame_custom(FPSTR(T_XLOAD));
         interf->json_section_content();
         interf->constant(FPSTR(T_SET_SCAN), FPSTR(T_DICT[lang][TD::D_Scan]), true, FPSTR(P_GREEN), 20);
         interf->json_section_end();
