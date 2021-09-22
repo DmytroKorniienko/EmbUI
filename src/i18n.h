@@ -42,7 +42,7 @@ enum TD : uint8_t {
     D_MQTT_Host,
     D_MQTT_Interval,
     D_MQTT_Port,
-    D_MQTT_Topic,
+    D_MQTT_Prefix,
     D_MSG_APOnly,
     D_MSG_APProtect,
     D_MSG_DATETIME,
