@@ -119,11 +119,20 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.disconnected.reason);
         // https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/esp32/esp_wifi_types.h
         if(WiFi.getMode() != WIFI_MODE_APSTA && !embuischedw.isEnabled()){
-            LOG(println, PSTR("UI WiFi: Reconnect attempt"));
-            embuischedw.set(WIFI_BEGIN_DELAY* TASK_SECOND, TASK_ONCE, [this](){ WiFi.mode(WIFI_MODE_APSTA);
-                                                        LOG(println, F("UI WiFi: Switch to AP-Station mode"));
-                                                        embuischedw.disable();} );
-            embuischedw.restartDelayed();
+            LOG(println, F("UI WiFi: Reconnect attempt"));
+            LOG(println, F("UI WiFi: Switch to AP-Station mode"));
+            // embuischedw.set(WIFI_BEGIN_DELAY* TASK_SECOND, TASK_ONCE, [this](){ WiFi.mode(WIFI_MODE_APSTA);
+            //                                             LOG(println, F("UI WiFi: Switch to AP-Station mode"));
+            //                                             embuischedw.disable();} );
+            // embuischedw.restartDelayed();
+        }
+
+        {
+            Task *t = new Task(WIFI_RECONNECT_TIMER * TASK_SECOND, TASK_ONCE,
+                    [this](){ embuischedw.disable(); wifi_setmode(WIFI_AP_STA); WiFi.begin(); TASK_RECYCLE; },
+                    &ts, false
+                );
+            t->enableDelayed();
         }
 
         sysData.wifi_sta = false;
@@ -135,7 +144,7 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         EmbUI::GetInstance()->pf_wifiscan(info.scan_done.number);
         break;
     default:
-        LOG(printf_P, PSTR("UI WiFi: Unhandled event\n"));
+        LOG(printf_P, PSTR("UI WiFi: Unhandled event: %d\n"), event);
         break;
     }
     timeProcessor.WiFiEvent(event, info);    // handle network events for timelib
