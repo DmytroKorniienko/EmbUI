@@ -5,6 +5,7 @@
 
 #include "ui.h"
 #include "i18n.h"        // localized GUI text-strings
+#include "constants.h" 
 
 /**
  * List of UI languages in predefined i18n resources
@@ -14,29 +15,6 @@ enum LANG : uint8_t {
     EN = (1U),
 };
 
-// UI blocks
-static const char T_SETTINGS[] PROGMEM = "settings";
-static const char T_OPT_NETW[] PROGMEM = "networking";
-static const char T_LOAD_WIFI[] PROGMEM = "loading_wifi";
-
-// UI handlers
-static const char T_DO_OTAUPD[] PROGMEM = "update";
-static const char T_UPROGRESS[] PROGMEM = "uprogress";
-static const char T_SET_WIFI[] PROGMEM = "set_wifi";
-static const char T_SET_WIFIAP[] PROGMEM = "set_wifiAP";
-static const char T_SET_MQTT[] PROGMEM = "set_mqtt";
-#ifdef EMBUI_USE_FTP
-static const char T_SET_FTP[] PROGMEM = "set_ftp";
-static const char T_CHK_FTP[] PROGMEM = "chk_ftp";
-#endif
-static const char T_SET_TIME[] PROGMEM = "set_time";
-static const char T_SET_SCAN[] PROGMEM = "set_scan";
-
-static const char T_SH_NETW[] PROGMEM = "sh_netw";
-static const char T_SH_TIME[] PROGMEM = "sh_time";
-static const char T_REBOOT[] PROGMEM = "reboot";
-
-static const char T_XLOAD[] PROGMEM = "xload";
 /*
     перенакрываемая функция для добавления пользовательских пунктов в меню "Настройки"
     вызывается в конце section_settings_frame()
@@ -51,7 +29,7 @@ class BasicUI {
   private:
     static bool isBackOn;           // is returning to main settings? default=true
 #ifndef ESP8266     
-    static Task *_WiFiScan;
+    static Task *_WIFIScan;
 #endif
   public:
     static uint8_t lang;            // default language for text resources
@@ -72,12 +50,12 @@ class BasicUI {
   static void opt_setup(Interface *interf, JsonObject *data);
 
     static void block_settings_netw(Interface *interf, JsonObject *data);
+    static void block_only_wifi(Interface *interf, JsonObject *data);
     static void block_settings_update(Interface *interf, JsonObject *data);
     static void block_settings_time(Interface *interf, JsonObject *data);
 
     static void section_settings_frame(Interface *interf, JsonObject *data);
     static void set_settings_wifi(Interface *interf, JsonObject *data);
-    static void set_settings_wifiAP(Interface *interf, JsonObject *data);
     static void set_scan_wifi(Interface *interf, JsonObject *data);
     static void set_settings_mqtt(Interface *interf, JsonObject *data);
     static void set_settings_time(Interface *interf, JsonObject *data);

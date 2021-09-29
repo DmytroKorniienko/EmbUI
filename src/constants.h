@@ -3,6 +3,9 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
+#ifndef _EMBUI_CONSTANTS_H
+#define _EMBUI_CONSTANTS_H
+
 // Interface
 static const char P_block[] PROGMEM = "block";
 static const char P_button[] PROGMEM = "button";
@@ -51,8 +54,7 @@ static const char P_cfgfile[] PROGMEM = "/config.json";
 static const char P_cfgfile_bkp[] PROGMEM = "/config_bkp.json";
 
 static const char P_hostname[] PROGMEM = "hostname";    // System hostname
-static const char P_APhostname[] PROGMEM = "APhostname";  // System AP-hostname
-static const char P_APonly[] PROGMEM = "APonly";        // AccessPoint-only mode
+static const char P_WIFIMODE[] PROGMEM = "WiFiMode";    // WiFi mode (AP, STA, AP+STA)
 static const char P_APpwd[] PROGMEM = "APpwd";          // AccessPoint password
 static const char P_TZSET[] PROGMEM = "TZSET";          // TimeZone rule variable
 static const char P_userntp[] PROGMEM = "userntp";      // user-defined NTP server
@@ -97,3 +99,29 @@ static const char P_FTP_PASS_DEFAULT[] PROGMEM  = "ftp";
 
 // Bitmap for EmbUI
 static const char P_cfgData[] PROGMEM  = "EmbUIData";
+
+// UI blocks
+static const char T_SETTINGS[] PROGMEM = "settings";
+static const char T_OPT_NETW[] PROGMEM = "networking";
+static const char T_LOAD_WIFI[] PROGMEM = "loading_wifi";
+
+// UI handlers
+static const char T_DO_OTAUPD[] PROGMEM = "update";
+static const char T_UPROGRESS[] PROGMEM = "uprogress";
+static const char T_SET_WIFI[] PROGMEM = "set_wifi";
+static const char T_SET_WIFIAP[] PROGMEM = "set_wifiAP";
+static const char T_SET_MQTT[] PROGMEM = "set_mqtt";
+#ifdef EMBUI_USE_FTP
+static const char T_SET_FTP[] PROGMEM = "set_ftp";
+static const char T_CHK_FTP[] PROGMEM = "chk_ftp";
+#endif
+static const char T_SET_TIME[] PROGMEM = "set_time";
+static const char T_SET_SCAN[] PROGMEM = "set_scan";
+
+static const char T_SH_NETW[] PROGMEM = "sh_netw";
+static const char T_SH_TIME[] PROGMEM = "sh_time";
+static const char T_REBOOT[] PROGMEM = "reboot";
+
+static const char T_XLOAD[] PROGMEM = "xload";
+
+#endif // _EMBUI_CONSTANTS_H

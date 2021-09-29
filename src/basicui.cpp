@@ -4,7 +4,7 @@
     uint8_t BasicUI::lang = 0;        // default language for text resources
     bool BasicUI::isBackOn = true;    // is returning to main settings? default=true
 #ifndef ESP8266     
-    Task *BasicUI::_WiFiScan = nullptr;
+    Task *BasicUI::_WIFIScan = nullptr;
 #endif
 /**
  * Define configuration variables and controls handlers
@@ -33,8 +33,7 @@ void BasicUI::add_sections(bool skipBack){ // is returning to main settings skip
     //EmbUI::GetInstance()->section_handle_add(FPSTR(T_SH_OTHER), show_settings_other);
 
     // обработка базовых настроек
-    EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_WIFI), set_settings_wifi);         // обработка настроек WiFi Client
-    EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_WIFIAP), set_settings_wifiAP);     // обработка настроек WiFi AP
+    EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_WIFI), set_settings_wifi);         // обработка настроек WiFi
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_MQTT), set_settings_mqtt);         // обработка настроек MQTT
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_SCAN), set_scan_wifi);             // обработка сканирования WiFi
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_TIME), set_settings_time);         // установки даты/времени
@@ -77,7 +76,7 @@ void BasicUI::section_settings_frame(Interface *interf, JsonObject *data){
     interf->spacer();
 
     interf->button(FPSTR(T_SH_NETW), FPSTR(T_DICT[lang][TD::D_WIFI_MQTT]));  // кнопка перехода в настройки сети
-    interf->button(FPSTR(T_SH_TIME), FPSTR(T_DICT[lang][TD::D_Time]));       // кнопка перехода в настройки времени
+    interf->button(FPSTR(T_SH_TIME), FPSTR(T_DICT[lang][TD::D_TIME]));       // кнопка перехода в настройки времени
 
     // call for user_defined function that may add more elements to the "settings page"
     user_settings_frame(interf, data);
@@ -87,6 +86,30 @@ void BasicUI::section_settings_frame(Interface *interf, JsonObject *data){
 
     interf->json_section_end();
     interf->json_frame_flush();
+}
+
+// Блок настроек WiFi
+void BasicUI::block_only_wifi(Interface *interf, JsonObject *data) {
+    interf->spacer(FPSTR(T_DICT[lang][TD::D_WIFIAPOPTS]));
+    interf->select(String(FPSTR(P_WIFIMODE)), embui.param(FPSTR(P_WIFIMODE)), String(FPSTR(T_DICT[lang][TD::D_WIFIMODE])));
+        interf->option("0", String(FPSTR(T_DICT[lang][TD::D_WIFI_STA])));
+        interf->option("1", String(FPSTR(T_DICT[lang][TD::D_WIFI_AP])));
+        interf->option("2", String(FPSTR(T_DICT[lang][TD::D_WIFI_APSTA])));
+    interf->json_section_end();
+
+    interf->comment(FPSTR(T_DICT[lang][TD::D_MSG_WIFIMODE]));
+
+    interf->text(FPSTR(P_hostname), FPSTR(T_DICT[lang][TD::D_HOSTNAME]));
+    interf->password(FPSTR(P_APpwd),  FPSTR(T_DICT[lang][TD::D_MSG_APPROTECT]));
+
+    interf->spacer(FPSTR(T_DICT[lang][TD::D_WIFICLIENTOPTS]));
+    interf->json_section_line(FPSTR(T_LOAD_WIFI));
+        interf->select_edit(FPSTR(P_WCSSID), String(WiFi.SSID()), String(FPSTR(T_DICT[lang][TD::D_WIFISSID])));
+        interf->json_section_end();
+        interf->button(FPSTR(T_SET_SCAN), FPSTR(T_DICT[lang][TD::D_SCAN]), FPSTR(P_GREEN), 22);
+    interf->json_section_end();
+    interf->password(FPSTR(P_WCPASS), String(""), FPSTR(T_DICT[lang][TD::D_PASSWORD]));
+    interf->button_submit(FPSTR(T_SET_WIFI), FPSTR(T_DICT[lang][TD::D_CONNECT]), FPSTR(P_GRAY));
 }
 
 /**
@@ -101,36 +124,18 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
     interf->json_section_main(FPSTR(T_OPT_NETW), FPSTR(T_DICT[lang][TD::D_WIFI_MQTT]));
 
     // форма настроек Wi-Fi Client
-    interf->json_section_hidden(FPSTR(T_SET_WIFI), FPSTR(T_DICT[lang][TD::D_WiFiClient]));
-        interf->spacer(FPSTR(T_DICT[lang][TD::D_WiFiClientOpts]));
-        interf->text(FPSTR(P_hostname), FPSTR(T_DICT[lang][TD::D_Hostname]));
-        interf->json_section_line(FPSTR(T_LOAD_WIFI));
-            interf->select_edit(FPSTR(P_WCSSID), String(WiFi.SSID()), String(FPSTR(T_DICT[lang][TD::D_WiFiSSID])));
-            interf->json_section_end();
-            interf->button(FPSTR(T_SET_SCAN), FPSTR(T_DICT[lang][TD::D_Scan]), FPSTR(P_GREEN), 20);
-        interf->json_section_end();
-        interf->password(FPSTR(P_WCPASS), String(""), FPSTR(T_DICT[lang][TD::D_Password]));
-        interf->button_submit(FPSTR(T_SET_WIFI), FPSTR(T_DICT[lang][TD::D_CONNECT]), FPSTR(P_GRAY));
-    interf->json_section_end();
-
-    // форма настроек Wi-Fi AP
-    interf->json_section_hidden(FPSTR(T_SET_WIFIAP), FPSTR(T_DICT[lang][TD::D_WiFiAP]));
-    interf->text(FPSTR(P_APhostname), EmbUI::GetInstance()->param(FPSTR(P_hostname)), String(FPSTR(T_DICT[lang][TD::D_Hostname])));
-    interf->spacer(FPSTR(T_DICT[lang][TD::D_WiFiAPOpts]));
-    interf->comment(FPSTR(T_DICT[lang][TD::D_MSG_APOnly]));
-    interf->checkbox(FPSTR(P_APonly), FPSTR(T_DICT[lang][TD::D_APOnlyMode]));
-    interf->password(FPSTR(P_APpwd),  FPSTR(T_DICT[lang][TD::D_MSG_APProtect]));
-    interf->button_submit(FPSTR(T_SET_WIFIAP), FPSTR(T_DICT[lang][TD::D_SAVE]), FPSTR(P_GRAY));
+    interf->json_section_hidden(FPSTR(T_SET_WIFI), FPSTR(T_DICT[lang][TD::D_WIFICLIENT]));
+        block_only_wifi(interf, data);
     interf->json_section_end();
 
     // форма настроек MQTT
     interf->json_section_hidden(FPSTR(T_SET_MQTT), FPSTR(T_DICT[lang][TD::D_MQTT]));
-    interf->text(FPSTR(P_m_host), FPSTR(T_DICT[lang][TD::D_MQTT_Host]));
-    interf->number(FPSTR(P_m_port), FPSTR(T_DICT[lang][TD::D_MQTT_Port]));
-    interf->text(FPSTR(P_m_user), FPSTR(T_DICT[lang][TD::D_User]));
-    interf->password(FPSTR(P_m_pass), FPSTR(T_DICT[lang][TD::D_Password]));
-    interf->text(FPSTR(P_m_pref), FPSTR(T_DICT[lang][TD::D_MQTT_Prefix]));
-    interf->number(FPSTR(P_m_tupd), FPSTR(T_DICT[lang][TD::D_MQTT_Interval]));
+    interf->text(FPSTR(P_m_host), FPSTR(T_DICT[lang][TD::D_MQTT_HOST]));
+    interf->number(FPSTR(P_m_port), FPSTR(T_DICT[lang][TD::D_MQTT_PORT]));
+    interf->text(FPSTR(P_m_user), FPSTR(T_DICT[lang][TD::D_USER]));
+    interf->password(FPSTR(P_m_pass), FPSTR(T_DICT[lang][TD::D_PASSWORD]));
+    interf->text(FPSTR(P_m_pref), FPSTR(T_DICT[lang][TD::D_MQTT_PREFIX]));
+    interf->number(FPSTR(P_m_tupd), FPSTR(T_DICT[lang][TD::D_MQTT_INTERVAL]));
     interf->button_submit(FPSTR(T_SET_MQTT), FPSTR(T_DICT[lang][TD::D_CONNECT]), FPSTR(P_GRAY));
     interf->json_section_end();
 
@@ -141,8 +146,8 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
             interf->checkbox(FPSTR(T_CHK_FTP), String(EmbUI::GetInstance()->cfgData.isftp), FPSTR(T_DICT[lang][TD::D_FTP]), true);
         interf->json_section_end();
         interf->json_section_begin(FPSTR(T_SET_FTP), "");
-            interf->text(FPSTR(P_ftpuser), FPSTR(T_DICT[lang][TD::D_User]));
-            interf->password(FPSTR(P_ftppass), FPSTR(T_DICT[lang][TD::D_Password]));
+            interf->text(FPSTR(P_ftpuser), FPSTR(T_DICT[lang][TD::D_USER]));
+            interf->password(FPSTR(P_ftppass), FPSTR(T_DICT[lang][TD::D_PASSWORD]));
             interf->button_submit(FPSTR(T_SET_FTP), FPSTR(T_DICT[lang][TD::D_SAVE]), FPSTR(P_GRAY));
         interf->json_section_end();
     interf->json_section_end();
@@ -166,7 +171,7 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
  */
 void BasicUI::block_settings_update(Interface *interf, JsonObject *data){
     if (!interf) return;
-    interf->json_section_hidden(FPSTR(T_DO_OTAUPD), FPSTR(T_DICT[lang][TD::D_Update]));
+    interf->json_section_hidden(FPSTR(T_DO_OTAUPD), FPSTR(T_DICT[lang][TD::D_UPDATE]));
     interf->spacer(FPSTR(T_DICT[lang][TD::D_FWLOAD]));
     interf->file(FPSTR(T_DO_OTAUPD), FPSTR(T_DO_OTAUPD), FPSTR(T_DICT[lang][TD::D_UPLOAD]));
     interf->button(FPSTR(T_REBOOT), FPSTR(T_DICT[lang][TD::D_REBOOT]),!data?String(FPSTR(P_RED)):String("")); // кнопка перезагрузки
@@ -182,13 +187,13 @@ void BasicUI::block_settings_time(Interface *interf, JsonObject *data){
     // Headline
     interf->json_section_main(FPSTR(T_SET_TIME), FPSTR(T_DICT[lang][TD::D_DATETIME]));
 
-    interf->comment(FPSTR(T_DICT[lang][TD::D_MSG_TZSet01]));     // комментарий-описание секции
+    interf->comment(FPSTR(T_DICT[lang][TD::D_MSG_TZSET01]));     // комментарий-описание секции
 
     // сперва рисуем простое поле с текущим значением правил временной зоны из конфига
     interf->text(FPSTR(P_TZSET), FPSTR(T_DICT[lang][TD::D_MSG_TZONE]));
 
     // user-defined NTP server
-    interf->text(FPSTR(P_userntp), FPSTR(T_DICT[lang][TD::D_NTP_Secondary]));
+    interf->text(FPSTR(P_userntp), FPSTR(T_DICT[lang][TD::D_NTP_SECONDARY]));
     // manual date and time setup
     interf->comment(FPSTR(T_DICT[lang][TD::D_MSG_DATETIME]));
     interf->datetime(FPSTR(P_DTIME), String(""), true);
@@ -215,55 +220,37 @@ void BasicUI::block_settings_time(Interface *interf, JsonObject *data){
 }
 
 /**
- * Обработчик настроек WiFi в режиме клиента
+ * Обработчик настроек WiFi
  */
 void BasicUI::set_settings_wifi(Interface *interf, JsonObject *data){
     if (!data || EmbUI::GetInstance()->sysData.isWSConnect) return;
 
     SETPARAM(FPSTR(P_hostname));        // сохраняем hostname в конфиг
+    SETPARAM(FPSTR(P_APpwd));
+    SETPARAM(FPSTR(P_WIFIMODE));
+    EmbUI::GetInstance()->save();
+
+    uint8_t wifiMode = EmbUI::GetInstance()->param(FPSTR(P_WIFIMODE)).toInt();
 
     String ssid = (*data)[FPSTR(P_WCSSID)];    // переменные доступа в конфиге не храним
     String pwd = (*data)[FPSTR(P_WCPASS)];     // фреймворк хранит последнюю доступную точку самостоятельно
 
-    Task *t = new Task(300, TASK_ONCE, nullptr, &ts, false, nullptr, [ssid, pwd](){
-        WiFi.disconnect();
-        if(ssid){
-            LOG(printf_P, PSTR("UI WiFi: Connecting to %s\n"), ssid.c_str());
-            EmbUI::GetInstance()->var(FPSTR(P_APonly),"0"); // сборосим режим принудительного AP, при попытке подключения к роутеру
-            EmbUI::GetInstance()->save();
-            EmbUI::GetInstance()->wifi_connect(ssid.c_str(), pwd.c_str());
-        } else {
-            EmbUI::GetInstance()->wifi_connect();           // иницируем WiFi-подключение с новыми параметрами
-            LOG(println, F("UI WiFi: No SSID defined!"));
-        }
-        TASK_RECYCLE;
-    });
-    t->enableDelayed();
-
-    if(isBackOn) section_settings_frame(interf, data);            // переходим в раздел "настройки"
-}
-
-/**
- * Обработчик настроек WiFi в режиме AP
- */
-void BasicUI::set_settings_wifiAP(Interface *interf, JsonObject *data){
-    if (!data || EmbUI::GetInstance()->sysData.isWSConnect) return;
-
-    if (data->containsKey(FPSTR(P_APhostname))){
-        EmbUI::GetInstance()->var((FPSTR(P_hostname)), (*data)[FPSTR(P_APhostname)]); // для обоих режимов (STA-AP) одно и то же хранилище имени
-    }
-    //SETPARAM(FPSTR(P_hostname));    // эти переменные будут сохранены в конфиг-файл
-    SETPARAM(FPSTR(P_APonly));
-    SETPARAM(FPSTR(P_APpwd));
-
-    EmbUI::GetInstance()->save();
-    bool isAPmode = EmbUI::GetInstance()->param(FPSTR(P_APonly))=="1";
-    if(isAPmode){
+    if(wifiMode==1){
         EmbUI::GetInstance()->wifi_switchtoAP();
     } else {
-        EmbUI::GetInstance()->wifi_connect(); 
+        if(wifiMode==0)
+            WiFi.mode(WIFI_STA);
+        else
+            WiFi.mode(WIFI_AP_STA);
+
+        LOG(printf_P, PSTR("UI WiFi: Connecting to %s\n"), ssid.c_str());
+        if((!ssid.isEmpty() && !pwd.isEmpty()) || (!ssid.isEmpty() && WiFi.SSID()!=ssid))
+            EmbUI::GetInstance()->wifi_connect(ssid, pwd);
+        else
+            EmbUI::GetInstance()->wifi_connect(); 
     }
-    if(isBackOn) section_settings_frame(interf, data);    // переходим в раздел "настройки"
+
+    if(isBackOn) section_settings_frame(interf, data);            // переходим в раздел "настройки"
 }
 
 /**
@@ -295,7 +282,7 @@ void BasicUI::set_scan_wifi(Interface *interf, JsonObject *data){
         LOG(printf_P, PSTR("UI WiFi: WiFi scan starting\n"));
         interf->json_frame_custom(FPSTR(T_XLOAD));
         interf->json_section_content();
-        interf->constant(FPSTR(T_SET_SCAN), FPSTR(T_DICT[lang][TD::D_Scan]), true, FPSTR(P_GREEN), 20);
+        interf->constant(FPSTR(T_SET_SCAN), FPSTR(T_DICT[lang][TD::D_SCAN]), true, FPSTR(P_GREEN), 22);
         interf->json_section_end();
         interf->json_frame_flush();
 
@@ -421,7 +408,7 @@ void BasicUI::scan_complete(int n){
         interf->json_frame_interface();
         interf->json_section_line(FPSTR(T_LOAD_WIFI));
         String ssid = WiFi.SSID();
-        interf->select_edit(FPSTR(P_WCSSID), ssid, String(FPSTR(T_DICT[BasicUI::lang][TD::D_WiFiSSID])));
+        interf->select_edit(FPSTR(P_WCSSID), ssid, String(FPSTR(T_DICT[BasicUI::lang][TD::D_WIFISSID])));
         for (int i = 0; i < WiFi.scanComplete(); i++) {
             interf->option(WiFi.SSID(i), WiFi.SSID(i));
             LOG(printf_P, PSTR("UI WiFi: WiFi Net %s\n"), WiFi.SSID(i).c_str());
@@ -429,7 +416,7 @@ void BasicUI::scan_complete(int n){
         if(ssid.isEmpty())
             interf->option("", ""); // at the end of list
         interf->json_section_end();
-        interf->button(FPSTR(T_SET_SCAN), FPSTR(T_DICT[BasicUI::lang][TD::D_Scan]), FPSTR(P_GREEN), 20);
+        interf->button(FPSTR(T_SET_SCAN), FPSTR(T_DICT[BasicUI::lang][TD::D_SCAN]), FPSTR(P_GREEN), 22);
         interf->json_section_end();
         interf->json_frame_flush();
 
@@ -453,7 +440,7 @@ void BasicUI::show_progress(Interface *interf, JsonObject *data){
 
     interf->json_frame_interface();
     interf->json_section_begin(FPSTR(T_DO_OTAUPD));
-    interf->constant("U", String(FPSTR(T_DICT[lang][TD::D_Update])) + String(F(" : ")) + (*data)[FPSTR(T_UPROGRESS)].as<String>()+ String("%"), true);
+    interf->constant("U", String(FPSTR(T_DICT[lang][TD::D_UPDATE])) + String(F(" : ")) + (*data)[FPSTR(T_UPROGRESS)].as<String>()+ String("%"), true);
     interf->json_section_end();
     interf->json_frame_flush();
 }
