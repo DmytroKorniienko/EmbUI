@@ -28,7 +28,12 @@ var render = function(){
 				custom_hook(this.id, d, id);
 			}
 			var data = {}; data[id] = (value !== undefined)? value : null;
-			ws.send_post(data);
+			if (this.className.includes("confirm")){
+				if (confirm(this.nextElementSibling.textContent))
+					ws.send_post(data);
+				}
+				else
+					ws.send_post(data);
 		},
 		on_showhide: function(d, id) {
 			go("#"+id).showhide();
@@ -36,7 +41,12 @@ var render = function(){
 		on_submit: function(d, id, val) {
 			var form = go("#"+id), data = go.formdata(go("input, textarea, select", form));
 			data[id] = val || null;
-			ws.send_post(data);
+			if (this.className.includes("confirm")){
+				if (confirm(this.nextElementSibling.textContent))
+					ws.send_post(data);
+				}
+				else
+					ws.send_post(data);
 		}
 	},
 	tmpl_section = new mustache(go("#tmpl_section")[0], fn_section),

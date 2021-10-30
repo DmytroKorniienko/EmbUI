@@ -39,6 +39,8 @@ static const char P_type[] PROGMEM = "type";
 static const char P_value[] PROGMEM = "value";
 static const char P_wifi[] PROGMEM = "wifi";
 static const char P_loading[] PROGMEM = "loading";
+static const char P_confirm[] PROGMEM = "confirm";
+static const char P_confirm_msg[] PROGMEM = "confirm_msg";
 
 // UI colors
 static const char P_RED[] PROGMEM = "red";
