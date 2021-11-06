@@ -29,10 +29,13 @@ cat html/css/pure-min.css html/css/grids.css | gzip -9 > ./data/css/pure.css.gz
 cat html/css/*_default.css | gzip -9 > ./data/css/style.css.gz
 cat html/css/*_light.css | gzip -9 > ./data/css/style_light.css.gz
 cat html/css/*_dark.css | gzip -9 > ./data/css/style_dark.css.gz
+cat html/css/embui_light.svg | gzip -9 > ./data/css/embui_light.svg.gz
+cat html/css/embui_dark.svg | gzip -9 > ./data/css/embui_dark.svg.gz
+cat html/css/custom.css | gzip -9 > ./data/css/custom.css.gz
 
 #cp html/css/*.jpg ./data/css/
 cp html/css/*.webp ./data/css/
-cp html/css/*.svg ./data/css/
+#cp html/css/*.svg ./data/css/
 
 cat html/js/*.js | gzip -9 > ./data/js/embui.js.gz
 cat html/index.html | gzip -9 > ./data/index.html.gz

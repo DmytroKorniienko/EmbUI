@@ -4,7 +4,6 @@
 // and others people
 
 #include "EmbUI.h"
-extern EmbUI embui;
 
 void EmbUI::connectToMqtt() {
     LOG(println, PSTR("UI: Connecting to MQTT..."));
@@ -51,7 +50,7 @@ void EmbUI::onMqttPublish(uint16_t packetId) {
 typedef void (*mqttCallback) (const String &topic, const String &payload);
 mqttCallback mqt;
 
-void mqtt_dummy_connect(){ embui.onMqttConnect(); }
+void mqtt_dummy_connect(){ EmbUI::GetInstance()->onMqttConnect(); }
 void mqtt_emptyFunction(const String &, const String &){}
 
 void EmbUI::mqtt(const String &pref, const String &host, int port, const String &user, const String &pass, void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
@@ -68,7 +67,7 @@ void EmbUI::mqtt(const String &pref, const String &host, int port, const String 
 
     LOG(println, PSTR("UI: MQTT Init completed"));
 
-    if (remotecontrol) embui.sysData.mqtt_remotecontrol = true;
+    if (remotecontrol) sysData.mqtt_remotecontrol = true;
     mqt = mqttFunction;
 
     mqttClient.onConnect(_onMqttConnect);
@@ -135,13 +134,13 @@ void EmbUI::mqtt(const String &host, int port, const String &user, const String 
 
 void EmbUI::mqtt(void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
     mqt = mqttFunction;
-    if (remotecontrol) embui.sysData.mqtt_remotecontrol = true;
+    if (remotecontrol) sysData.mqtt_remotecontrol = true;
 }
 
 void EmbUI::mqtt(void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol){
     onConnect = mqttConnect;
     mqt = mqttFunction;
-    if (remotecontrol) embui.sysData.mqtt_remotecontrol = true;
+    if (remotecontrol) sysData.mqtt_remotecontrol = true;
 }
 
 void EmbUI::mqtt_handle(){
@@ -166,12 +165,12 @@ void EmbUI::mqtt_reconnect(){
 
 void EmbUI::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
   LOG(println,F("UI: Disconnected from MQTT."));
-  embui.sysData.mqtt_connect = false;
-  embui.sysData.mqtt_connected = false;
+  EmbUI::GetInstance()->sysData.mqtt_connect = false;
+  EmbUI::GetInstance()->sysData.mqtt_connected = false;
 }
 
 void EmbUI::_onMqttConnect(bool sessionPresent) {
-    embui.sysData.mqtt_connect = true;
+    EmbUI::GetInstance()->sysData.mqtt_connect = true;
 }
 
 void EmbUI::onMqttConnect(){
@@ -195,27 +194,27 @@ void EmbUI::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProp
     strncpy(buffer, payload, len);
 
     String tpc = String(topic);
-    String m_pref = embui.param(FPSTR(P_m_pref)); 
+    String m_pref = EmbUI::GetInstance()->param(FPSTR(P_m_pref)); 
     if (!m_pref.isEmpty()) tpc = tpc.substring(m_pref.length() + 1, tpc.length());
 
     if (tpc.equals(F("embui/get/config"))) {
-        embui.publish(F("embui/pub/config"), embui.deb(), false);    
+        EmbUI::GetInstance()->publish(F("embui/pub/config"), EmbUI::GetInstance()->deb(), false);    
     } else if (tpc.startsWith(F("embui/get/"))) {
         String param = tpc.substring(10); // sizeof embui/set/
-        if(embui.isparamexists(param))
-            embui.publish(String(F("embui/pub/")) + param, embui.param(param), false);
+        if(EmbUI::GetInstance()->isparamexists(param))
+            EmbUI::GetInstance()->publish(String(F("embui/pub/")) + param, EmbUI::GetInstance()->param(param), false);
         else {
             httpCallback(param, String(buffer), false); // нельзя напрямую передавать payload, это не ASCIIZ
             mqt(tpc, String(buffer)); // отправим во внешний обработчик
         }
-    } else if (embui.sysData.mqtt_remotecontrol && tpc.startsWith(F("embui/set/"))) {
+    } else if (EmbUI::GetInstance()->sysData.mqtt_remotecontrol && tpc.startsWith(F("embui/set/"))) {
        String cmd = tpc.substring(10); // sizeof embui/set/
        httpCallback(cmd, String(buffer), true); // нельзя напрямую передавать payload, это не ASCIIZ
-    } else if (embui.sysData.mqtt_remotecontrol && tpc.startsWith(F("embui/jsset/"))) {
+    } else if (EmbUI::GetInstance()->sysData.mqtt_remotecontrol && tpc.startsWith(F("embui/jsset/"))) {
         DynamicJsonDocument doc(1024);
         deserializeJson(doc, payload, len);
         JsonObject obj = doc.as<JsonObject>();
-        embui.post(obj);
+        EmbUI::GetInstance()->post(obj);
     } else {
         mqt(tpc, String(buffer));
     }

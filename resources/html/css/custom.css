@@ -1,0 +1,19 @@
+/*!
+Custom styles for display controls
+*/
+
+#vcc:before {
+    content: 'VCC:';
+  }
+#vcc:after {
+    content: 'V';
+}
+#temp:before {
+    content: 'Temp.:';
+  }
+#temp:after {
+    content: '℃';
+}
+#clk:before {
+    content: 'Clock:';
+}

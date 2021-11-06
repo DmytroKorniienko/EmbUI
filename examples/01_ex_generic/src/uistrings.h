@@ -3,8 +3,15 @@
 // Set of flash-strings that might be reused multiple times within the code
 
 // General
-static const char T_HEADLINE[] PROGMEM = "EmbUI Demo";    // имя проекта
-
+#if defined ARDUINO_ESP32_DEV  
+  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32 Demo";    // имя проекта
+#elif defined ARDUINO_ESP32S2_DEV  
+  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32S2 Demo";    // имя проекта
+#elif defined ARDUINO_ESP32C3_DEV  
+  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32C3 Demo";    // имя проекта
+#else
+  static const char T_HEADLINE[] PROGMEM = "EmbUI Demo";    // имя проекта
+#endif  
 
 // Our variable names
 static const char V_LED[] PROGMEM = "vLED";

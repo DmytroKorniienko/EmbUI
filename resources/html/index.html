@@ -7,6 +7,7 @@
 	<meta name="theme-color" content="#2a3033">
 	<title>EmbUI</title>
 	<link rel="stylesheet" href="css/pure.css">
+	<link rel="stylesheet" href="css/custom.css">
 	<link id="dyncss" rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
@@ -89,20 +90,23 @@
 			<input type="hidden" id="{{id}}" name="{{id}}" value="{{value}}">
 		{{/if}}
 		{{#if html == "const"}}
-			<div class="pure-u-1 pure-button mr">{{label}}</div>
+		<div class="pure-u-1 pure-button mr{{#if2 loading}} button--loading{{/if2}}" {{#if2 top_margine!=10 || color}}style="{{/if2}} {{#if2 top_margine!=10}} margin-top: {{top_margine}}px !important;{{/if2}} {{#if2 color}} background-color: {{color}};{{/if2}} {{#if2 top_margine!=10 || color}}"{{/if2}} ><span class="button__text">{{label}}</span></div>
 			<input type="hidden" id="{{id}}" name="{{id}}" value="{{value}}">
 		{{/if}}
 		{{#if html == "button"}}
-			<div id="{{id}}" class="pure-u-1 pure-button pure-button-primary mr" {{#if2 top_margine!=10 || color}}style="{{/if2}} {{#if2 top_margine!=10}} margin-top: {{top_margine}}px !important;{{/if2}} {{#if2 color}} background-color: {{color}};{{/if2}} {{#if2 top_margine!=10 || color}}"{{/if2}}
+			<div id="{{id}}" class="pure-u-1 pure-button pure-button-primary mr{{#if2 confirm}}confirm{{/if2}}" {{#if2 top_margine!=10 || color}}style="{{/if2}} {{#if2 top_margine!=10}} margin-top: {{top_margine}}px !important;{{/if2}} {{#if2 color}} background-color: {{color}};{{/if2}} {{#if2 top_margine!=10 || color}}"{{/if2}}
 				{{#if2 submit}}{{onevent "click", "on_submit", submit, value}}{{/if2}}
 				{{#if2 !submit}}{{onevent "click", "on_change", id}}{{/if2}}
 			>
 				{{label}}
 			</div>
+			{{#if2 confirm}}
+				<div class="hidden">{{confirm_msg}}</div>
+			{{/if2}}
 		{{/if}}
 		{{#if html == "img"}}
 		<div class = "image">
-			<img src = {{value}}>
+			<img id="{{id}}" src = {{value}}>
 		</div>
 		{{/if}}
 		{{#if html == "textarea"}}
@@ -159,11 +163,13 @@
 			>
 		{{/if}}
 		{{#if html != "select" && block}}{{>tmpl_section _this}}{{/if}}
-		{{#if html == "iframe"}}
-			<div class="frame">{{value}}</div>
+		{{#if html == "raw_html"}}
+			{{value}}
 		{{/if}}
-		{{#if html == "iframe2"}}
-			<div class="frame"><iframe id="{{id}}" name="{{id}}" src="{{value}}" class="iframe">iframe does not supported</iframe></div>
+		{{#if html == "iframe"}}
+			<div class="fframe_wrapper">
+				<iframe id="{{id}}" name="{{id}}" src="{{value}}" frameborder="0" allowfullscreen class="fframe">iframe does not supported</iframe>
+			</div>
 		{{/if}}
 		{{#if html == "custom" && type == "div"}}
 		<!-- Custom div element, on create 'div' calls user js-function with a name passed in {{value}} parameter

@@ -95,7 +95,7 @@ class Interface {
     DynamicJsonDocument json;
     LList<section_stack_t*> section_stack;
     frameSend *send_hndl;
-    EmbUI *embui;
+    EmbUI *_embui;
 
     /**
      * @brief - add object to frame with mem overflow protection 
@@ -104,21 +104,21 @@ class Interface {
 
     public:
         Interface(EmbUI *j, AsyncWebSocket *server, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
-            embui = j;
+            _embui = j;
             send_hndl = new frameSendAll(server);
         }
         Interface(EmbUI *j, AsyncWebSocketClient *client, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
-            embui = j;
+            _embui = j;
             send_hndl = new frameSendClient(client);
         }
         Interface(EmbUI *j, AsyncWebServerRequest *request, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
-            embui = j;
+            _embui = j;
             send_hndl = new frameSendHttp(request);
         }
         ~Interface(){
             delete send_hndl;
             send_hndl = nullptr;
-            embui = nullptr;
+            _embui = nullptr;
         }
 
         void json_frame_value();
@@ -148,8 +148,8 @@ class Interface {
         void json_section_begin(const String &name, const String &label, bool main, bool hidden, bool line, JsonObject obj);
         void json_section_end();
 
-        void frame(const String &id, const String &value);
-        void frame2(const String &id, const String &value);
+        void raw_html(const String &id, const String &value);
+        void iframe(const String &id, const String &value);
 
         /**
          * @brief - Add 'value' object to the Interface frame
@@ -162,8 +162,9 @@ class Interface {
         void hidden(const String &id);
         void hidden(const String &id, const String &value);
 
-        void constant(const String &id, const String &value, const String &label);
-        void constant(const String &id, const String &label);
+        // Can use like non clickable button with loading spinner with label or not
+        void constant(const String &id, const String &value, const String &label, bool loading = false, const String &color = "", uint8_t top_margine = 10);
+        void constant(const String &id, const String &label, bool loading = false, const String &color = "", uint8_t top_margine = 10);
 
         void text(const String &id, const String &value, const String &label, bool directly = false);
         void text(const String &id, const String &label, bool directly = false);
@@ -186,8 +187,9 @@ class Interface {
         void date(const String &id, const String &value, const String &label);
         void date(const String &id, const String &label);
         
-        void datetime(const String &id, const String &value, const String &label);
-        void datetime(const String &id, const String &label);
+        // Step - show seconds 
+        void datetime(const String &id, const String &value, const String &label, bool step = false);
+        void datetime(const String &id, const String &label, bool step = false);
         
         void email(const String &id, const String &value, const String &label);
         void email(const String &id, const String &label);
@@ -227,9 +229,12 @@ class Interface {
         void textarea(const String &id, const String &label);
 
         void file(const String &name, const String &action, const String &label);
-        void button(const String &id, const String &label, const String &color = "", uint8_t top_margine=10);
-        void button_submit(const String &section, const String &label, const String &color = "", uint8_t top_margine=10);
-        void button_submit_value(const String &section, const String &value, const String &label, const String &color = "", uint8_t top_margine=10);
+        void button(const String &id, const String &label, const String &color = "", uint8_t top_margine=10, const String &message = "");
+        void button_confirm(const String &id, const String &label, const String &message = "", const String &color = "", uint8_t top_margine=10);
+        void button_submit(const String &section, const String &label, const String &color = "", uint8_t top_margine=10, const String &message = "");
+        void button_submit_confirm(const String &section, const String &label, const String &message = "", const String &color = "", uint8_t top_margine=10);
+        void button_submit_value(const String &section, const String &value, const String &label, const String &color = "", uint8_t top_margine=10, const String &message = "");
+        void button_submit_value_confirm(const String &section, const String &value, const String &label, const String &message = "", const String &color = "", uint8_t top_margine=10);
         void spacer(const String &label = "");
         void comment(const String &label = "");
 
@@ -240,8 +245,9 @@ class Interface {
          * @param value - element value
          * @param label - element label
          * @param direct - if true, element value in send via ws on-change 
+         * @param step - show seconds for datetime control 
          */
-        void html_input(const String &id, const String &type, const String &value, const String &label, bool direct = false);
+        void html_input(const String &id, const String &type, const String &value, const String &label, bool direct = false, bool step = false);
 
         /**
          * @brief - create "display" div with custom css selector

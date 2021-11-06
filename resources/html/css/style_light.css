@@ -9,10 +9,10 @@ label {white-space: nowrap;}
 .mr {margin: 10px 0px 10px 0px !important;}
 .spacer {text-align: center; font-weight: 300; color: #777; padding-bottom: 10px; margin: 15px 0px 15px 0px; border-bottom: 1px solid #777;}
 .comment {margin: 1em 0;}
-.frame {width: 100%; height: 480px; min-height: 50px; resize: vertical;}
-.iframe {resize: vertical; width: 100%; height: 100%; frameborder: 0; scrolling:"yes";}
+.fframe {position:absolute; top:0; left:0; width:100%; height:100%; border: none;}
+.fframe_wrapper {position:relative;padding-top:75.00%;;background-color: #CCCCCC;} /* 56.25% == 16:9,  75% == 4:3 aspect ratio */
 body {
-  background-image: url('wp_light.svg'), url('wp_light.webp');
+  background-image: url('embui_light.svg'), url('embui_light.webp');
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
@@ -52,6 +52,7 @@ body {
 .checkbox {
   display : none;
 }
+
 /* Sensor displays
  style inspired by https://github.com/viperet/esp8266-power-monitor */
  .display {
@@ -99,7 +100,6 @@ body {
   }
 
 
-
 .select-editable {
   position:relative;
 }
@@ -118,12 +118,58 @@ body {
   outline:none;
 }
 .image {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-  }
-  
-  .image img {
-	height: 100%;
-	width: auto;
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: inherit;
+}
+.image img {
+  height: 100%;
+  width: inherit;
+}
+
+.button--loading {
+    position: relative;
+    color: #ffffff;
+    text-align: center;
+    line-height: 2.2em;
+    padding: initial;
+    display: flex;
+    justify-content: center;
+}
+
+.button--loading::before {
+  content: "";
+  width: 1.415em;
+  height: 1.415em;
+  display: inline-block;
+  border: 4px solid transparent;
+  border-top-color: #fff;
+  border-radius: 50%;
+  text-align: left;
+  animation: button-loading-spinner 1s linear infinite reverse;
+  margin: 2px;
+}
+
+.button__text {
+    transition: all 0.2s;
+    margin-left: 0.5em;
+}
+
+@-webkit-keyframes button-loading-spinner {
+    from {
+        transform: rotate(0turn);
+    }
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+@keyframes button-loading-spinner {
+    from {
+        transform: rotate(0turn);
+    }
+    to {
+        transform: rotate(1turn);
+    }
+}

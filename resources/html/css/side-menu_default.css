@@ -3,7 +3,13 @@
   }
 
 body {
-    color: #777;
+	color: #777;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none; 
 }
 
 .pure-img-responsive {
@@ -249,5 +255,8 @@ Hides the menu at `48em`, but modify this based on your app's needs.
     #layout.active {
         position: relative;
         left: var(--slide);
+    }
+    .button--loading .button__text {
+        display: none;
     }
 }

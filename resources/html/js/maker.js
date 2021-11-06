@@ -28,7 +28,12 @@ var render = function(){
 				custom_hook(this.id, d, id);
 			}
 			var data = {}; data[id] = (value !== undefined)? value : null;
-			ws.send_post(data);
+			if (this.className.includes("confirm")){
+				if (confirm(this.nextElementSibling.textContent))
+					ws.send_post(data);
+				}
+				else
+					ws.send_post(data);
 		},
 		on_showhide: function(d, id) {
 			go("#"+id).showhide();
@@ -36,7 +41,12 @@ var render = function(){
 		on_submit: function(d, id, val) {
 			var form = go("#"+id), data = go.formdata(go("input, textarea, select", form));
 			data[id] = val || null;
-			ws.send_post(data);
+			if (this.className.includes("confirm")){
+				if (confirm(this.nextElementSibling.textContent))
+					ws.send_post(data);
+				}
+				else
+					ws.send_post(data);
 		}
 	},
 	tmpl_section = new mustache(go("#tmpl_section")[0], fn_section),
@@ -251,7 +261,6 @@ window.addEventListener("load", function(ev){
 		xload(mgs);
 	}
 
-
 	var active = false, layout =  go("#layout");
 	go("#menuLink").bind("click", function(){
 		active = !active;
@@ -266,6 +275,26 @@ window.addEventListener("load", function(ev){
 			return false;
 		}
 	});
+	
+	// touch swipe left support
+	let strX, strY, strT;
+	go("body").bind("touchstart", function(e){
+	  let t = e.changedTouches[0];
+	  strX = t.pageX;
+	  strY = t.pageY;
+	  strT = new Date().getTime();
+	}, {passive: true});
+
+	go("body").bind("touchend", function(e){
+	    let t = e.changedTouches[0],
+	        elapsedT = new Date().getTime() - strT;
+	    if (elapsedT <= 500 && Math.abs(t.pageY - strY) <= 75) {
+	      if (!active && t.pageX - strX >= 50) {
+		layout.addClass("active"); active = true;
+	      }
+	    }
+	}, false);
+
 }.bind(window));
 
 window.addEventListener("popstate", function(e){

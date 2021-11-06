@@ -21,9 +21,8 @@ json_frame_interface - формирование интерфейса
 json_frame_value - формирование данных
 
 Пример.
-extern EmbUI embui;
 AsyncWebSocket ws("/ws");
-Interface *interf = new Interface(&embui, client);
+Interface *interf = new Interface(EmbUI::GetInstance(), client);
 interf->json_frame_interface("Огненная лампа");
 ...
 interf->json_frame_flush();
@@ -79,10 +78,13 @@ void checkbox(const String &id, const String &value, const String &label, bool d
 hidden - скрытый контрол, не отображаемый в интерфейсе. Нужен для проброса  состояния в некоторых сложных формах.
 Пример использования - управление конфигурациями лампы.
 
-constant - тоже, что и hidden но выводиться лейбл, как не активный но видимый пользователю элемент.
+constant - тоже, что и hidden но выводиться лейбл, как не активный но видимый пользователю элемент, также можно использовать в качестве кнопки с иконкой загрузки.
 button - отправка параметра - значения кнопки. используется для обработки действия без доп. параметров (например загрузка страницы)
+button_confirm - тоже, что и button, только со всплывающим предупреждением.
 button_submit - отправка данных из секции.
+button_submit__confirm - тоже, что и button_submit, только со всплывающим предупреждением.
 button_submit_value - тоже, но дополнительно передается значение. если действий несколько (удалить, загрузить)
+button_submit_value__confirm - тоже, что и button_submit_value, только со всплывающим предупреждением.
 spacer - разделитель, может быть как линией, так и заголовком.
 select-edit - тоже, что и select, но помимо выбора из списка в нем можно вписать свое значение.
 

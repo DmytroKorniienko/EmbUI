@@ -26,23 +26,20 @@
         "url": "https://github.com/DmytroKorniienko/EmbUI.git"
     },
     "platforms": ["espressif8266", "espressif32"],
-    "version": "2.4.7",
+    "version": "2.5.0",
     "dependencies":
     [
         {"owner": "bblanchon",
          "name": "ArduinoJson",
          "version": "*"},
         {"name": "AsyncWebServer-mod",
-         "version": "https://github.com/DmytroKorniienko/ESPAsyncWebServer"},
+         "version": "https://github.com/DmytroKorniienko/ESPAsyncWebServer/#ESPAsyncWebServerMod"},
         {"owner": "marvinroger",
          "name": "AsyncMqttClient",
          "version": "*"},
         {"owner": "arkhipenko",
          "name": "TaskScheduler",
          "version": "*"},
-        {"name": "LITTLEFS",
-         "version": "https://github.com/lorol/LITTLEFS.git",
-         "platforms": ["espressif32"]},
         {"name": "ESP32SSDP",
          "version": "*",
          "platforms": ["espressif32"]},
@@ -52,8 +49,7 @@
     ],
     "build": {
         "flags": [
-            "-DEMBUIVER=2.4.7",
-            "-DCONFIG_LITTLEFS_FOR_IDF_3_2"
+            "-DEMBUIVER=2.5.0"
         ],
         "srcDir": "src"
     },
@@ -63,12 +59,7 @@
             "base": "examples/01_ex_generic",
             "files": [
                 "platformio.ini",
-                "src/globals.h",
-                "src/interface.cpp",
-                "src/interface.h",
                 "src/main.cpp",
-                "src/main.h",
-                "src/uistrings.h",
                 "src/src.ino"
             ]
         },
@@ -77,12 +68,7 @@
             "base": "examples/02_sensors",
             "files": [
                 "platformio.ini",
-                "src/globals.h",
-                "src/interface.cpp",
-                "src/interface.h",
                 "src/main.cpp",
-                "src/main.h",
-                "src/uistrings.h",
                 "src/src.ino"
             ]
         }

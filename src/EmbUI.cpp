@@ -17,7 +17,10 @@
 uint8_t __attribute__((weak)) uploadProgress(size_t len, size_t total);
 void mqtt_emptyFunction(const String &, const String &);
 
+EmbUI *EmbUI::pInstance = nullptr;
+#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EMBUI)
 EmbUI embui;
+#endif
 
 void section_main_frame(Interface *interf, JsonObject *data) {}
 void pubCallback(Interface *interf){}
@@ -27,13 +30,13 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     if(type == WS_EVT_CONNECT){
         LOG(printf_P, PSTR("UI: ws[%s][%u] connect MEM: %u\n"), server->url(), client->id(), ESP.getFreeHeap());
 
-        embui.sysData.isWSConnect = true; // на 5 секунд устанавливаем флаг
-        Task *_t = new Task(TASK_SECOND * 5, TASK_ONCE, nullptr, &ts, false, nullptr, [](){TASK_RECYCLE; embui.sysData.isWSConnect = false;});
+        EmbUI::GetInstance()->sysData.isWSConnect = true; // на 5 секунд устанавливаем флаг
+        Task *_t = new Task(TASK_SECOND * 5, TASK_ONCE, nullptr, &ts, false, nullptr, [](){TASK_RECYCLE; EmbUI::GetInstance()->sysData.isWSConnect = false;});
         _t->enableDelayed();
 
-        Interface *interf = new Interface(&embui, client);
+        Interface *interf = new Interface(EmbUI::GetInstance(), client);
         section_main_frame(interf, nullptr);
-        embui.send_pub();
+        EmbUI::GetInstance()->send_pub();
         delete interf;
 
     } else
@@ -66,13 +69,13 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
                     return;
                 }
                 JsonObject data = (*res)[F("data")]; // ссылка на интересующую часть документа, документ обязан существовать до конца использования!
-                embui.post(data);
+                EmbUI::GetInstance()->post(data);
 
                 // Отправка эхо клиентам тут
-                if (embui.ws.count()>1 && data){   // if there are multiple ws cliens connected, we must echo back data section, to reflect any changes
+                if (EmbUI::GetInstance()->ws.count()>1 && data){   // if there are multiple ws cliens connected, we must echo back data section, to reflect any changes
                     JsonObject &_d = data;
                     LOG(printf_P, PSTR("UI: =ECHO= MEM_1: %u\n"), _d.memoryUsage());
-                    Interface *interf = new Interface(&embui, &embui.ws, _d.memoryUsage() + 256);  // about 256 bytes requred for section structs
+                    Interface *interf = new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, _d.memoryUsage() + 256);  // about 256 bytes requred for section structs
                     if(interf){
                         interf->json_frame_value();
                         for (JsonPair kv : _d) {
@@ -101,7 +104,6 @@ void notFound(AsyncWebServerRequest *request) {
 }
 
 void EmbUI::begin(){
-
     uint8_t retry_cnt = 3;
 
     // монтируем ФС только один раз при старте
@@ -121,7 +123,7 @@ void EmbUI::begin(){
     create_parameters();    // weak function, creates user-defined variables
     mqtt(param(FPSTR(P_m_pref)), param(FPSTR(P_m_host)), param(FPSTR(P_m_port)).toInt(), param(FPSTR(P_m_user)), param(FPSTR(P_m_pass)), mqtt_emptyFunction, false); // init mqtt
 
-    LOG(println, String(F("UI CONFIG: ")) + embui.deb());
+    LOG(println, String(F("UI CONFIG: ")) + deb());
     #ifdef ESP8266
         e1 = WiFi.onStationModeGotIP(std::bind(&EmbUI::onSTAGotIP, this, std::placeholders::_1));
         e2 = WiFi.onStationModeDisconnected(std::bind(&EmbUI::onSTADisconnected, this, std::placeholders::_1));
@@ -302,23 +304,24 @@ void EmbUI::begin(){
 
     server.onNotFound(notFound);
 
+    tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
+        embui_uptime++;
+        ws.cleanupClients(MAX_WS_CLIENTS);
+        #ifdef ESP8266
+            MDNS.update();
+        #endif
+        taskGC();
+    } );
+    ts.addTask(tHouseKeeper);
+    tHouseKeeper.enableDelayed();
+
     server.begin();
 
     setPubInterval(PUB_PERIOD);
 
-    tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
-            ws.cleanupClients(MAX_WS_CLIENTS);
-            #ifdef ESP8266
-                MDNS.update();
-            #endif
-            taskGC();
-        } );
-    ts.addTask(tHouseKeeper);
-    tHouseKeeper.enableDelayed();
-
 #ifdef EMBUI_USE_FTP
-  /////FTP Setup, ensure LittleFS is started before ftp;  /////////
-  if (LittleFS.begin() && embui.cfgData.isftp) {
+  //FTP Setup, ensure LittleFS is started before ftp;
+  if (LittleFS.begin() && cfgData.isftp) {
     ftpSrv.begin(param(FPSTR(P_ftpuser)), param(FPSTR(P_ftppass))); //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
   }
 #endif
@@ -435,7 +438,7 @@ void EmbUI::handle(){
     udpLoop();
     ts.execute();           // run task scheduler
 #ifdef EMBUI_USE_FTP
-    if(embui.cfgData.isftp)
+    if(EmbUI::GetInstance()->cfgData.isftp)
         ftpSrv.handleFTP();     //make sure in loop you call handleFTP()!!  
 #endif
     //btn();
@@ -475,14 +478,14 @@ void EmbUI::create_sysvars(){
     LOG(println, F("UI: Creating system vars"));
     var_create(FPSTR(P_cfgData), String("0"));        // bitmap data
     var_create(FPSTR(P_hostname), "");                // device hostname (autogenerated on first-run)
-    var_create(FPSTR(P_APonly),  FPSTR(P_false));     // режим AP-only (только точка доступа), не трогать
-    var_create(FPSTR(P_APpwd), "");                   // пароль внутренней точки доступа
+    var_create(FPSTR(P_WIFIMODE), String("0"));       // STA/AP/AP+STA, STA by default
+    var_create(FPSTR(P_APpwd), F(TOSTRING(__APPASSWORD)));  // пароль внутренней точки доступа
     // параметры подключения к MQTT
     var_create(FPSTR(P_m_host), "");                  // MQTT server hostname
     var_create(FPSTR(P_m_port), "");                  // MQTT port
     var_create(FPSTR(P_m_user), "");                  // MQTT login
     var_create(FPSTR(P_m_pass), "");                  // MQTT pass
-    var_create(FPSTR(P_m_pref), embui.mc);            // MQTT topic == use ESP MAC address
+    var_create(FPSTR(P_m_pref), mc);                  // MQTT topic == use ESP MAC address
     var_create(FPSTR(P_m_tupd), TOSTRING(MQTT_PUB_PERIOD));              // интервал отправки данных по MQTT в секундах
     // date/time related vars
     var_create(FPSTR(P_TZSET), "");                   // TimeZone/DST rule (empty value == GMT/no DST)

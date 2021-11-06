@@ -1,9 +1,16 @@
 #include "main.h"
-
 #include "EmbUI.h"
 #include "interface.h"
-
 #include "uistrings.h"   // non-localized text-strings
+
+#ifdef ESP32
+#if defined ARDUINO_ESP32S2_DEV || ARDUINO_ESP32C3_DEV  
+  #include <driver/temp_sensor.h>
+#endif
+  extern "C" int rom_phy_get_vdd33();
+#else
+  ADC_MODE(ADC_VCC);  // read internal Vcc
+#endif
 
 /**
  * можно нарисовать свой собственный интефейс/обработчики с нуля, либо
@@ -21,7 +28,6 @@ extern Scheduler ts;
 
 // Periodic task that runs every 5 sec and calls sensor publishing method
 Task tDisplayUpdater(5 * TASK_SECOND, TASK_FOREVER, &sensorPublisher, &ts, true );
-
 
 /**
  * переопределяем метод из фреймворка, регистрирующий необходимы нам в проекте переменные и методы обработки
@@ -55,6 +61,15 @@ void create_parameters(){
     // обработчики
     embui.section_handle_add(FPSTR(V_LED), action_blink);               // обработка рычажка светодиода
     embui.section_handle_add(FPSTR(V_UPDRATE), setRate);                 // sensor data publisher rate change
+
+#if defined ARDUINO_ESP32S2_DEV || ARDUINO_ESP32C3_DEV  
+    // ESP32-C3 & ESP32-S2
+    {
+      temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();
+      temp_sensor_set_config(cfg);
+      temp_sensor_start();
+    }
+#endif
 };
 
 /**
@@ -73,7 +88,7 @@ void section_main_frame(Interface *interf, JsonObject *data){
   block_menu(interf, data);                         // Строим UI блок с меню выбора других секций
   interf->json_frame_flush();
 
-  if(!embui.sysData.wifi_sta && embui.param(FPSTR(P_APonly))=="0"){
+  if(!embui.sysData.wifi_sta && embui.param(FPSTR(P_WIFIMODE))!="1"){
     // форсируем выбор вкладки настройки WiFi если контроллер не подключен к внешней AP
     LOG(println, F("UI: Opening network setup section"));
     BasicUI::block_settings_netw(interf, data);
@@ -94,7 +109,8 @@ void block_menu(Interface *interf, JsonObject *data){
     /**
      * пункт меню - "демо"
      */
-    interf->option(FPSTR(T_DEMO), F("UI Demo"));
+
+  interf->option(FPSTR(T_DEMO), F("UI Demo"));
 
     /**
      * добавляем в меню пункт - настройки,
@@ -115,7 +131,16 @@ void block_demopage(Interface *interf, JsonObject *data){
 
     // Headline
     // параметр FPSTR(T_SET_DEMO) определяет зарегистрированный обработчик данных для секции
-    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some demo sensors"));
+#if defined ARDUINO_ESP32_DEV  
+    LOG(println, F("ARDUINO_ESP32_DEV"));  
+    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32 demo sensors"));
+#elif defined ARDUINO_ESP32S2_DEV  
+    LOG(println, F("ARDUINO_ESP32S2_DEV"));
+    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32S2 demo sensors"));
+#elif defined ARDUINO_ESP32C3_DEV  
+    LOG(println, F("ARDUINO_ESP32C3_DEV"));
+    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32C3 demo sensors"));
+#endif  
 
     // переключатель, связанный со светодиодом. Изменяется синхронно
     interf->checkbox(FPSTR(V_LED), F("Onboard LED"), true);
@@ -125,8 +150,12 @@ void block_demopage(Interface *interf, JsonObject *data){
     interf->json_section_line();             // "Live displays"
 
     // Voltage display, shows ESPs internal voltage
+#ifdef ESP8266
     interf->display(F("vcc"), String(ESP.getVcc()/1000.0));
-
+#else
+    interf->display(F("vcc"), String("3.3"));
+    //interf->display(F("vcc"), String((float)rom_phy_get_vdd33()/1000.0)); // extern "C" int rom_phy_get_vdd33();
+#endif
     // Fake temperature sensor
     interf->display(F("temp"), String(24));
     interf->json_section_end();     // end of line
@@ -148,8 +177,6 @@ void block_demopage(Interface *interf, JsonObject *data){
     interf->json_section_end();
     interf->json_frame_flush();
 }
-
-
 
 void action_blink(Interface *interf, JsonObject *data){
   if (!data) return;  // здесь обрабатывает только данные
@@ -176,12 +203,30 @@ void sensorPublisher() {
     if (!embui.ws.count())
       return;
 
-    Interface *interf = new Interface(&embui, &embui.ws, SMALL_JSON_SIZE);
+    Interface *interf = new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, SMALL_JSON_SIZE);
     interf->json_frame_value();
     // Voltage sensor
     //  id, value, html=true
+
+#if defined ARDUINO_ESP32_DEV  
+    interf->value(F("vcc"), String((float)rom_phy_get_vdd33()/1000.0)); // extern "C" int rom_phy_get_vdd33();
+    interf->value(F("temp"), String(24 + random(-30,30)/10), true);                // add some random spikes to the temperature :)
+#elif defined ARDUINO_ESP32S2_DEV  
+    interf->value(F("vcc"), String("3.3"), true); // html must be set 'true' so this value could be handeled properly for div elements
+    float t;
+    if(temp_sensor_read_celsius(&t)==ESP_OK){
+      interf->value(F("temp"), String(t), true);
+    }
+#elif defined ARDUINO_ESP32C3_DEV  
+    interf->value(F("vcc"), String("3.3"), true); // html must be set 'true' so this value could be handeled properly for div elements
+    float t;
+    if(temp_sensor_read_celsius(&t)==ESP_OK){
+      interf->value(F("temp"), String(t), true);
+    }
+#else
     interf->value(F("vcc"), String((ESP.getVcc() + random(-100,100))/1000.0), true); // html must be set 'true' so this value could be handeled properly for div elements
     interf->value(F("temp"), String(24 + random(-30,30)/10), true);                // add some random spikes to the temperature :)
+#endif  
 
     String clk; embui.timeProcessor.getDateTimeString(clk);
     interf->value(F("clk"), clk, true); // Current date/time for Clock display
