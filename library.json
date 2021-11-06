@@ -33,7 +33,7 @@
          "name": "ArduinoJson",
          "version": "*"},
         {"name": "AsyncWebServer-mod",
-         "version": "https://github.com/DmytroKorniienko/ESPAsyncWebServer/tree/ESPAsyncWebServerMod"},
+         "version": "https://github.com/DmytroKorniienko/ESPAsyncWebServer/#ESPAsyncWebServerMod"},
         {"owner": "marvinroger",
          "name": "AsyncMqttClient",
          "version": "*"},
