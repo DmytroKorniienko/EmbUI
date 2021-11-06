@@ -229,9 +229,12 @@ class Interface {
         void textarea(const String &id, const String &label);
 
         void file(const String &name, const String &action, const String &label);
-        void button(const String &id, const String &label, const String &color = "", uint8_t top_margine=10);
-        void button_submit(const String &section, const String &label, const String &color = "", uint8_t top_margine=10);
-        void button_submit_value(const String &section, const String &value, const String &label, const String &color = "", uint8_t top_margine=10);
+        void button(const String &id, const String &label, const String &color = "", uint8_t top_margine=10, const String &message = "");
+        void button_confirm(const String &id, const String &label, const String &message = "", const String &color = "", uint8_t top_margine=10);
+        void button_submit(const String &section, const String &label, const String &color = "", uint8_t top_margine=10, const String &message = "");
+        void button_submit_confirm(const String &section, const String &label, const String &message = "", const String &color = "", uint8_t top_margine=10);
+        void button_submit_value(const String &section, const String &value, const String &label, const String &color = "", uint8_t top_margine=10, const String &message = "");
+        void button_submit_value_confirm(const String &section, const String &value, const String &label, const String &message = "", const String &color = "", uint8_t top_margine=10);
         void spacer(const String &label = "");
         void comment(const String &label = "");
 

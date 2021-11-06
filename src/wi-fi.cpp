@@ -145,7 +145,7 @@ void EmbUI::wifi_init(){
     String appwd = param(FPSTR(P_APpwd));
     getAPmac();
     if (!hn.length()){
-        hn = String(__IDPREFIX) + mc;
+        hn = String(F(TOSTRING(__IDPREFIX))) + String(mc);
         var(FPSTR(P_hostname), hn, true);
     }
 

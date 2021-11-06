@@ -3,15 +3,6 @@
 #pragma once
 
 /**
- *  Dictionary size,
- *  must be more or equal to the number of messages in TD Enum
- */
-#define DICT_SIZE 71
-
-
-
-
-/**
  * Text-Dictionary Enums for language resources
  * the order of enums must match with elements in dictionary
  *
@@ -87,7 +78,9 @@ enum TD : uint8_t {
     D_FTP,
     D_WIFI_STA,
     D_WIFI_AP,
-    D_WIFI_APSTA
+    D_WIFI_APSTA,
+    D_MSG_CONF,
+    DICT_SIZE               // Должен быть в конце списка!
 };
 
 
@@ -168,6 +161,7 @@ static const char T_EN_W_SAT[] PROGMEM = "Saturday";
 static const char T_EN_WIFI_STA[] PROGMEM = "Client (STA)";
 static const char T_EN_WIFI_AP[] PROGMEM = "Access point (AP)";
 static const char T_EN_WIFI_APSTA[] PROGMEM = "Mixed (AP+STA)";
+static const char T_EN_MSG_CONF[] PROGMEM = "Sure?";
 
 // Русские тексты (порядок значения не имеет)
 static const char T_RU_LANG[] PROGMEM = "Язык интерфейса";
@@ -230,6 +224,7 @@ static const char T_RU_W_SUN[] PROGMEM = "Воскресенье";
 static const char T_RU_WIFI_STA[] PROGMEM = "Клиент (STA)";
 static const char T_RU_WIFI_AP[] PROGMEM = "Точка доступа (AP)";
 static const char T_RU_WIFI_APSTA[] PROGMEM = "Смешанный (AP+STA)";
+static const char T_RU_MSG_CONF[] PROGMEM = "Уверены?";
 
 /**
  *  Dictionary with references to all text resources
@@ -311,7 +306,8 @@ static const char *const T_DICT[][DICT_SIZE] PROGMEM = {
     T_EN_FTP,
     T_RU_WIFI_STA,
     T_RU_WIFI_AP,
-    T_RU_WIFI_APSTA
+    T_RU_WIFI_APSTA,
+    T_RU_MSG_CONF
     },
 
 
@@ -386,6 +382,7 @@ static const char *const T_DICT[][DICT_SIZE] PROGMEM = {
     T_EN_FTP,
     T_EN_WIFI_STA,
     T_EN_WIFI_AP,
-    T_EN_WIFI_APSTA
+    T_EN_WIFI_APSTA,
+    T_EN_MSG_CONF
   }
 };

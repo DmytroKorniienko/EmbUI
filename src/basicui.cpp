@@ -174,7 +174,7 @@ void BasicUI::block_settings_update(Interface *interf, JsonObject *data){
     interf->json_section_hidden(FPSTR(T_DO_OTAUPD), FPSTR(T_DICT[lang][TD::D_UPDATE]));
     interf->spacer(FPSTR(T_DICT[lang][TD::D_FWLOAD]));
     interf->file(FPSTR(T_DO_OTAUPD), FPSTR(T_DO_OTAUPD), FPSTR(T_DICT[lang][TD::D_UPLOAD]));
-    interf->button(FPSTR(T_REBOOT), FPSTR(T_DICT[lang][TD::D_REBOOT]),!data?String(FPSTR(P_RED)):String("")); // кнопка перезагрузки
+    interf->button_confirm(FPSTR(T_REBOOT), FPSTR(T_DICT[lang][TD::D_REBOOT]), FPSTR(T_DICT[lang][TD::D_MSG_CONF]), !data?String(FPSTR(P_RED)):String("")); // кнопка перезагрузки
 }
 
 /**

@@ -77,7 +77,11 @@
 #endif
 
 #ifndef __IDPREFIX
-#define __IDPREFIX F("EmbUI-")
+#define __IDPREFIX EmbUI-
+#endif
+
+#ifndef __APPASSWORD
+#define __APPASSWORD
 #endif
 
 // size of a JsonDocument to hold EmbUI config 
@@ -518,7 +522,7 @@ private:
     void ssdp_begin() {
           String hn = param(FPSTR(P_hostname));
           if (!hn.length())
-              var(FPSTR(P_hostname), String(__IDPREFIX) + mc, true);
+              var(FPSTR(P_hostname), String(F(TOSTRING(__IDPREFIX))) + mc, true);
 
           uint32_t chipId;
           #ifdef ESP32
