@@ -516,12 +516,9 @@ void Interface::json_section_end(){
  * @brief - serialize and send json obj directly to the ws buffer
  */
 void frameSendAll::send(const JsonObject& data){
-    size_t length = measureJson(data);
-    AsyncWebSocketMessageBuffer * buffer = ws->makeBuffer(length);
-    if (!buffer)
-        return;
+    String buffer;
+    serializeJson(data, buffer);
 
-    serializeJson(data, (char*)buffer->get(), ++length);
     ws->textAll(buffer);
 };
 
@@ -529,12 +526,9 @@ void frameSendAll::send(const JsonObject& data){
  * @brief - serialize and send json obj directly to the ws buffer
  */
 void frameSendClient::send(const JsonObject& data){
-    size_t length = measureJson(data);
-    AsyncWebSocketMessageBuffer * buffer = cl->server()->makeBuffer(length);
-    if (!buffer)
-        return;
+    String buffer;
+    serializeJson(data, buffer);
 
-    serializeJson(data, (char*)buffer->get(), ++length);
     cl->text(buffer);
 }
 

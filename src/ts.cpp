@@ -7,6 +7,7 @@
 #define _TASK_SCHEDULING_OPTIONS
 #include <TaskScheduler.h>
 #include "globals.h"
+#include <vector>
 
 // TaskScheduler - Let the runner object be a global, single instance shared between object files.
 Scheduler ts;

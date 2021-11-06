@@ -22,7 +22,7 @@
  #ifndef FORMAT_LITTLEFS_IF_FAILED
   #define FORMAT_LITTLEFS_IF_FAILED true
  #endif
- #define LittleFS LITTLEFS
+//  #define LittleFS LITTLEFS
  #define U_FS   U_SPIFFS
 #endif
 
@@ -432,6 +432,8 @@ class EmbUI
         WiFi.enableSTA(false);  // отключаю STA
     }
 
+    unsigned long getUptime() {return embui_uptime;}
+
   private:
     /**
      * call to create system-dependent variables,
@@ -452,6 +454,8 @@ class EmbUI
     Task *tValPublisher = nullptr;     // Status data publisher
     Task tHouseKeeper;     // Maintenance task, runs every second
     Task tAutoSave;          // config autosave timer
+
+    unsigned long embui_uptime = 0; // uptime in seconds
 
     // WiFi-related
     /**

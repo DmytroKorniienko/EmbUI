@@ -382,7 +382,7 @@ void TimeProcessor::onSTADisconnected(const WiFiEventStationModeDisconnected eve
 #endif  //ESP8266
 
 #ifdef ESP32
-void TimeProcessor::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
+void TimeProcessor::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info){
     switch (event)
     {
     case SYSTEM_EVENT_STA_GOT_IP:

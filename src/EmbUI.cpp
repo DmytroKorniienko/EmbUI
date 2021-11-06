@@ -305,12 +305,13 @@ void EmbUI::begin(){
     server.onNotFound(notFound);
 
     tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
-            ws.cleanupClients(MAX_WS_CLIENTS);
-            #ifdef ESP8266
-                MDNS.update();
-            #endif
-            taskGC();
-        } );
+        embui_uptime++;
+        ws.cleanupClients(MAX_WS_CLIENTS);
+        #ifdef ESP8266
+            MDNS.update();
+        #endif
+        taskGC();
+    } );
     ts.addTask(tHouseKeeper);
     tHouseKeeper.enableDelayed();
 

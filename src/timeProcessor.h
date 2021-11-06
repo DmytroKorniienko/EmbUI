@@ -127,7 +127,7 @@ public:
 #endif
 
 #ifdef ESP32
-    void WiFiEvent(WiFiEvent_t event, system_event_info_t info);
+    void WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info);
 #endif
 
     /**
