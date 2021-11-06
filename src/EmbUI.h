@@ -22,7 +22,9 @@
  #ifndef FORMAT_LITTLEFS_IF_FAILED
   #define FORMAT_LITTLEFS_IF_FAILED true
  #endif
-//  #define LittleFS LITTLEFS
+ #ifdef ARDUINO_ESP32_DEV
+  #define LittleFS LITTLEFS
+ #endif
  #define U_FS   U_SPIFFS
 #endif
 

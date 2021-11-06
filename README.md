@@ -38,12 +38,11 @@ Embedded WebUI Interface
 
 ## Depends
 
-Projects           |                     URL                                    | Remarks
------------------- | :---------------------------------------------------------:| --------------
-ArduinoJson        |  https://github.com/bblanchon/ArduinoJson.git              |
-AsyncWebServer-mod |  https://github.com/DmytroKorniienko/ESPAsyncWebServer.git | manual install, fork
-AsyncMqttClient    |  https://github.com/marvinroger/async-mqtt-client.git      | manual install
-TaskScheduler      |  https://github.com/arkhipenko/TaskScheduler.git           |
-LittleFS_esp32     |  https://github.com/lorol/LITTLEFS.git                     |
-FtpClientServer    |  https://github.com/charno/FTPClientServer.git             | manual install, fork, esp32
-ESP32SSDP          |  https://github.com/luc-github/ESP32SSDP.git               | manual install, esp32
+Projects           |                     URL                                                          | Remarks
+------------------ | :-------------------------------------------------------------------------------:| --------------
+ArduinoJson        |  https://github.com/bblanchon/ArduinoJson.git                                    |
+AsyncWebServer-mod |  https://github.com/DmytroKorniienko/ESPAsyncWebServer/tree/ESPAsyncWebServerMod | manual install, fork
+AsyncMqttClient    |  https://github.com/marvinroger/async-mqtt-client.git                            | manual install
+TaskScheduler      |  https://github.com/arkhipenko/TaskScheduler.git                                 |
+FtpClientServer    |  https://github.com/charno/FTPClientServer.git                                   | manual install, fork, esp32
+ESP32SSDP          |  https://github.com/luc-github/ESP32SSDP.git                                     | manual install, esp32

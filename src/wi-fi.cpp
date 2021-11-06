@@ -111,7 +111,11 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         break;
 
     case SYSTEM_EVENT_STA_DISCONNECTED:
-        LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.wifi_sta_disconnected.reason);
+        #ifndef ARDUINO_ESP32_DEV
+            LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.wifi_sta_disconnected.reason);
+        #else
+            LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.disconnected.reason);
+        #endif
         // https://github.com/espressif/arduino-esp32/blob/master/tools/sdk/include/esp32/esp_wifi_types.h
         if(WiFi.getMode() != WIFI_AP_STA){
             LOG(println, F("UI WiFi: Reconnect attempt"));
@@ -130,7 +134,11 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         break;
     case SYSTEM_EVENT_SCAN_DONE:
         //BasicUI::scan_complete(info.scan_done.number);
-        EmbUI::GetInstance()->pf_wifiscan(info.wifi_scan_done.number);
+        #ifndef ARDUINO_ESP32_DEV
+            EmbUI::GetInstance()->pf_wifiscan(info.wifi_scan_done.number);
+        #else
+            EmbUI::GetInstance()->pf_wifiscan(info.scan_done.number);
+        #endif
         break;
     default:
         LOG(printf_P, PSTR("UI WiFi: Unhandled event: %d\n"), event);

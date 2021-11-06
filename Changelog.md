@@ -1,5 +1,10 @@
 ## Changelog
 
+### v2.5.0  Release
+Added:
+  - ESP32-C3 & ESP32-S2 support
+Fixes:
+  - stabilty and bug fixes
 ### v2.4.7  Release
 Added:
   - Image Control
