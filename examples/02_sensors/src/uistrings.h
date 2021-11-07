@@ -7,9 +7,9 @@
 #if defined ARDUINO_ESP32_DEV  
   static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32 Demo";    // имя проекта
 #elif defined ARDUINO_ESP32S2_DEV  
-  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32S2 Demo";    // имя проекта
+  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32-S2 Demo";    // имя проекта
 #elif defined ARDUINO_ESP32C3_DEV  
-  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32C3 Demo";    // имя проекта
+  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32-C3 Demo";    // имя проекта
 #else
   static const char T_HEADLINE[] PROGMEM = "EmbUI Demo";    // имя проекта
 #endif

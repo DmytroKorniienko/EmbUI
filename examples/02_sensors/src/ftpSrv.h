@@ -7,8 +7,6 @@
 #ifdef ESP32
  #include <AsyncTCP.h>
  #include <LITTLEFS.h>
- #define FORMAT_LITTLEFS_IF_FAILED true
- #define LittleFS LITTLEFS
 #endif
 
 #ifndef FTP_USER

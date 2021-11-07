@@ -17,9 +17,9 @@
 void setup() {
   Serial.begin(BAUD_RATE);
 
-    LOG(printf_P, PSTR("\n\nsetup: free heap  : %d\n"), ESP.getFreeHeap());
+  LOG(printf_P, PSTR("\n\nsetup: free heap  : %d\n"), ESP.getFreeHeap());
 #ifdef ESP32
-    LOG(printf_P, PSTR("setup: free PSRAM  : %d\n"), ESP.getFreePsram()); // 4194252
+  LOG(printf_P, PSTR("setup: free PSRAM  : %d\n"), ESP.getFreePsram()); // 4194252
 #endif
 
   Serial.println("Starting test...");
@@ -43,6 +43,6 @@ void loop() {
   embui.handle();
 
 #ifdef USE_FTP
-    ftp_loop(); // цикл обработки событий фтп-сервера
+  ftp_loop(); // цикл обработки событий фтп-сервера
 #endif
 }

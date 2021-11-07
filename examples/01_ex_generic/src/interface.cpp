@@ -5,6 +5,15 @@
 
 #include "uistrings.h"   // non-localized text-strings
 
+#ifdef ESP32
+#if defined ARDUINO_ESP32S2_DEV || ARDUINO_ESP32C3_DEV  
+  #include <driver/temp_sensor.h>
+#endif
+  extern "C" int rom_phy_get_vdd33();
+#else
+  ADC_MODE(ADC_VCC);  // read internal Vcc
+#endif
+
 /**
  * можно нарисовать свой собственный интефейс/обработчики с нуля, либо
  * подключить статический класс с готовыми формами для базовых системных натсроек и дополнить интерфейс.
@@ -47,6 +56,14 @@ void create_parameters(){
 
     embui.section_handle_add(FPSTR(V_LED), action_blink);               // обработка рычажка светодиода
 
+#if defined ARDUINO_ESP32S2_DEV || ARDUINO_ESP32C3_DEV  
+    // ESP32-C3 & ESP32-S2
+    {
+      temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();
+      temp_sensor_set_config(cfg);
+      temp_sensor_start();
+    }
+#endif
 };
 
 /**
@@ -65,7 +82,7 @@ void section_main_frame(Interface *interf, JsonObject *data){
   block_menu(interf, data);                         // Строим UI блок с меню выбора других секций
   interf->json_frame_flush();
 
-  if(!embui.sysData.wifi_sta && embui.param(FPSTR(P_WIFIMODE))=="0"){
+  if(!embui.sysData.wifi_sta && embui.param(FPSTR(P_WIFIMODE))!="1"){
     // форсируем выбор вкладки настройки WiFi если контроллер не подключен к внешней AP
     LOG(println, F("UI: Opening network setup section"));
     BasicUI::block_settings_netw(interf, data);
@@ -111,7 +128,16 @@ void block_demopage(Interface *interf, JsonObject *data){
 
     // Headline
     // параметр FPSTR(T_SET_DEMO) определяет зарегистрированный обработчик данных для секции
-    interf->json_section_main(FPSTR(T_DEMO), F("Some demo controls"));
+#if defined ARDUINO_ESP32_DEV  
+    LOG(println, F("ARDUINO_ESP32_DEV"));  
+    interf->json_section_main(FPSTR(T_DEMO), F("Some ESP32 demo controls"));
+#elif defined ARDUINO_ESP32S2_DEV  
+    LOG(println, F("ARDUINO_ESP32S2_DEV"));
+    interf->json_section_main(FPSTR(T_DEMO), F("Some ESP32-S2 demo controls"));
+#elif defined ARDUINO_ESP32C3_DEV  
+    LOG(println, F("ARDUINO_ESP32C3_DEV"));
+    interf->json_section_main(FPSTR(T_DEMO), F("Some ESP32-C3 demo controls"));
+#endif  
       interf->json_section_begin("", ""); // отдельная секция для светодиода, чтобы не мешало обработчику секции T_SET_DEMO для полей ниже
         interf->comment(F("Комментарий: набор контролов для демонстрации"));     // комментарий-описание секции
 
@@ -159,7 +185,7 @@ void action_blink(Interface *interf, JsonObject *data){
   SETPARAM(FPSTR(V_LED));  // save new LED state to the config
 
   // set LED state to the new checkbox state
-  digitalWrite(LED_BUILTIN, !(*data)[FPSTR(V_LED)].as<unsigned int>()); // write inversed signal for biuldin LED
+  digitalWrite(LED_BUILTIN, !(*data)[FPSTR(V_LED)].as<unsigned int>()); // write inversed signal for builtin LED
   Serial.printf("LED: %d\n", (*data)[FPSTR(V_LED)].as<unsigned int>());
 }
 

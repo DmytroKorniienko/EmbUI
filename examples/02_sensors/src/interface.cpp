@@ -136,10 +136,10 @@ void block_demopage(Interface *interf, JsonObject *data){
     interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32 demo sensors"));
 #elif defined ARDUINO_ESP32S2_DEV  
     LOG(println, F("ARDUINO_ESP32S2_DEV"));
-    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32S2 demo sensors"));
+    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32-S2 demo sensors"));
 #elif defined ARDUINO_ESP32C3_DEV  
     LOG(println, F("ARDUINO_ESP32C3_DEV"));
-    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32C3 demo sensors"));
+    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32-C3 demo sensors"));
 #endif  
 
     // переключатель, связанный со светодиодом. Изменяется синхронно
@@ -184,7 +184,8 @@ void action_blink(Interface *interf, JsonObject *data){
   SETPARAM(FPSTR(V_LED));  // save new LED state to the config
 
   // set LED state to the new checkbox state
-  digitalWrite(LED_BUILTIN, !(*data)[FPSTR(V_LED)].as<unsigned int>()); // write inversed signal for biuldin LED
+  digitalWrite(LED_BUILTIN, !(*data)[FPSTR(V_LED)].as<unsigned int>()); // write inversed signal for builtin LED
+
   Serial.printf("LED: %d\n", (*data)[FPSTR(V_LED)].as<unsigned int>());
 }
 
@@ -215,13 +216,13 @@ void sensorPublisher() {
     interf->value(F("vcc"), String("3.3"), true); // html must be set 'true' so this value could be handeled properly for div elements
     float t;
     if(temp_sensor_read_celsius(&t)==ESP_OK){
-      interf->value(F("temp"), String(t), true);
+      interf->value(F("temp"), String(t,1), true);
     }
 #elif defined ARDUINO_ESP32C3_DEV  
     interf->value(F("vcc"), String("3.3"), true); // html must be set 'true' so this value could be handeled properly for div elements
     float t;
     if(temp_sensor_read_celsius(&t)==ESP_OK){
-      interf->value(F("temp"), String(t), true);
+      interf->value(F("temp"), String(t,1), true);
     }
 #else
     interf->value(F("vcc"), String((ESP.getVcc() + random(-100,100))/1000.0), true); // html must be set 'true' so this value could be handeled properly for div elements

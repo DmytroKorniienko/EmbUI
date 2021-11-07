@@ -342,8 +342,23 @@ void BasicUI::embuistatus(Interface *interf){
     if (!interf) return;
     interf->json_frame_value();
     interf->value(F("pTime"), EmbUI::GetInstance()->timeProcessor.getFormattedShortTime(), true);
+
+#if !defined(ESP32) || !defined(BOARD_HAS_PSRAM)    
     interf->value(F("pMem"), String(ESP.getFreeHeap()), true);
-    interf->value(F("pUptime"), String(EmbUI::GetInstance()->getUptime()), true);
+#else
+    if(psramFound()){
+        interf->value(F("pMem"), String(ESP.getFreeHeap())+F(" / ")+String(ESP.getFreePsram()), true);
+        //LOG(printf_P, PSTR("Free PSRAM: %d\n"), ESP.getFreePsram());
+    } else {
+        interf->value(F("pMem"), String(ESP.getFreeHeap()), true);
+    }
+#endif
+
+    //interf->value(F("pUptime"), String(EmbUI::GetInstance()->getUptime()), true);
+    char fuptime[16];
+    uint32_t tm = EmbUI::GetInstance()->getUptime();
+    sprintf_P(fuptime, PSTR("%u.%02u:%02u:%02u"),tm/86400,(tm/3600)%24,(tm/60)%60,tm%60);
+    interf->value(F("pUptime"), String(fuptime), true);
     interf->json_frame_flush();
 }
 
