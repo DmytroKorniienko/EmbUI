@@ -137,7 +137,10 @@ void block_demopage(Interface *interf, JsonObject *data){
 #elif defined ARDUINO_ESP32C3_DEV  
     LOG(println, F("ARDUINO_ESP32C3_DEV"));
     interf->json_section_main(FPSTR(T_DEMO), F("Some ESP32-C3 demo controls"));
-#endif  
+#else
+    LOG(println, F("ESP8266"));
+    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some demo controls"));
+#endif
       interf->json_section_begin("", ""); // отдельная секция для светодиода, чтобы не мешало обработчику секции T_SET_DEMO для полей ниже
         interf->comment(F("Комментарий: набор контролов для демонстрации"));     // комментарий-описание секции
 

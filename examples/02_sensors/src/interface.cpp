@@ -140,6 +140,9 @@ void block_demopage(Interface *interf, JsonObject *data){
 #elif defined ARDUINO_ESP32C3_DEV  
     LOG(println, F("ARDUINO_ESP32C3_DEV"));
     interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32-C3 demo sensors"));
+#else
+    LOG(println, F("ESP8266"));
+    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some demo sensors"));
 #endif  
 
     // переключатель, связанный со светодиодом. Изменяется синхронно
