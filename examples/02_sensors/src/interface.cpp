@@ -136,6 +136,7 @@ void block_demopage(Interface *interf, JsonObject *data){
     interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32 demo sensors"));
 #elif defined ARDUINO_ESP32S2_DEV  
     LOG(println, F("ARDUINO_ESP32S2_DEV"));
+<<<<<<< HEAD
     interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32-S2 demo sensors"));
 #elif defined ARDUINO_ESP32C3_DEV  
     LOG(println, F("ARDUINO_ESP32C3_DEV"));
@@ -143,6 +144,12 @@ void block_demopage(Interface *interf, JsonObject *data){
 #else
     LOG(println, F("ESP8266"));
     interf->json_section_main(FPSTR(T_SET_DEMO), F("Some demo sensors"));
+=======
+    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32S2 demo sensors"));
+#elif defined ARDUINO_ESP32C3_DEV  
+    LOG(println, F("ARDUINO_ESP32C3_DEV"));
+    interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32C3 demo sensors"));
+>>>>>>> main
 #endif  
 
     // переключатель, связанный со светодиодом. Изменяется синхронно
@@ -219,13 +226,21 @@ void sensorPublisher() {
     interf->value(F("vcc"), String("3.3"), true); // html must be set 'true' so this value could be handeled properly for div elements
     float t;
     if(temp_sensor_read_celsius(&t)==ESP_OK){
+<<<<<<< HEAD
       interf->value(F("temp"), String(t,1), true);
+=======
+      interf->value(F("temp"), String(t), true);
+>>>>>>> main
     }
 #elif defined ARDUINO_ESP32C3_DEV  
     interf->value(F("vcc"), String("3.3"), true); // html must be set 'true' so this value could be handeled properly for div elements
     float t;
     if(temp_sensor_read_celsius(&t)==ESP_OK){
+<<<<<<< HEAD
       interf->value(F("temp"), String(t,1), true);
+=======
+      interf->value(F("temp"), String(t), true);
+>>>>>>> main
     }
 #else
     interf->value(F("vcc"), String((ESP.getVcc() + random(-100,100))/1000.0), true); // html must be set 'true' so this value could be handeled properly for div elements

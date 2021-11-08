@@ -91,7 +91,11 @@ void BasicUI::section_settings_frame(Interface *interf, JsonObject *data){
 // Блок настроек WiFi
 void BasicUI::block_only_wifi(Interface *interf, JsonObject *data) {
     interf->spacer(FPSTR(T_DICT[lang][TD::D_WIFIAPOPTS]));
+<<<<<<< HEAD
     interf->select(String(FPSTR(P_WIFIMODE)), EmbUI::GetInstance()->param(FPSTR(P_WIFIMODE)), String(FPSTR(T_DICT[lang][TD::D_WIFIMODE])));
+=======
+    interf->select(String(FPSTR(P_WIFIMODE)), embui.param(FPSTR(P_WIFIMODE)), String(FPSTR(T_DICT[lang][TD::D_WIFIMODE])));
+>>>>>>> main
         interf->option("0", String(FPSTR(T_DICT[lang][TD::D_WIFI_STA])));
         interf->option("1", String(FPSTR(T_DICT[lang][TD::D_WIFI_AP])));
         interf->option("2", String(FPSTR(T_DICT[lang][TD::D_WIFI_APSTA])));
@@ -342,6 +346,7 @@ void BasicUI::embuistatus(Interface *interf){
     if (!interf) return;
     interf->json_frame_value();
     interf->value(F("pTime"), EmbUI::GetInstance()->timeProcessor.getFormattedShortTime(), true);
+<<<<<<< HEAD
 
 #if !defined(ESP32) || !defined(BOARD_HAS_PSRAM)    
     interf->value(F("pMem"), String(ESP.getFreeHeap()), true);
@@ -359,6 +364,10 @@ void BasicUI::embuistatus(Interface *interf){
     uint32_t tm = EmbUI::GetInstance()->getUptime();
     sprintf_P(fuptime, PSTR("%u.%02u:%02u:%02u"),tm/86400,(tm/3600)%24,(tm/60)%60,tm%60);
     interf->value(F("pUptime"), String(fuptime), true);
+=======
+    interf->value(F("pMem"), String(ESP.getFreeHeap()), true);
+    interf->value(F("pUptime"), String(EmbUI::GetInstance()->getUptime()), true);
+>>>>>>> main
     interf->json_frame_flush();
 }
 

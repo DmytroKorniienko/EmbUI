@@ -82,7 +82,11 @@ void section_main_frame(Interface *interf, JsonObject *data){
   block_menu(interf, data);                         // Строим UI блок с меню выбора других секций
   interf->json_frame_flush();
 
+<<<<<<< HEAD
   if(!embui.sysData.wifi_sta && embui.param(FPSTR(P_WIFIMODE))!="1"){
+=======
+  if(!embui.sysData.wifi_sta && embui.param(FPSTR(P_WIFIMODE))=="0"){
+>>>>>>> main
     // форсируем выбор вкладки настройки WiFi если контроллер не подключен к внешней AP
     LOG(println, F("UI: Opening network setup section"));
     BasicUI::block_settings_netw(interf, data);
