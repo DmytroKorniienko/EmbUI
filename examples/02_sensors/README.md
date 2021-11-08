@@ -17,3 +17,5 @@
  - собрать проект в platformio
  - залить FS в контроллер `pio run -t uploadfs`
  - залить прошивку в контроллер `pio run -t upload`
+
+mklittlefs.exe вы можете найти по ссылке https://github.com/earlephilhower/mklittlefs , из фреймворка он удален, в связи с ограничениями публикации библиотеки
