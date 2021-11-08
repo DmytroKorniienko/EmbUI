@@ -26,10 +26,9 @@ Embedded WebUI Interface
 
 
 ## Примеры построения интерфейсов
-
-<img src="https://raw.githubusercontent.com/vortigont/espem/master/examples/espemembui.png" alt="espem ui" width="30%"/><img src="https://raw.githubusercontent.com/vortigont/espem/master/examples/espemembui_setup.png" alt="espem opts" width="30%"/>
-
 ![EmbUI](https://user-images.githubusercontent.com/26786760/140750180-65de2694-3ed8-41de-87eb-6f7e94ac12b2.png)
+
+<details><summary>Other pictures</summary><img src="https://raw.githubusercontent.com/vortigont/espem/master/examples/espemembui.png" alt="espem ui" width="30%"/><img src="https://raw.githubusercontent.com/vortigont/espem/master/examples/espemembui_setup.png" alt="espem opts" width="30%"/></details>
 
 
 ## Использование
