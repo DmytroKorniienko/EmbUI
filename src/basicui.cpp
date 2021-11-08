@@ -91,7 +91,7 @@ void BasicUI::section_settings_frame(Interface *interf, JsonObject *data){
 // Блок настроек WiFi
 void BasicUI::block_only_wifi(Interface *interf, JsonObject *data) {
     interf->spacer(FPSTR(T_DICT[lang][TD::D_WIFIAPOPTS]));
-    interf->select(String(FPSTR(P_WIFIMODE)), embui.param(FPSTR(P_WIFIMODE)), String(FPSTR(T_DICT[lang][TD::D_WIFIMODE])));
+    interf->select(String(FPSTR(P_WIFIMODE)), EmbUI::GetInstance()->param(FPSTR(P_WIFIMODE)), String(FPSTR(T_DICT[lang][TD::D_WIFIMODE])));
         interf->option("0", String(FPSTR(T_DICT[lang][TD::D_WIFI_STA])));
         interf->option("1", String(FPSTR(T_DICT[lang][TD::D_WIFI_AP])));
         interf->option("2", String(FPSTR(T_DICT[lang][TD::D_WIFI_APSTA])));
