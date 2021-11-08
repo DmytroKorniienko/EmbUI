@@ -17,15 +17,9 @@
 void setup() {
   Serial.begin(BAUD_RATE);
 
-<<<<<<< HEAD
   LOG(printf_P, PSTR("\n\nsetup: free heap  : %d\n"), ESP.getFreeHeap());
 #ifdef ESP32
   LOG(printf_P, PSTR("setup: free PSRAM  : %d\n"), ESP.getFreePsram()); // 4194252
-=======
-    LOG(printf_P, PSTR("\n\nsetup: free heap  : %d\n"), ESP.getFreeHeap());
-#ifdef ESP32
-    LOG(printf_P, PSTR("setup: free PSRAM  : %d\n"), ESP.getFreePsram()); // 4194252
->>>>>>> main
 #endif
 
   Serial.println("Starting test...");
