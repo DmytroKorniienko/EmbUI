@@ -44,5 +44,7 @@ ArduinoJson        |  https://github.com/bblanchon/ArduinoJson.git              
 AsyncWebServer-mod |  https://github.com/DmytroKorniienko/ESPAsyncWebServer/tree/ESPAsyncWebServerMod | manual install, fork
 AsyncMqttClient    |  https://github.com/marvinroger/async-mqtt-client.git                            | manual install
 TaskScheduler      |  https://github.com/arkhipenko/TaskScheduler.git                                 |
-FtpClientServer    |  https://github.com/charno/FTPClientServer.git                                   | manual install, fork, esp32
+FtpClientServer    |  https://github.com/charno/FTPClientServer.git                                   | manual install, fork
 ESP32SSDP          |  https://github.com/luc-github/ESP32SSDP.git                                     | manual install, esp32
+AsyncTCP           |  https://github.com/me-no-dev/AsyncTCP.git                                       | manual install, esp32
+LittleFS_esp32     |  https://github.com/lorol/LITTLEFS.git                                           | manual install, esp32
