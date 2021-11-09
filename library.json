@@ -54,15 +54,6 @@
         "srcDir": "src"
     },
     "examples": [
-    /*    {
-            "name": "Generic UI",
-            "base": "examples/01_ex_generic",
-            "files": [
-                "platformio.ini",
-                "src/main.cpp",
-                "src/src.ino"
-            ]
-        },*/
         {
             "name": "Generic UI sensors",
             "base": "examples/02_sensors",
