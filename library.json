@@ -2,7 +2,7 @@
     "name": "EmbUI",
     "frameworks": "arduino",
     "keywords": "embui, arduino, framework, esp8266, esp32",
-    "description": "Embeded Web UI framework for esp8266/esp32 IoT prototyping",
+    "description": "Embeded Web UI framework for esp8266/esp32/esp32-c3/esp32-s2 IoT prototyping",
     "url": "https://github.com/DmytroKorniienko/EmbUI",
     "authors": [
         {
@@ -54,7 +54,7 @@
         "srcDir": "src"
     },
     "examples": [
-        {
+    /*    {
             "name": "Generic UI",
             "base": "examples/01_ex_generic",
             "files": [
@@ -62,13 +62,14 @@
                 "src/main.cpp",
                 "src/src.ino"
             ]
-        },
+        },*/
         {
             "name": "Generic UI sensors",
             "base": "examples/02_sensors",
             "files": [
                 "platformio.ini",
                 "src/main.cpp",
+                "src/interface.cpp",
                 "src/src.ino"
             ]
         }
