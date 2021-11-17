@@ -154,7 +154,7 @@ void block_demopage(Interface *interf, JsonObject *data){
         *  первый параметр FPSTR(T_DEMO) определяет какая секция откроется
         *  после обработки отправленных данных
         */ 
-        interf->button_submit(FPSTR(T_SET_DEMO), FPSTR(T_DICT[BasicUI::lang][TD::D_Send]), FPSTR(P_GRAY));
+        interf->button_submit(FPSTR(T_SET_DEMO), FPSTR(T_DICT[BasicUI::lang][TD::D_SEND]), FPSTR(P_GRAY));
       interf->json_section_end();
     interf->json_section_end();
     interf->json_frame_flush();
