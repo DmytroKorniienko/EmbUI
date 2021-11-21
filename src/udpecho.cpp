@@ -4,6 +4,8 @@
 // and others people
 
 #include "EmbUI.h"
+
+#ifdef TEMP_OFF
 #include <ESPAsyncUDP.h>
 
 AsyncUDP Udp;
@@ -39,3 +41,12 @@ void EmbUI::udpLoop(){
     }
     if(!udpApply) return;
 }
+#else
+void EmbUI::udp(){}
+
+void EmbUI::udp(const String &message){}
+
+void EmbUI::udpBegin(){}
+
+void EmbUI::udpLoop(){}
+#endif
