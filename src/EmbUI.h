@@ -95,6 +95,14 @@
 #define MAX_WS_CLIENTS 4
 #endif
 
+// #define USE_EXTERNAL_WS_BUFFER
+
+#ifdef USE_EXTERNAL_WS_BUFFER
+#ifndef EXT_WS_BUFFER_SIZE
+#define EXT_WS_BUFFER_SIZE 4096
+#endif
+#endif
+
 // TaskScheduler - Let the runner object be a global, single instance shared between object files.
 extern Scheduler ts;
 
@@ -288,9 +296,12 @@ class EmbUI
     AsyncWebSocket ws;
     mqttCallback onConnect;
     TimeProcessor timeProcessor;
-
 #ifdef EMBUI_USE_FTP
     FTPServer ftpSrv;
+#endif
+#ifdef USE_EXTERNAL_WS_BUFFER    
+    uint8_t *extWsBuf = nullptr;
+    void clear_ext_ws_buff();
 #endif
 
     char mc[7]; // id из последних 3 байт mac-адреса "ffffff"

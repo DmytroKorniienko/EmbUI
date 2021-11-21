@@ -4,9 +4,9 @@
 // and others people
 
 #include "EmbUI.h"
-#include <WiFiUdp.h>
+#include <ESPAsyncUDP.h>
 
-WiFiUDP Udp;
+AsyncUDP Udp;
 bool udpApply = false;
 
 void EmbUI::udp(){
@@ -19,39 +19,23 @@ void EmbUI::udp(const String &message){
 }
 
 void EmbUI::udpBegin(){
-    Udp.begin(localUdpPort);
-    if(!udpMessage.isEmpty()) udpApply = true;
+    if(Udp.listen(5568)){
+        Udp.onPacket([](AsyncUDPPacket packet){
+            LOG(printf, PSTR("Received %d bytes from %s, port %d\n"), packet.length(), packet.remoteIP().toString().c_str(), packet.remotePort());
+            LOG(print, PSTR("UDP packet contents: "));
+            LOG(write, packet.data(), packet.length());
+            LOG(println, String(F("\nSend UDP: ")) + EmbUI::GetInstance()->udpMessage);
+            packet.print(EmbUI::GetInstance()->udpMessage);
+            });
+    }
 }
 
 void EmbUI::udpLoop(){
     static bool st = false;
+
     if(!st){
         st = true;
         udpBegin();
     }
-
     if(!udpApply) return;
-
-    int packetSize = Udp.parsePacket();
-    if (packetSize)
-    {
-        char *data = new char[packetSize+1];
-        
-        LOG(printf, PSTR("Received %d bytes from %s, port %d\n"), packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
-        uint32_t len = Udp.read(data, packetSize);
-        if (len > 0)
-        {
-            data[len] = 0;
-        }
-        LOG(printf, PSTR("UDP packet contents: %s\n"), data);
-
-        // send back a reply, to the IP address and port we got the packet from
-        Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-        //Udp.write(ip.c_str());
-        LOG(println, String(F("Send UDP: ")) + udpMessage);
-        Udp.print(udpMessage);
-        Udp.endPacket();
-
-        delete[] data;
-    }
 }

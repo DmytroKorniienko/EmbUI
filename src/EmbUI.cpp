@@ -52,7 +52,45 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     } else
     if(type == WS_EVT_DATA){
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
-        if(info->final && info->index == 0 && info->len == len){
+        bool pgkReady = false;
+        if (info->len == len)
+            pgkReady = true;
+#ifdef USE_EXTERNAL_WS_BUFFER
+        bool mPkg = false;
+        static uint32_t lastLen = 0;
+        if (info->len > EXT_WS_BUFFER_SIZE) {
+            LOG(printf_P, PSTR("UI: ws package out of max package size %d byte \n"), EXT_WS_BUFFER_SIZE);
+            return;
+        }
+        if (info->len != len){
+            if (info->index == 0) {
+                EmbUI::GetInstance()->clear_ext_ws_buff();
+                EmbUI::GetInstance()->extWsBuf = new uint8_t[info->len];
+                if (!EmbUI::GetInstance()->extWsBuf) {
+                    LOG(printf_P, PSTR("UI: ws package out of mem size \n"));
+                    return;
+                }
+                lastLen = 0;
+            }
+            if (lastLen != info->index || !EmbUI::GetInstance()->extWsBuf) {
+                LOG(printf_P, PSTR("UI: ws package lost \n"));
+                    EmbUI::GetInstance()->clear_ext_ws_buff();
+                return;
+            }
+            memcpy(EmbUI::GetInstance()->extWsBuf+info->index, data, len);
+            pgkReady = info->index + len == info->len && EmbUI::GetInstance()->extWsBuf ? true : false;
+            lastLen += len;
+            if (info->index + len == info->len) 
+                mPkg = true;
+        }
+#endif
+        if(info->final && pgkReady){
+#ifdef USE_EXTERNAL_WS_BUFFER
+            if (mPkg) {
+                len = info->len;
+                data = EmbUI::GetInstance()->extWsBuf;
+            }
+#endif
             if (!strncmp_P((const char *)data+1, PSTR("\"pkg\":\"post\""), 12)) {
                 uint16_t objCnt = 2, tmpCnt=0; // минимально резервируем под 2 штуки
                 for(uint16_t i=0; i<len; i++)
@@ -61,12 +99,23 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
                 objCnt += tmpCnt/4; // по кол-ву кавычек/4, т.к. "key":"value"
                 LOG(printf_P, PSTR("UI: =POST= LEN: %u, obj: %u\n"), len, tmpCnt/4);
                 DynamicJsonDocument *res = new DynamicJsonDocument(len + JSON_OBJECT_SIZE(objCnt)); // https://arduinojson.org/v6/assistant/
-                if(!res) return;
-                DeserializationError error = deserializeJson((*res), (const char*)data, len); // deserialize via copy to prevent dangling pointers in action()'s
+                if(!res) {
+                    LOG(printf_P, PSTR("UI: res mem alloc error \n"));
+#ifdef USE_EXTERNAL_WS_BUFFER
+                    if (mPkg)
+                        EmbUI::GetInstance()->clear_ext_ws_buff();
+#endif
+                    return;
+                }
+                    DeserializationError error = deserializeJson((*res), (const char*)data, len); // deserialize via copy to prevent dangling pointers in action()'s
+#ifdef USE_EXTERNAL_WS_BUFFER
+                if (mPkg) 
+                    EmbUI::GetInstance()->clear_ext_ws_buff();          // очищаем буфер, т.к. уже не нужен
+#endif
                 if (error){
                     LOG(printf_P, PSTR("UI: Post deserialization err: %d\n"), error.code());
                     delete res;
-                    return;
+                    return;                   
                 }
                 JsonObject data = (*res)[F("data")]; // ссылка на интересующую часть документа, документ обязан существовать до конца использования!
                 EmbUI::GetInstance()->post(data);
@@ -469,6 +518,15 @@ void EmbUI::set_callback(CallBack set, CallBack action, callback_function_t call
             return;
     }
 };
+
+#ifdef USE_EXTERNAL_WS_BUFFER
+void EmbUI::clear_ext_ws_buff(){
+    if (extWsBuf) {
+        delete[] extWsBuf;
+        extWsBuf = nullptr;
+    }
+}
+#endif
 
 /**
  * call to create system-dependent variables,
