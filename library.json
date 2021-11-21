@@ -43,6 +43,12 @@
         {"name": "ESP32SSDP",
          "version": "*",
          "platforms": ["espressif32"]},
+         {  "name": "ESPAsyncUDP",
+            "version": "*",
+            "platforms": ["espressif8266"]},
+         {  "name": "ESP32 Async UDP",
+            "version": "*",
+            "platforms": ["espressif32"]},
          {"owner": "charno",
             "name": "FTPClientServer",
             "version": "https://github.com/charno/FTPClientServer"}

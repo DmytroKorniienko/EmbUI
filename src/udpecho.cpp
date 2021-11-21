@@ -5,8 +5,11 @@
 
 #include "EmbUI.h"
 
-#ifdef TEMP_OFF
+#if defined (ESP32) || defined (ARDUINO_ESP32_DEV)
+#include <AsyncUDP.h>
+#elif defined (ESP8266)
 #include <ESPAsyncUDP.h>
+#endif
 
 AsyncUDP Udp;
 bool udpApply = false;
@@ -41,12 +44,3 @@ void EmbUI::udpLoop(){
     }
     if(!udpApply) return;
 }
-#else
-void EmbUI::udp(){}
-
-void EmbUI::udp(const String &message){}
-
-void EmbUI::udpBegin(){}
-
-void EmbUI::udpLoop(){}
-#endif
