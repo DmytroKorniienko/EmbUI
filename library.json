@@ -45,8 +45,7 @@
          "platforms": "espressif32"},
         {"name": "ESPAsyncUDP",
          "version": "https://github.com/DmytroKorniienko/ESPAsyncUDP",
-         "platforms": "espressif8266",
-         "lib_compat_mode": "strict"},
+         "platforms": "espressif8266"},
         {"owner": "charno",
          "name": "FTPClientServer",
          "version": "https://github.com/charno/FTPClientServer"}
@@ -56,7 +55,7 @@
             "-DEMBUI_VER=2.5.0"
         ],
         "srcDir": "src",
-        "lib_compat_mode": "strict"
+        "libCompatMode": "strict"
     },
     "examples": [
         {
