@@ -46,7 +46,7 @@
         {"name": "ESPAsyncUDP",
          "version": "https://github.com/DmytroKorniienko/ESPAsyncUDP",
          "platforms": ["espressif8266"],
-         "lib_compat_mode" = "strict"},
+         "lib_compat_mode": "strict"},
         {"owner": "charno",
          "name": "FTPClientServer",
          "version": "https://github.com/charno/FTPClientServer"}
