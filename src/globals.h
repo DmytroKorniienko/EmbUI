@@ -3,7 +3,8 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#pragma once
+#ifndef _EMBUI_GLOBALS_H
+#define _EMBUI_GLOBALS_H
 
 // Global macro's and framework libs
 #include <Arduino.h>
@@ -13,6 +14,7 @@
 #ifndef __STRINGIFY
  #define __STRINGIFY(a) #a
 #endif
+#define __I(x) x
 #define TOSTRING(x) __STRINGIFY(x)
 
 // LOG macro's
@@ -31,3 +33,5 @@
 #endif
 
 typedef std::function<void(void)> callback_function_t;
+
+#endif

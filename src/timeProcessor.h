@@ -3,38 +3,38 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#ifndef __TIMEPROCESSOR_H
-#define __TIMEPROCESSOR_H
+#ifndef _EMBUI_TIMEPROCESSOR_H
+#define _EMBUI_TIMEPROCESSOR_H
 
 #include "globals.h"
 #include "ts.h"
 #include "wi-fi.h"
 
-#ifndef TZONE
-#define DEF_TZONE PSTR("GMT0")         // default Time-Zone
+#ifndef EMBUI_TZONE
+#define EMBUI_DEF_TZONE PSTR("GMT0")         // default Time-Zone
 #else
-#define DEF_TZONE TZONE
+#define EMBUI_DEF_TZONE EMBUI_TZONE
 #endif
 
-#ifdef COUNTRY
-    #define NTP1ADDRESS        TOSTRING(COUNTRY) "." "pool.ntp.org"    // пул серверов времени для NTP
-    #define NTP2ADDRESS        ("pool.ntp.org")
+#ifdef EMBUI_NTP_POOL_REGION
+    #define EMBUI_NTP1ADDRESS        TOSTRING(EMBUI_NTP_POOL_REGION) "." "pool.ntp.org"    // пул серверов времени для NTP
+    #define EMBUI_NTP2ADDRESS        ("pool.ntp.org")
 #else
-    #define NTP1ADDRESS        "ntp3.vniiftri.ru"
-    #define NTP2ADDRESS        ("pool.ntp.org")
+    #define EMBUI_NTP1ADDRESS        "ntp3.vniiftri.ru"
+    #define EMBUI_NTP2ADDRESS        ("pool.ntp.org")
 #endif
 
-#ifndef CUSTOM_NTP_INDEX
-#define CUSTOM_NTP_INDEX    2
+#ifndef EMBUI_CUSTOM_NTP_INDEX
+#define EMBUI_CUSTOM_NTP_INDEX    2
 #endif
 
-#define TIMEAPI_BUFSIZE     600
-#define TM_BASE_YEAR        1900
-#define DAYSECONDS          (86400U)
-#define DATETIME_STRLEN     (19U)   // buffer for data/time string "YYYY-MM-DDThh:mm:ss"
-#define HTTPSYNC_DELAY      5
-#define HTTP_REFRESH_HRS    3     // время суток для обновления часовой зоны
-#define HTTP_REFRESH_MIN    3
+#define EMBUI_TIMEAPI_BUFSIZE     600
+#define EMBUI_TM_BASE_YEAR        1900
+#define EMBUI_DAYSECONDS          (86400U)
+#define EMBUI_DATETIME_STRLEN     (19U)   // buffer for data/time string "YYYY-MM-DDThh:mm:ss"
+#define EMBUI_HTTPSYNC_DELAY      5
+#define EMBUI_HTTP_REFRESH_HRS    3     // время суток для обновления часовой зоны
+#define EMBUI_HTTP_REFRESH_MIN    3
 
 // http://worldtimeapi.org/api/ip
 // http://worldtimeapi.org/api/timezone
@@ -64,7 +64,7 @@ private:
         ntpcnt = 1;
         isSynced = false;      // флаг, означает что время было синхронизированно
     // используем http-сервис для смещения TZ
-    #ifdef TZONE
+    #ifdef EMBUI_TZONE
         usehttpzone = false;
     #else
         usehttpzone = true;
@@ -88,7 +88,7 @@ private:
     unsigned int getHttpData(String &payload, const String &url);
     /**
      * функция установки планировщика обновления временной зоны
-     * при вызове без параметра выставляет отложенный запуск на HTTP_REFRESH_HRS:HTTP_REFRESH_MIN
+     * при вызове без параметра выставляет отложенный запуск на EMBUI_HTTP_REFRESH_HRS:EMBUI_HTTP_REFRESH_MIN
      */
     void httprefreshtimer(const uint32_t delay=0);
 

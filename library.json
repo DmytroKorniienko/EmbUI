@@ -55,7 +55,7 @@
     ],
     "build": {
         "flags": [
-            "-DEMBUIVER=2.5.0"
+            "-DEMBUI_VER=2.5.0"
         ],
         "srcDir": "src"
     },

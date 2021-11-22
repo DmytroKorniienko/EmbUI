@@ -3,7 +3,7 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#ifndef gpio_h
-#define gpio_h
+#ifndef _EMBUI_GPIO_H
+#define _EMBUI_GPIO_H
 
 #endif

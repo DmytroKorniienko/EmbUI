@@ -3,7 +3,11 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#ifndef udpecho_h
-#define udpecho_h
+#ifndef _EMBUI_UDPECHO_H
+#define _EMBUI_UDPECHO_H
+
+#ifdef EMBUI_USE_UDP
+  //
+#endif
 
 #endif

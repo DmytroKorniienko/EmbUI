@@ -7,12 +7,12 @@
 #include "ui.h"
 
 // Update defs
-#ifndef ESP_IMAGE_HEADER_MAGIC
- #define ESP_IMAGE_HEADER_MAGIC 0xE9
+#ifndef EMBUI_ESP_IMAGE_HEADER_MAGIC
+ #define EMBUI_ESP_IMAGE_HEADER_MAGIC 0xE9
 #endif
 
-#ifndef GZ_HEADER
- #define GZ_HEADER 0x1F
+#ifndef EMBUI_GZ_HEADER
+ #define EMBUI_GZ_HEADER 0x1F
 #endif
 uint8_t __attribute__((weak)) uploadProgress(size_t len, size_t total);
 void mqtt_emptyFunction(const String &, const String &);
@@ -26,7 +26,15 @@ void section_main_frame(Interface *interf, JsonObject *data) {}
 void pubCallback(Interface *interf){}
 String httpCallback(const String &param, const String &value, bool isSet) { return String(); }
 
+//custom WS action handler, weak function
+bool ws_action_handle(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+{
+    return false; // override this in user code if necessary
+}
+
 void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len){
+    if(ws_action_handle(server, client, type, arg, data, len)) return;
+
     if(type == WS_EVT_CONNECT){
         LOG(printf_P, PSTR("UI: ws[%s][%u] connect MEM: %u\n"), server->url(), client->id(), ESP.getFreeHeap());
 
@@ -45,7 +53,6 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     } else
     if(type == WS_EVT_ERROR){
         LOG(printf_P, PSTR("ws[%s][%u] error(%u): %s\n"), server->url(), client->id(), *((uint16_t*)arg), (char*)data);
-        httpCallback(F("sys_WS_EVT_ERROR"), "", false); // сообщим об ошибке сокета
     } else
     if(type == WS_EVT_PONG){
         LOG(printf_P, PSTR("ws[%s][%u] pong[%u]: %s\n"), server->url(), client->id(), len, (len)?(char*)data:"");
@@ -55,11 +62,11 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         bool pgkReady = false;
         if (info->len == len)
             pgkReady = true;
-#ifdef USE_EXTERNAL_WS_BUFFER
+#ifdef EMBUI_USE_EXTERNAL_WS_BUFFER
         bool mPkg = false;
         static uint32_t lastLen = 0;
-        if (info->len > EXT_WS_BUFFER_SIZE) {
-            LOG(printf_P, PSTR("UI: ws package out of max package size %d byte \n"), EXT_WS_BUFFER_SIZE);
+        if (info->len > EMBUI_USE_EXTERNAL_WS_BUFFER) {
+            LOG(printf_P, PSTR("UI: ws package out of max package size %d byte \n"), EMBUI_USE_EXTERNAL_WS_BUFFER);
             return;
         }
         if (info->len != len){
@@ -85,7 +92,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         }
 #endif
         if(info->final && pgkReady){
-#ifdef USE_EXTERNAL_WS_BUFFER
+#ifdef EMBUI_USE_EXTERNAL_WS_BUFFER
             if (mPkg) {
                 len = info->len;
                 data = EmbUI::GetInstance()->extWsBuf;
@@ -101,14 +108,14 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
                 DynamicJsonDocument *res = new DynamicJsonDocument(len + JSON_OBJECT_SIZE(objCnt)); // https://arduinojson.org/v6/assistant/
                 if(!res) {
                     LOG(printf_P, PSTR("UI: res mem alloc error \n"));
-#ifdef USE_EXTERNAL_WS_BUFFER
+#ifdef EMBUI_USE_EXTERNAL_WS_BUFFER
                     if (mPkg)
                         EmbUI::GetInstance()->clear_ext_ws_buff();
 #endif
                     return;
                 }
                     DeserializationError error = deserializeJson((*res), (const char*)data, len); // deserialize via copy to prevent dangling pointers in action()'s
-#ifdef USE_EXTERNAL_WS_BUFFER
+#ifdef EMBUI_USE_EXTERNAL_WS_BUFFER
                 if (mPkg) 
                     EmbUI::GetInstance()->clear_ext_ws_buff();          // очищаем буфер, т.к. уже не нужен
 #endif
@@ -156,7 +163,11 @@ void EmbUI::begin(){
     uint8_t retry_cnt = 3;
 
     // монтируем ФС только один раз при старте
-    while(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
+#ifdef ESP32
+    while(!LittleFS.begin(true)){
+#else
+    while(!LittleFS.begin()){
+#endif
         LOG(println, F("UI: LittleFS initialization error, retrying..."));
         --retry_cnt;
         delay(100);
@@ -170,8 +181,9 @@ void EmbUI::begin(){
     cfgData.flags = param(FPSTR(P_cfgData)).toInt(); // restore bitmap data
     create_sysvars();       // create system variables (if missing)
     create_parameters();    // weak function, creates user-defined variables
+    #ifdef EMBUI_USE_MQTT
     mqtt(param(FPSTR(P_m_pref)), param(FPSTR(P_m_host)), param(FPSTR(P_m_port)).toInt(), param(FPSTR(P_m_user)), param(FPSTR(P_m_pass)), mqtt_emptyFunction, false); // init mqtt
-
+    #endif
     LOG(println, String(F("UI CONFIG: ")) + deb());
     #ifdef ESP8266
         e1 = WiFi.onStationModeGotIP(std::bind(&EmbUI::onSTAGotIP, this, std::placeholders::_1));
@@ -193,7 +205,7 @@ void EmbUI::begin(){
     ws.onEvent(onWsEvent);
     server.addHandler(&ws);
 
-#ifdef USE_SSDP
+#ifdef EMBUI_USE_SSDP
     ssdp_begin(); LOG(println, F("Start SSDP"));
 #endif
 
@@ -207,7 +219,7 @@ void EmbUI::begin(){
 */
 
     server.on(PSTR("/version"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        request->send(200, FPSTR(PGmimetxt), F("EmbUI ver: " TOSTRING(EMBUIVER)));
+        request->send(200, FPSTR(PGmimetxt), F("EmbUI ver: " TOSTRING(EMBUI_VER)));
     });
 
     server.on(PSTR("/cmd"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
@@ -274,7 +286,7 @@ void EmbUI::begin(){
             AsyncWebServerResponse *response = request->beginResponse(500, FPSTR(PGmimetxt), F("UPDATE FAILED"));
             response->addHeader(F("Connection"), F("close"));
             request->send(response);
-            setPubInterval(PUB_PERIOD);
+            setPubInterval(EMBUI_PUB_PERIOD);
         } else {
             Task *t = new Task(TASK_SECOND, TASK_ONCE, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); }, &ts, false);
             t->enableDelayed();
@@ -284,13 +296,13 @@ void EmbUI::begin(){
         setPubInterval(0); // отключить публикацию на время обновления
         if (!index) {
             #ifdef ESP8266
-        	int type = (data[0] == ESP_IMAGE_HEADER_MAGIC || data[0] == GZ_HEADER)? U_FLASH : U_FS;
+        	int type = (data[0] == EMBUI_ESP_IMAGE_HEADER_MAGIC || data[0] == EMBUI_GZ_HEADER)? U_FLASH : U_FS;
                 Update.runAsync(true);
                 // TODO: разобраться почему под littlefs образ генерится чуть больше чем размер доступной памяти по константам
                 size_t size = (type == U_FLASH)? request->contentLength() : (uintptr_t)&_FS_end - (uintptr_t)&_FS_start;
             #endif
             #ifdef ESP32
-                int type = (data[0] == ESP_IMAGE_HEADER_MAGIC)? U_FLASH : U_FS;
+                int type = (data[0] == EMBUI_ESP_IMAGE_HEADER_MAGIC)? U_FLASH : U_FS;
                 size_t size = (type == U_FLASH)? request->contentLength() : UPDATE_SIZE_UNKNOWN;
             #endif
             LOG(printf_P, PSTR("Updating %s, file size:%u\n"), (type == U_FLASH)? "Firmware" : "Filesystem", request->contentLength());
@@ -310,7 +322,7 @@ void EmbUI::begin(){
             } else {
                 Update.printError(Serial);
             }
-            setPubInterval(PUB_PERIOD);
+            setPubInterval(EMBUI_PUB_PERIOD);
         }
         uploadProgress(index + len, request->contentLength());
     });
@@ -355,7 +367,7 @@ void EmbUI::begin(){
 
     tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
         embui_uptime++;
-        ws.cleanupClients(MAX_WS_CLIENTS);
+        ws.cleanupClients(EMBUI_MAX_WS_CLIENTS);
         #ifdef ESP8266
             MDNS.update();
         #endif
@@ -366,7 +378,7 @@ void EmbUI::begin(){
 
     server.begin();
 
-    setPubInterval(PUB_PERIOD);
+    setPubInterval(EMBUI_PUB_PERIOD);
 
 #ifdef EMBUI_USE_FTP
   //FTP Setup, ensure LittleFS is started before ftp;
@@ -405,7 +417,7 @@ void EmbUI::post(JsonObject &data){
 
 void EmbUI::send_pub(){
     if (!ws.count()) return;
-    Interface *interf = new Interface(this, &ws, SMALL_JSON_SIZE);
+    Interface *interf = new Interface(this, &ws, EMBUI_SMALL_JSON_SIZE);
     pubCallback(interf);
     delete interf;
 }
@@ -483,8 +495,12 @@ void EmbUI::led(uint8_t pin, bool invert){
 }
 
 void EmbUI::handle(){
+#ifdef EMBUI_USE_MQTT
     mqtt_handle();
+#endif
+#ifdef EMBUI_USE_UDP
     udpLoop();
+#endif
     ts.execute();           // run task scheduler
 #ifdef EMBUI_USE_FTP
     if(EmbUI::GetInstance()->cfgData.isftp)
@@ -519,7 +535,7 @@ void EmbUI::set_callback(CallBack set, CallBack action, callback_function_t call
     }
 };
 
-#ifdef USE_EXTERNAL_WS_BUFFER
+#ifdef EMBUI_USE_EXTERNAL_WS_BUFFER
 void EmbUI::clear_ext_ws_buff(){
     if (extWsBuf) {
         delete[] extWsBuf;
@@ -537,14 +553,14 @@ void EmbUI::create_sysvars(){
     var_create(FPSTR(P_cfgData), String("0"));        // bitmap data
     var_create(FPSTR(P_hostname), "");                // device hostname (autogenerated on first-run)
     var_create(FPSTR(P_WIFIMODE), String("0"));       // STA/AP/AP+STA, STA by default
-    var_create(FPSTR(P_APpwd), F(TOSTRING(__APPASSWORD)));  // пароль внутренней точки доступа
+    var_create(FPSTR(P_APpwd), F(TOSTRING(EMBUI_APPASSWORD)));  // пароль внутренней точки доступа
     // параметры подключения к MQTT
     var_create(FPSTR(P_m_host), "");                  // MQTT server hostname
     var_create(FPSTR(P_m_port), "");                  // MQTT port
     var_create(FPSTR(P_m_user), "");                  // MQTT login
     var_create(FPSTR(P_m_pass), "");                  // MQTT pass
     var_create(FPSTR(P_m_pref), mc);                  // MQTT topic == use ESP MAC address
-    var_create(FPSTR(P_m_tupd), TOSTRING(MQTT_PUB_PERIOD));              // интервал отправки данных по MQTT в секундах
+    var_create(FPSTR(P_m_tupd), TOSTRING(EMBUI_MQTT_PUB_PERIOD));              // интервал отправки данных по MQTT в секундах
     // date/time related vars
     var_create(FPSTR(P_TZSET), "");                   // TimeZone/DST rule (empty value == GMT/no DST)
     var_create(FPSTR(P_userntp), "");                 // Backup NTP server

@@ -1,6 +1,7 @@
 // localization for BasicUI resources goes here
 
-#pragma once
+#ifndef _EMBUI_I18N_H
+#define _EMBUI_I18N_H
 
 /**
  * Text-Dictionary Enums for language resources
@@ -386,3 +387,5 @@ static const char *const T_DICT[][DICT_SIZE] PROGMEM = {
     T_EN_MSG_CONF
   }
 };
+
+#endif

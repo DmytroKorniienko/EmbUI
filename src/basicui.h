@@ -1,7 +1,8 @@
 /*
     Here is a set of predefined WebUI elements for system settings setup like WiFi, time, MQTT, etc...
 */
-#pragma once
+#ifndef _EMBUI_BASICUI_H
+#define _EMBUI_BASICUI_H
 
 #include "ui.h"
 #include "i18n.h"        // localized GUI text-strings
@@ -57,7 +58,9 @@ class BasicUI {
     static void section_settings_frame(Interface *interf, JsonObject *data);
     static void set_settings_wifi(Interface *interf, JsonObject *data);
     static void set_scan_wifi(Interface *interf, JsonObject *data);
+#ifdef EMBUI_USE_MQTT
     static void set_settings_mqtt(Interface *interf, JsonObject *data);
+#endif
     static void set_settings_time(Interface *interf, JsonObject *data);
     static void set_language(Interface *interf, JsonObject *data);
     static void embuistatus(Interface *interf);
@@ -72,3 +75,5 @@ class BasicUI {
 
     //uint8_t uploadProgress(size_t len, size_t total);
 };
+
+#endif

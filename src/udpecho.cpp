@@ -5,9 +5,11 @@
 
 #include "EmbUI.h"
 
-#if defined (ESP32) || defined (ARDUINO_ESP32_DEV)
+#ifdef EMBUI_USE_UDP
+
+#ifdef ESP32
 #include <AsyncUDP.h>
-#elif defined (ESP8266)
+#else
 #include <ESPAsyncUDP.h>
 #endif
 
@@ -44,3 +46,5 @@ void EmbUI::udpLoop(){
     }
     if(!udpApply) return;
 }
+
+#endif

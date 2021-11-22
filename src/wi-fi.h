@@ -3,9 +3,8 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#pragma once
-
-#define __EMBUI_WIFI_H
+#ifndef _EMBUI_WIFI_H
+#define _EMBUI_WIFI_H
 
 #ifdef ESP8266
  #include <ESP8266WiFi.h>
@@ -15,10 +14,10 @@
  #include <WiFi.h>
 #endif
 
-#define WIFI_CONNECT_TIMEOUT    7       // timer for esp8266 STA connection attempt 
-#define WIFI_RECONNECT_TIMER    30      // timer for esp8266, STA connect retry
-#define WIFI_BEGIN_DELAY        3       // scheduled delay for STA begin() connection
+#define EMBUI_WIFI_CONNECT_TIMEOUT    7       // timer for esp8266 STA connection attempt (depricated)
+#define EMBUI_WIFI_RECONNECT_TIMER    30      // timer for esp8266, STA connect retry
+#define EMBUI_WIFI_BEGIN_DELAY        3       // scheduled delay for STA begin() connection
 
-#define WIFI_PSK_MIN_LENGTH     8
+#define EMBUI_WIFI_PSK_MIN_LENGTH     8
 
-//#endif
+#endif

@@ -3,8 +3,8 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#ifndef EmbUI_h
-#define EmbUI_h
+#ifndef _EMBUI_EMBUI_H
+#define _EMBUI_EMBUI_H
 
 #include "globals.h"
 
@@ -13,15 +13,9 @@
 #ifdef ESP8266
  #include <ESPAsyncTCP.h>
  #include <LittleFS.h>
- #define FORMAT_LITTLEFS_IF_FAILED
-#endif
-
-#ifdef ESP32
+#else
  #include <AsyncTCP.h>
  #include <LITTLEFS.h>
- #ifndef FORMAT_LITTLEFS_IF_FAILED
-  #define FORMAT_LITTLEFS_IF_FAILED true
- #endif
  #ifdef ARDUINO_ESP32_DEV
   #define LittleFS LITTLEFS
  #endif
@@ -38,7 +32,7 @@
 #ifdef ESP8266
  #include <Updater.h>
  #include <ESP8266mDNS.h>        // Include the mDNS library
- #ifdef USE_SSDP
+ #ifdef EMBUI_USE_SSDP
   #include <ESP8266SSDP.h>
  #endif
 #endif
@@ -46,7 +40,7 @@
 #ifdef ESP32
  #include <ESPmDNS.h>
  #include <Update.h>
- #ifdef USE_SSDP
+ #ifdef EMBUI_USE_SSDP
   #include <ESP32SSDP.h>
  #endif
 #endif
@@ -56,52 +50,42 @@
 #include "ts.h"
 #include "timeProcessor.h"
 
-#define UDP_PORT            4243    // UDP server port
+#define EMBUI_UDP_PORT            4243    // UDP server port
 
-#ifndef PUB_PERIOD
-#define PUB_PERIOD 10            // Values Publication period, s
+#ifndef EMBUI_PUB_PERIOD
+#define EMBUI_PUB_PERIOD 10            // Values Publication period, s
 #endif
 
-#define MQTT_PUB_PERIOD     30
-
-#ifndef DELAY_AFTER_FS_WRITING
-#define DELAY_AFTER_FS_WRITING       (50U)                        // 50мс, меньшие значения могут повлиять на стабильность
+#ifndef EMBUI_MQTT_PUB_PERIOD
+#define EMBUI_MQTT_PUB_PERIOD     30
 #endif
 
-#define AUTOSAVE_TIMEOUT    2       // configuration autosave timer, sec    (4 bit value, multiplied by AUTOSAVE_MULTIPLIER)
+#define EMBUI_AUTOSAVE_TIMEOUT    2       // configuration autosave timer, sec    (4 bit value, multiplied by EMBUI_AUTOSAVE_MULTIPLIER)
 
-#ifndef AUTOSAVE_MULTIPLIER
-#define AUTOSAVE_MULTIPLIER       (10U)                           // множитель таймера автосохранения конфиг файла
+#ifndef EMBUI_AUTOSAVE_MULTIPLIER
+#define EMBUI_AUTOSAVE_MULTIPLIER       (10U)                           // множитель таймера автосохранения конфиг файла
 #endif
 
-#ifndef __DISABLE_BUTTON0
-#define __BUTTON 0 // Кнопка "FLASH" на NODE_MCU
+//#define EMBUI_USE_SYS_BUTTON 0 // Кнопка "FLASH" на NODE_MCU
+
+#ifndef EMBUI_IDPREFIX
+#define EMBUI_IDPREFIX EmbUI-
 #endif
 
-#ifndef __IDPREFIX
-#define __IDPREFIX EmbUI-
-#endif
-
-#ifndef __APPASSWORD
-#define __APPASSWORD
+#ifndef EMBUI_APPASSWORD
+#define EMBUI_APPASSWORD
 #endif
 
 // size of a JsonDocument to hold EmbUI config 
-#ifndef __CFGSIZE
-#define __CFGSIZE (2048)
+#ifndef EMBUI_CFGSIZE
+#define EMBUI_CFGSIZE (2048)
 #endif
 
-#ifndef MAX_WS_CLIENTS
-#define MAX_WS_CLIENTS 4
+#ifndef EMBUI_MAX_WS_CLIENTS
+#define EMBUI_MAX_WS_CLIENTS 4
 #endif
 
-// #define USE_EXTERNAL_WS_BUFFER
-
-#ifdef USE_EXTERNAL_WS_BUFFER
-#ifndef EXT_WS_BUFFER_SIZE
-#define EXT_WS_BUFFER_SIZE 4096
-#endif
-#endif
+// #define EMBUI_USE_EXTERNAL_WS_BUFFER 4096
 
 // TaskScheduler - Let the runner object be a global, single instance shared between object files.
 extern Scheduler ts;
@@ -124,7 +108,7 @@ class Interface;
 
 #define CALL_INTF(key, val, call) { \
     obj[key] = val; \
-    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, SMALL_JSON_SIZE) : nullptr; \
+    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, EMBUI_SMALL_JSON_SIZE) : nullptr; \
     call(interf, &obj); \
     if (interf) { \
         interf->json_frame_value(); \
@@ -135,7 +119,7 @@ class Interface;
 }
 
 #define CALL_INTF_OBJ(call) { \
-    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, SMALL_JSON_SIZE*1.5) : nullptr; \
+    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, EMBUI_SMALL_JSON_SIZE*1.5) : nullptr; \
     call(interf, &obj); \
     if (interf) { \
         interf->json_frame_value(); \
@@ -148,7 +132,7 @@ class Interface;
 }
 
 #define CALL_INTF_EMPTY(call) { \
-    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, SMALL_JSON_SIZE*1.5) : nullptr; \
+    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, EMBUI_SMALL_JSON_SIZE*1.5) : nullptr; \
     call(interf, nullptr); \
     if (interf) { \
         delete interf; \
@@ -160,23 +144,44 @@ void __attribute__((weak)) pubCallback(Interface *interf);
 String __attribute__((weak)) httpCallback(const String &param, const String &value, bool isset);
 void __attribute__((weak)) create_parameters();
 bool __attribute__((weak)) notfound_handle(AsyncWebServerRequest *request, const String& req);
+bool __attribute__((weak)) ws_action_handle(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
 
 //----------------------
 
-#ifdef USE_SSDP
-  #ifndef EXTERNAL_SSDP
-    #define __SSDPNAME ("EmbUI (kDn)")
-    #define __SSDPURLMODEL ("https://github.com/DmytroKorniienko/")
-    #define __SSDPMODEL ("https://github.com/DmytroKorniienko/")
-    #define __SSDPURLMANUF ("https://github.com/anton-zolotarev")
-    #define __SSDPMANUF ("obliterator")
-  #endif
+#ifdef EMBUI_USE_SSDP
+    // #ifndef EMBUI_SSDP_NAME
+    //     #define EMBUI_SSDP_NAME "EmbUI"
+    // #endif
+    
+    #ifndef EMBUI_SSDP_MODEL
+        #define EMBUI_SSDP_MODEL "EmbUI"
+        static const char PGnameModel[] PROGMEM = EMBUI_SSDP_MODEL;
+    #else
+        static const char PGnameModel[] PROGMEM = TOSTRING(EMBUI_SSDP_MODEL);
+    #endif
 
-  static const char PGnameModel[] PROGMEM = TOSTRING(__SSDPNAME);
-  static const char PGurlModel[] PROGMEM = TOSTRING(__SSDPURLMODEL);
-  static const char PGversion[] PROGMEM = TOSTRING(EMBUIVER);
-  static const char PGurlManuf[] PROGMEM = TOSTRING(__SSDPURLMANUF);
-  static const char PGnameManuf[] PROGMEM = TOSTRING(__SSDPMANUF);
+    #ifndef EMBUI_SSDP_URLMODEL
+        #define EMBUI_SSDP_URLMODEL "https://github.com/DmytroKorniienko/EmbUI/"
+        static const char PGurlModel[] PROGMEM = EMBUI_SSDP_URLMODEL;
+    #else
+        static const char PGurlModel[] PROGMEM = TOSTRING(EMBUI_SSDP_URLMODEL);
+    #endif
+    
+    #ifndef EMBUI_SSDP_MANUF
+        #define EMBUI_SSDP_MANUF "EmbUI Developers"
+        static const char PGnameManuf[] PROGMEM = EMBUI_SSDP_MANUF;
+    #else
+        static const char PGnameManuf[] PROGMEM = TOSTRING(EMBUI_SSDP_MANUF);
+    #endif
+    #ifndef EMBUI_SSDP_URLMANUF
+        #define EMBUI_SSDP_URLMANUF "https://github.com/DmytroKorniienko/EmbUI/"
+        static const char PGurlManuf[] PROGMEM = EMBUI_SSDP_URLMANUF;
+    #else
+        static const char PGurlManuf[] PROGMEM = TOSTRING(EMBUI_SSDP_URLMANUF);
+    #endif
+
+    static const char PGversion[] PROGMEM = TOSTRING(EMBUI_VER);
+
 #endif
 
 // Callback enums
@@ -214,7 +219,7 @@ class EmbUI
         bool fsDirty:1;         // флаг поврежденной FS (ошибка монтирования)
         bool isWiFiScanning:1;  // флаг процесса сканирования WiFi
         uint8_t LED_PIN:5;      // [0...30]
-        uint8_t asave:4;        // 4 бита значения таймера автосохранения конфига (домножается на AUTOSAVE_MULTIPLIER)
+        uint8_t asave:4;        // 4 бита значения таймера автосохранения конфига (домножается на EMBUI_AUTOSAVE_MULTIPLIER)
     };
     uint32_t flags; // набор битов для конфига
     _BITFIELDS() {
@@ -228,7 +233,7 @@ class EmbUI
         fsDirty = false;
         isWiFiScanning = false;
         LED_PIN = 31; // [0...30]
-        asave = AUTOSAVE_TIMEOUT; // defaul timeout 2*10 sec
+        asave = EMBUI_AUTOSAVE_TIMEOUT; // defaul timeout 2*10 sec
     }
     } BITFIELDS;
     #pragma pack(pop)
@@ -262,14 +267,14 @@ class EmbUI
 #else
   protected:
 #endif
-    EmbUI() : cfg(__CFGSIZE), section_handle(), server(80), ws(F("/ws"))
+    EmbUI() : cfg(EMBUI_CFGSIZE), section_handle(), server(80), ws(F("/ws"))
 #ifdef EMBUI_USE_FTP
     , ftpSrv(LittleFS)
 #endif
     {
         memset(mc,0,sizeof(mc));
 
-        tAutoSave.set(sysData.asave * AUTOSAVE_MULTIPLIER * TASK_SECOND, TASK_ONCE, [this](){LOG(println, F("UI: AutoSave")); save();} );    // config autosave timer
+        tAutoSave.set(sysData.asave * EMBUI_AUTOSAVE_MULTIPLIER * TASK_SECOND, TASK_ONCE, [this](){LOG(println, F("UI: AutoSave")); save();} );    // config autosave timer
         ts.addTask(tAutoSave);
         EmbUI::pInstance = this;
     }
@@ -299,7 +304,7 @@ class EmbUI
 #ifdef EMBUI_USE_FTP
     FTPServer ftpSrv;
 #endif
-#ifdef USE_EXTERNAL_WS_BUFFER    
+#ifdef EMBUI_USE_EXTERNAL_WS_BUFFER    
     uint8_t *extWsBuf = nullptr;
     void clear_ext_ws_buff();
 #endif
@@ -324,6 +329,7 @@ class EmbUI
     void udp(const String &message);
     void udp();
 
+#ifdef EMBUI_USE_MQTT
     // MQTT
     bool isMQTTconected() { return sysData.mqtt_connected; }
     void pub_mqtt(const String &key, const String &value);
@@ -349,6 +355,11 @@ class EmbUI
     void publishto(const String &topic, const String &payload, bool retained);
     void remControl();
 
+    String id(const String &tpoic);
+#endif
+
+    void send_pub();
+
     /**
      * @brief - process posted data for the registered action
      * if post came from the WebUI echoes received data back to the WebUI,
@@ -356,9 +367,6 @@ class EmbUI
      * looks for registered action for the section name and calls the action with post data if found
      */
     void post(JsonObject &data);
-
-    void send_pub();
-    String id(const String &tpoic);
 
     /**
      * Initialize WiFi using stored configuration
@@ -461,9 +469,17 @@ class EmbUI
     void led_off();
     void led_inv();
 
+#ifdef EMBUI_USE_UDP
+    unsigned int localUdpPort = EMBUI_UDP_PORT;
+    //char udpRemoteIP[16];
+    String incomingPacket;
+    String udpMessage; // буфер для сообщений Обмена по UDP
     void udpBegin();
     void udpLoop();
+#endif
+#ifdef EMBUI_USE_SYS_BUTTON
     void btn();
+#endif
     void getAPmac();
 
     // Scheduler tasks
@@ -499,6 +515,7 @@ private:
     WIFISCANCB pf_wifiscan;
 #endif
 
+#ifdef EMBUI_USE_MQTT
     // MQTT Private Methods and vars
     String m_pref; // к сожалению они нужны, т.к. в клиент передаются указатели на уже имеющийся объект, значит на конфиг ссылку отдавать нельзя!!!
     String m_host;
@@ -514,11 +531,8 @@ private:
     static void onMqttUnsubscribe(uint16_t packetId);
     static void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
     static void onMqttPublish(uint16_t packetId);
+#endif
 
-    unsigned int localUdpPort = UDP_PORT;
-    //char udpRemoteIP[16];
-    String incomingPacket;
-    String udpMessage; // буфер для сообщений Обмена по UDP
     unsigned long astimer;
 
     // callback pointers
@@ -531,11 +545,11 @@ private:
     // Dyn tasks garbage collector
     void taskGC() {GC_taskGC();}
 
-#ifdef USE_SSDP
+#ifdef EMBUI_USE_SSDP
     void ssdp_begin() {
           String hn = param(FPSTR(P_hostname));
           if (!hn.length())
-              var(FPSTR(P_hostname), String(F(TOSTRING(__IDPREFIX))) + mc, true);
+              var(FPSTR(P_hostname), String(F(TOSTRING(EMBUI_IDPREFIX))) + mc, true);
 
           uint32_t chipId;
           #ifdef ESP32

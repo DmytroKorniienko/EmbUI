@@ -104,8 +104,8 @@ TimeProcessor::TimeProcessor()
     sntp_set_time_sync_notification_cb(timeavailable);
 #endif
 */
-    configTzTime(DEF_TZONE, NTP1ADDRESS, NTP2ADDRESS);
-    //LOG(printf_P, PSTR("TIME: Time Zone set to: %s\n"), DEF_TZONE);
+    configTzTime(EMBUI_DEF_TZONE, EMBUI_NTP1ADDRESS, EMBUI_NTP2ADDRESS);
+    //LOG(printf_P, PSTR("TIME: Time Zone set to: %s\n"), EMBUI_DEF_TZONE);
 
     sntp_stop();    // отключаем ntp пока нет подключения к AP
 }
@@ -140,13 +140,13 @@ void TimeProcessor::setTime(const char *timestr){
 
 void TimeProcessor::setTime(const String &timestr){
     //"YYYY-MM-DDThh:mm:ss"    [19]
-    if (timestr.length()<DATETIME_STRLEN)
+    if (timestr.length()<EMBUI_DATETIME_STRLEN)
         return;
 
     struct tm t;
     tm *tm=&t;
 
-    tm->tm_year = timestr.substring(0,4).toInt() - TM_BASE_YEAR;
+    tm->tm_year = timestr.substring(0,4).toInt() - EMBUI_TM_BASE_YEAR;
     tm->tm_mon = timestr.substring(5,7).toInt()-1;
     tm->tm_mday = timestr.substring(8,10).toInt();
     tm->tm_hour= timestr.substring(11,13).toInt();
@@ -200,7 +200,7 @@ void TimeProcessor::tzsetup(const char* tz){
     tzset();
     tzone = ""; // сбрасываем костыльную зону
     tpData.usehttpzone = false;  // запрещаем использование http
-    LOG(printf_P, PSTR("TIME: TZSET rules changed from: %s to: %s\n"), DEF_TZONE, tz);
+    LOG(printf_P, PSTR("TIME: TZSET rules changed from: %s to: %s\n"), EMBUI_DEF_TZONE, tz);
 
     unsigned long shift = RTC_Worker();
     //time_t _time = shift;
@@ -237,7 +237,7 @@ void TimeProcessor::getTimeHTTP()
         return;     // выходим если не выставлено разрешение на использование http
 
     String result((char *)0);
-    result.reserve(TIMEAPI_BUFSIZE);
+    result.reserve(EMBUI_TIMEAPI_BUFSIZE);
     if(tzone.length()){
         String url(FPSTR(PG_timeapi_tz_url));
         url+=tzone;
@@ -251,7 +251,7 @@ void TimeProcessor::getTimeHTTP()
     }
 
     LOG(println, result);
-    DynamicJsonDocument doc(TIMEAPI_BUFSIZE);
+    DynamicJsonDocument doc(EMBUI_TIMEAPI_BUFSIZE);
     DeserializationError error = deserializeJson(doc, result);
     result="";
 
@@ -301,10 +301,10 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
         localtime_r(now(), tm);
 
         tm->tm_mday++;                  // выставляем "завтра"
-        tm->tm_hour= HTTP_REFRESH_HRS;
-        tm->tm_min = HTTP_REFRESH_MIN;
+        tm->tm_hour= EMBUI_HTTP_REFRESH_HRS;
+        tm->tm_min = EMBUI_HTTP_REFRESH_MIN;
 
-        timer = (mktime(tm) - getUnixTime())% DAYSECONDS;
+        timer = (mktime(tm) - getUnixTime())% EMBUI_DAYSECONDS;
 
         LOG(printf_P, PSTR("Schedule TZ refresh in %ld\n"), timer);
     }
@@ -325,10 +325,10 @@ void TimeProcessor::ntpReSync(){
                 if((!sntpIsSynced() || !tpData.isSynced) && tpData.ntpcnt){
                     const char *to;
                     switch(tpData.ntpcnt){
-                        case 1: to = NTP1ADDRESS; break;
-                        case 2: to = NTP2ADDRESS; break;
+                        case 1: to = EMBUI_NTP1ADDRESS; break;
+                        case 2: to = EMBUI_NTP2ADDRESS; break;
                         case 3: to = ntp2.c_str(); break;
-                        default: to = NTP1ADDRESS; break;
+                        default: to = EMBUI_NTP1ADDRESS; break;
                     }
                     LOG(printf_P, PSTR("NTP: switching NTP[%d] server from %s to %s\n"), tpData.ntpcnt, String(sntp_getservername(0)).c_str(), to); // странное преобразование, но почему-то без него бывают ребуты...
                     sntp_stop();
@@ -368,7 +368,7 @@ void TimeProcessor::onSTAGotIP(const WiFiEventStationModeGotIP ipInfo)
     ntpReSync();
     if(tpData.usehttpzone){
         // отложенный запрос смещения зоны через http-сервис
-        httprefreshtimer(HTTPSYNC_DELAY);
+        httprefreshtimer(EMBUI_HTTPSYNC_DELAY);
     }
 }
 
@@ -390,7 +390,7 @@ void TimeProcessor::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info){
         ntpReSync();
         if(tpData.usehttpzone){
             // отложенный запрос смещения зоны через http-сервис
-            httprefreshtimer(HTTPSYNC_DELAY);
+            httprefreshtimer(EMBUI_HTTPSYNC_DELAY);
         }
         LOG(println, F("UI TIME: Starting sntp sync"));
         break;
@@ -425,9 +425,9 @@ void TimeProcessor::timeavailable(){
  * @param _tstamp - преобразовать заданный таймстамп, если не задан используется текущее локальное время
  */
 void TimeProcessor::getDateTimeString(String &buf, const time_t _tstamp){
-  char tmpBuf[DATETIME_STRLEN];
+  char tmpBuf[EMBUI_DATETIME_STRLEN];
   const tm* tm = localtime(  _tstamp ? &_tstamp : now());
-  sprintf_P(tmpBuf,PSTR("%04u-%02u-%02uT%02u:%02u"), tm->tm_year + TM_BASE_YEAR, tm->tm_mon+1, tm->tm_mday, tm->tm_hour, tm->tm_min);
+  sprintf_P(tmpBuf,PSTR("%04u-%02u-%02uT%02u:%02u"), tm->tm_year + EMBUI_TM_BASE_YEAR, tm->tm_mon+1, tm->tm_mday, tm->tm_hour, tm->tm_min);
   buf.concat(tmpBuf);
 }
 
@@ -442,7 +442,7 @@ void TimeProcessor::setOffset(const int val){
     #elif defined ESP32
         //setTimeZone((long)val, 0);    // this breaks linker in some weird way
         //configTime((long)val, 0, ntp0.c_str(), ntp1.c_str(), "");
-        configTime((long)val, 0, NTP1ADDRESS, NTP2ADDRESS, "");
+        configTime((long)val, 0, EMBUI_NTP1ADDRESS, EMBUI_NTP2ADDRESS, "");
     #endif
 
     // в правилах TZSET смещение имеет обратный знак (TZ-OffSet=UTC)
@@ -465,9 +465,9 @@ void TimeProcessor::setcustomntp(const char* ntp){
              return;
 
     this->ntp2 = ntp;
-    sntp_setservername(CUSTOM_NTP_INDEX, (char *)this->ntp2.c_str());
-    LOG(printf_P, PSTR("NTP: Set custom NTP[%d] to: %s\n"), CUSTOM_NTP_INDEX, this->ntp2.c_str());
-    this->tpData.ntpcnt = CUSTOM_NTP_INDEX;
+    sntp_setservername(EMBUI_CUSTOM_NTP_INDEX, (char *)this->ntp2.c_str());
+    LOG(printf_P, PSTR("NTP: Set custom NTP[%d] to: %s\n"), EMBUI_CUSTOM_NTP_INDEX, this->ntp2.c_str());
+    this->tpData.ntpcnt = EMBUI_CUSTOM_NTP_INDEX;
 
     // sntp_restart();
     ntpReSync();

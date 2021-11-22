@@ -34,7 +34,9 @@ void BasicUI::add_sections(bool skipBack){ // is returning to main settings skip
 
     // обработка базовых настроек
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_WIFI), set_settings_wifi);         // обработка настроек WiFi
+#ifdef EMBUI_USE_MQTT
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_MQTT), set_settings_mqtt);         // обработка настроек MQTT
+#endif
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_SCAN), set_scan_wifi);             // обработка сканирования WiFi
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_TIME), set_settings_time);         // установки даты/времени
     EmbUI::GetInstance()->section_handle_add(FPSTR(P_LANGUAGE), set_language);              // смена языка интерфейса
@@ -128,6 +130,7 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
         block_only_wifi(interf, data);
     interf->json_section_end();
 
+#ifdef EMBUI_USE_MQTT
     // форма настроек MQTT
     interf->json_section_hidden(FPSTR(T_SET_MQTT), FPSTR(T_DICT[lang][TD::D_MQTT]));
     interf->text(FPSTR(P_m_host), FPSTR(T_DICT[lang][TD::D_MQTT_HOST]));
@@ -138,6 +141,7 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
     interf->number(FPSTR(P_m_tupd), FPSTR(T_DICT[lang][TD::D_MQTT_INTERVAL]));
     interf->button_submit(FPSTR(T_SET_MQTT), FPSTR(T_DICT[lang][TD::D_CONNECT]), FPSTR(P_GRAY));
     interf->json_section_end();
+#endif
 
 #ifdef EMBUI_USE_FTP
     // форма настроек FTP
@@ -253,6 +257,7 @@ void BasicUI::set_settings_wifi(Interface *interf, JsonObject *data){
     if(isBackOn) section_settings_frame(interf, data);            // переходим в раздел "настройки"
 }
 
+#ifdef EMBUI_USE_MQTT
 /**
  * Обработчик настроек MQTT
  */
@@ -271,6 +276,7 @@ void BasicUI::set_settings_mqtt(Interface *interf, JsonObject *data){
 
     if(isBackOn) section_settings_frame(interf, data); 
 }
+#endif
 
 /**
  * Обработчик сканирования WiFi
