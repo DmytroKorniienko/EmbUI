@@ -55,7 +55,8 @@
         "flags": [
             "-DEMBUI_VER=2.5.0"
         ],
-        "srcDir": "src"
+        "srcDir": "src",
+        "lib_compat_mode": "strict"
     },
     "examples": [
         {
