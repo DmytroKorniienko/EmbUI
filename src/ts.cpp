@@ -23,6 +23,9 @@ make sure to add it to the loop()
 std::vector<Task*> *taskTrash = nullptr;    // ptr to a vector container with obsolete tasks
 
 void GC_taskRecycle(Task *t){
+#if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+    HeapSelectIram ephemeral;
+#endif
     if (!taskTrash)
         taskTrash = new std::vector<Task*>(8);
 
@@ -33,7 +36,9 @@ void GC_taskRecycle(Task *t){
 void GC_taskGC(){
     if (!taskTrash || taskTrash->empty())
         return;
-
+#if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+    HeapSelectIram ephemeral;
+#endif
     size_t heapbefore = ESP.getFreeHeap();
     for(auto& _t : *taskTrash) { delete _t; }
 

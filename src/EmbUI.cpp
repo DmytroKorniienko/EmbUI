@@ -36,6 +36,9 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     if(ws_action_handle(server, client, type, arg, data, len)) return;
 
     if(type == WS_EVT_CONNECT){
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         LOG(printf_P, PSTR("UI: ws[%s][%u] connect MEM: %u\n"), server->url(), client->id(), ESP.getFreeHeap());
 
         EmbUI::GetInstance()->sysData.isWSConnect = true; // на 5 секунд устанавливаем флаг
@@ -58,6 +61,9 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         LOG(printf_P, PSTR("ws[%s][%u] pong[%u]: %s\n"), server->url(), client->id(), len, (len)?(char*)data:"");
     } else
     if(type == WS_EVT_DATA){
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         AwsFrameInfo *info = (AwsFrameInfo*)arg;
         bool pgkReady = false;
         if (info->len == len)
@@ -260,6 +266,9 @@ void EmbUI::begin(){
 */
     // postponed reboot
     server.on(PSTR("/restart"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         Task *t = new Task(TASK_SECOND*5, TASK_ONCE, nullptr, &ts, false, nullptr, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); });
         t->enableDelayed();
         request->redirect(F("/"));
@@ -288,6 +297,9 @@ void EmbUI::begin(){
             request->send(response);
             setPubInterval(EMBUI_PUB_PERIOD);
         } else {
+            #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+                HeapSelectIram ephemeral;
+            #endif
             Task *t = new Task(TASK_SECOND, TASK_ONCE, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); }, &ts, false);
             t->enableDelayed();
             request->redirect(F("/"));
@@ -409,6 +421,9 @@ void EmbUI::post(JsonObject &data){
 
     if (section) {
         LOG(printf_P, PSTR("\nUI: POST SECTION: %s\n\n"), section->name.c_str());
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         Interface *interf = new Interface(this, &ws);
         section->callback(interf, &data);
         delete interf;
@@ -417,6 +432,9 @@ void EmbUI::post(JsonObject &data){
 
 void EmbUI::send_pub(){
     if (!ws.count()) return;
+    #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+        HeapSelectIram ephemeral;
+    #endif
     Interface *interf = new Interface(this, &ws, EMBUI_SMALL_JSON_SIZE);
     pubCallback(interf);
     delete interf;
@@ -436,6 +454,9 @@ void EmbUI::section_handle_remove(const String &name)
 
 void EmbUI::section_handle_add(const String &name, buttonCallback response)
 {
+    #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+        HeapSelectIram ephemeral;
+    #endif
     section_handle_t *section = new section_handle_t;
     section->name = name;
     section->callback = response;
@@ -579,6 +600,9 @@ void EmbUI::setPubInterval(uint16_t _t){
         tValPublisher->cancel(); // cancel & delete
 
     if (_t){
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         tValPublisher = new Task(_t * TASK_SECOND, TASK_FOREVER, [this](){ if(ws.count()) send_pub(); }, &ts, true, nullptr, [this](){TASK_RECYCLE; tValPublisher=nullptr;});
     }
 }

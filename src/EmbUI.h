@@ -106,6 +106,47 @@ class Interface;
     obj.clear(); \
 }
 
+
+#if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP) //&& 1==0 // disabled for stability reason
+
+#define CALL_INTF(key, val, call) { \
+    { HeapSelectIram ephemeral; \
+    obj[key] = val; \
+    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, EMBUI_SMALL_JSON_SIZE) : nullptr; \
+    call(interf, &obj); \
+    if (interf) { \
+        interf->json_frame_value(); \
+        interf->value(key, val, false); \
+        interf->json_frame_flush(); \
+        delete interf; \
+    }} \
+}
+
+#define CALL_INTF_OBJ(call) { \
+    { HeapSelectIram ephemeral; \
+    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, EMBUI_SMALL_JSON_SIZE*1.5) : nullptr; \
+    call(interf, &obj); \
+    if (interf) { \
+        interf->json_frame_value(); \
+        for (JsonPair kv : obj) { \
+            interf->value(kv.key().c_str(), kv.value(), false); \
+        } \
+        interf->json_frame_flush(); \
+        delete interf; \
+    }} \
+}
+
+#define CALL_INTF_EMPTY(call) { \
+    { HeapSelectIram ephemeral; \
+    Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, EMBUI_SMALL_JSON_SIZE*1.5) : nullptr; \
+    call(interf, nullptr); \
+    if (interf) { \
+        delete interf; \
+    }} \
+}
+
+#else
+
 #define CALL_INTF(key, val, call) { \
     obj[key] = val; \
     Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, EMBUI_SMALL_JSON_SIZE) : nullptr; \
@@ -138,6 +179,8 @@ class Interface;
         delete interf; \
     } \
 }
+
+#endif
 
 void __attribute__((weak)) section_main_frame(Interface *interf, JsonObject *data);
 void __attribute__((weak)) pubCallback(Interface *interf);
@@ -290,6 +333,9 @@ class EmbUI
 
     static EmbUI *GetInstance() {
         if(pInstance==nullptr){
+            #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+                HeapSelectIram ephemeral;
+            #endif
             pInstance = new EmbUI();
         }
         return pInstance;

@@ -516,6 +516,9 @@ void Interface::json_section_begin(const String &name, const String &label, bool
     if (hidden) obj[FPSTR(P_hidden)] = true;
     if (line) obj[F("line")] = true;
 
+#if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+    HeapSelectIram ephemeral;
+#endif
     section_stack_t *section = new section_stack_t;
     section->name = name;
     section->block = obj.createNestedArray(FPSTR(P_block));

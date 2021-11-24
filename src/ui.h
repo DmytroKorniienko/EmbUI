@@ -105,14 +105,23 @@ class Interface {
     public:
         Interface(EmbUI *j, AsyncWebSocket *server, size_t size = EMBUI_IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             _embui = j;
+            #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+                HeapSelectDram ephemeral; // force DRAM
+            #endif
             send_hndl = new frameSendAll(server);
         }
         Interface(EmbUI *j, AsyncWebSocketClient *client, size_t size = EMBUI_IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             _embui = j;
+            #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+                HeapSelectDram ephemeral; // force DRAM
+            #endif
             send_hndl = new frameSendClient(client);
         }
         Interface(EmbUI *j, AsyncWebServerRequest *request, size_t size = EMBUI_IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             _embui = j;
+            #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+                HeapSelectDram ephemeral; // force DRAM
+            #endif
             send_hndl = new frameSendHttp(request);
         }
         ~Interface(){

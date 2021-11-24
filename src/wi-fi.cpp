@@ -49,6 +49,9 @@ void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
         LOG(println, F("UI WiFi: switching to internal AP"));
         wifi_setmode(WIFI_AP);
     }
+    #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+        HeapSelectIram ephemeral;
+    #endif
     embuischedw = new Task(EMBUI_WIFI_RECONNECT_TIMER * TASK_SECOND, TASK_ONCE,
             [this](){ wifi_setmode(WIFI_AP_STA); WiFi.begin(); TASK_RECYCLE; embuischedw = nullptr; },
             &ts, false
@@ -208,6 +211,9 @@ void EmbUI::wifi_init(){
 void EmbUI::wifi_connect(const String &ssid, const String &pwd)
 {
     if ((!ssid.isEmpty() && !pwd.isEmpty()) || (!ssid.isEmpty() && WiFi.SSID()!=String(ssid))){
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         String _ssid(ssid); String _pwd(pwd);   // I need objects to pass it to the lambda
         embuischedw = new Task(EMBUI_WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE, [_ssid, _pwd, this](){
                     LOG(printf_P, PSTR("UI WiFi: client connecting to SSID:%s, pwd:%s\n"), _ssid.c_str(), _pwd.c_str());
@@ -224,6 +230,9 @@ void EmbUI::wifi_connect(const String &ssid, const String &pwd)
                     TASK_RECYCLE; embuischedw = nullptr;
             }, &ts, false);
     } else {
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         embuischedw = new Task(EMBUI_WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE,
                 [this](){ WiFi.begin(); TASK_RECYCLE; embuischedw = nullptr; },
                 &ts, false

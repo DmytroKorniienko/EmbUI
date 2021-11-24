@@ -10,6 +10,11 @@
 #include <Arduino.h>
 #include "constants.h"
 
+#if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+#include <umm_malloc/umm_malloc.h>
+#include <umm_malloc/umm_heap_select.h>
+#endif
+
 // STRING Macro
 #ifndef __STRINGIFY
  #define __STRINGIFY(a) #a

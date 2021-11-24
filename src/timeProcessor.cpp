@@ -310,6 +310,9 @@ void TimeProcessor::httprefreshtimer(const uint32_t delay){
     }
 
     if(!_httpTask){
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         _httpTask = new Task(timer * TASK_SECOND, TASK_ONCE, nullptr, &ts, false, nullptr, [this](){getTimeHTTP(); TASK_RECYCLE; _httpTask=nullptr;});
     }
     _httpTask->restartDelayed();
@@ -321,6 +324,9 @@ void TimeProcessor::ntpReSync(){
         sntp_setoperatingmode(SNTP_OPMODE_POLL);
 #endif
         if(!_ntpTask){
+            #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+                HeapSelectIram ephemeral;
+            #endif
             _ntpTask = new Task(TASK_SECOND*10, TASK_ONCE, nullptr, &ts, false, nullptr, [this](){
                 if((!sntpIsSynced() || !tpData.isSynced) && tpData.ntpcnt){
                     const char *to;
