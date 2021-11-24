@@ -1,6 +1,11 @@
 # EmbUI
 Embedded WebUI Interface
 
+[![arduino-library-badge](https://www.ardu-badge.com/badge/EmbUI.svg?)](https://www.ardu-badge.com/EmbUI)
+[![PlatformIO CI](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build.yml/badge.svg)](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build.yml)
+
+__[CHANGELOG](/CHANGELOG.md)__
+
 Фреймворк построения web-интерфейса и элементов управления для проектов под Arduino 
 ## Поддерживаемые платформы
  - ESP8266 Arduino Core
