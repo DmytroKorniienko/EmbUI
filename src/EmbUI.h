@@ -87,7 +87,10 @@
 #define EMBUI_MAX_WS_CLIENTS 4
 #endif
 
-// #define EMBUI_USE_EXTERNAL_WS_BUFFER 4096
+#if defined(EMBUI_USE_EXTERNAL_WS_BUFFER) && EMBUI_USE_EXTERNAL_WS_BUFFER<2048
+#undef EMBUI_USE_EXTERNAL_WS_BUFFER
+#define EMBUI_USE_EXTERNAL_WS_BUFFER 2048
+#endif
 
 // TaskScheduler - Let the runner object be a global, single instance shared between object files.
 extern Scheduler ts;
