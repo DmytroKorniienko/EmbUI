@@ -2,7 +2,7 @@
     "name": "EmbUI",
     "frameworks": "arduino",
     "keywords": "embui, arduino, framework, esp8266, esp32",
-    "description": "Embeded Web UI framework for esp8266/esp32 IoT prototyping",
+    "description": "Embeded Web UI framework for esp8266/esp32/esp32-c3/esp32-s2 IoT prototyping",
     "url": "https://github.com/DmytroKorniienko/EmbUI",
     "authors": [
         {
@@ -42,33 +42,32 @@
          "version": "*"},
         {"name": "ESP32SSDP",
          "version": "*",
-         "platforms": ["espressif32"]},
-         {"owner": "charno",
-            "name": "FTPClientServer",
-            "version": "https://github.com/charno/FTPClientServer"}
+         "platforms": "espressif32"},
+        {"name": "ESP32 Async UDP",
+         "version": "*",
+         "platforms": "espressif32"},
+        {"name": "ESPAsyncUDP",
+         "version": "https://github.com/DmytroKorniienko/ESPAsyncUDP",
+         "platforms": "espressif8266"},
+        {"owner": "charno",
+         "name": "FTPClientServer",
+         "version": "https://github.com/charno/FTPClientServer"}
     ],
     "build": {
         "flags": [
-            "-DEMBUIVER=2.5.0"
+            "-DEMBUI_VER=2.5.0"
         ],
-        "srcDir": "src"
+        "srcDir": "src",
+        "libCompatMode": "strict"
     },
     "examples": [
-        {
-            "name": "Generic UI",
-            "base": "examples/01_ex_generic",
-            "files": [
-                "platformio.ini",
-                "src/main.cpp",
-                "src/src.ino"
-            ]
-        },
         {
             "name": "Generic UI sensors",
             "base": "examples/02_sensors",
             "files": [
                 "platformio.ini",
                 "src/main.cpp",
+                "src/interface.cpp",
                 "src/src.ino"
             ]
         }

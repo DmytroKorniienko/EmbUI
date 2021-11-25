@@ -4,7 +4,7 @@
 #include "uistrings.h"   // non-localized text-strings
 
 #ifdef ESP32
-#if defined ARDUINO_ESP32S2_DEV || ARDUINO_ESP32C3_DEV  
+#if defined CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
   #include <driver/temp_sensor.h>
 #endif
   extern "C" int rom_phy_get_vdd33();
@@ -62,7 +62,7 @@ void create_parameters(){
     embui.section_handle_add(FPSTR(V_LED), action_blink);               // обработка рычажка светодиода
     embui.section_handle_add(FPSTR(V_UPDRATE), setRate);                 // sensor data publisher rate change
 
-#if defined ARDUINO_ESP32S2_DEV || ARDUINO_ESP32C3_DEV  
+#if defined CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
     // ESP32-C3 & ESP32-S2
     {
       temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();
@@ -131,14 +131,17 @@ void block_demopage(Interface *interf, JsonObject *data){
 
     // Headline
     // параметр FPSTR(T_SET_DEMO) определяет зарегистрированный обработчик данных для секции
-#if defined ARDUINO_ESP32_DEV  
-    LOG(println, F("ARDUINO_ESP32_DEV"));  
+#if defined CONFIG_IDF_TARGET_ESP32  
+    LOG(println, F("CONFIG_IDF_TARGET_ESP32"));  
     interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32 demo sensors"));
-#elif defined ARDUINO_ESP32S2_DEV  
-    LOG(println, F("ARDUINO_ESP32S2_DEV"));
+#elif defined CONFIG_IDF_TARGET_ESP32S3
+    LOG(println, F("CONFIG_IDF_TARGET_ESP32S3"));
+    interf->json_section_main(FPSTR(T_DEMO), F("Some ESP32-S3 demo controls"));
+#elif defined CONFIG_IDF_TARGET_ESP32S2  
+    LOG(println, F("CONFIG_IDF_TARGET_ESP32S2"));
     interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32-S2 demo sensors"));
-#elif defined ARDUINO_ESP32C3_DEV  
-    LOG(println, F("ARDUINO_ESP32C3_DEV"));
+#elif defined CONFIG_IDF_TARGET_ESP32C3  
+    LOG(println, F("CONFIG_IDF_TARGET_ESP32C3"));
     interf->json_section_main(FPSTR(T_SET_DEMO), F("Some ESP32-C3 demo sensors"));
 #else
     LOG(println, F("ESP8266"));
@@ -207,21 +210,21 @@ void sensorPublisher() {
     if (!embui.ws.count())
       return;
 
-    Interface *interf = new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, SMALL_JSON_SIZE);
+    Interface *interf = new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws, EMBUI_SMALL_JSON_SIZE);
     interf->json_frame_value();
     // Voltage sensor
     //  id, value, html=true
 
-#if defined ARDUINO_ESP32_DEV  
+#if defined CONFIG_IDF_TARGET_ESP32  
     interf->value(F("vcc"), String((float)rom_phy_get_vdd33()/1000.0)); // extern "C" int rom_phy_get_vdd33();
     interf->value(F("temp"), String(24 + random(-30,30)/10), true);                // add some random spikes to the temperature :)
-#elif defined ARDUINO_ESP32S2_DEV  
+#elif defined CONFIG_IDF_TARGET_ESP32S2  
     interf->value(F("vcc"), String("3.3"), true); // html must be set 'true' so this value could be handeled properly for div elements
     float t;
     if(temp_sensor_read_celsius(&t)==ESP_OK){
       interf->value(F("temp"), String(t,1), true);
     }
-#elif defined ARDUINO_ESP32C3_DEV  
+#elif defined CONFIG_IDF_TARGET_ESP32C3  
     interf->value(F("vcc"), String("3.3"), true); // html must be set 'true' so this value could be handeled properly for div elements
     float t;
     if(temp_sensor_read_celsius(&t)==ESP_OK){

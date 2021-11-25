@@ -5,6 +5,8 @@
 
 #include "EmbUI.h"
 
+#ifdef EMBUI_USE_MQTT
+
 void EmbUI::connectToMqtt() {
     LOG(println, PSTR("UI: Connecting to MQTT..."));
 
@@ -181,7 +183,6 @@ void EmbUI::onMqttConnect(){
         subscribeAll();
         String strue = FPSTR(P_true);
         mqttClient.publish(m_will.c_str(), 0, true, strue.c_str());
-        httpCallback(F("sys_AUTODISCOVERY"), "", false); // реализация AUTODISCOVERY
     }
 }
 
@@ -254,3 +255,5 @@ void EmbUI::pub_mqtt(const String &key, const String &value){
 void EmbUI::subscribe(const String &topic){
     mqttClient.subscribe(id(topic).c_str(), 0);
 }
+
+#endif

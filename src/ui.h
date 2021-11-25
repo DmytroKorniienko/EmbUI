@@ -3,30 +3,30 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#ifndef ui_h
-#define ui_h
+#ifndef _EMBUI_UI_H
+#define _EMBUI_UI_H
 
 #include "EmbUI.h"
 
 #ifdef ESP8266
-#ifndef IFACE_DYN_JSON_SIZE
-  #define IFACE_DYN_JSON_SIZE 2048
+#ifndef EMBUI_IFACE_DYN_JSON_SIZE
+  #define EMBUI_IFACE_DYN_JSON_SIZE 2048
 #endif
-#ifndef SMALL_JSON_SIZE
-  #define SMALL_JSON_SIZE  768
+#ifndef EMBUI_SMALL_JSON_SIZE
+  #define EMBUI_SMALL_JSON_SIZE  768
 #endif
 #elif defined ESP32
-#ifndef IFACE_DYN_JSON_SIZE
-  #define IFACE_DYN_JSON_SIZE 8192
+#ifndef EMBUI_IFACE_DYN_JSON_SIZE
+  #define EMBUI_IFACE_DYN_JSON_SIZE 8192
 #endif
-#ifndef SMALL_JSON_SIZE
-  #define SMALL_JSON_SIZE  1024
+#ifndef EMBUI_SMALL_JSON_SIZE
+  #define EMBUI_SMALL_JSON_SIZE  1024
 #endif
 #endif
 
 // static json doc size
-#define IFACE_STA_JSON_SIZE SMALL_JSON_SIZE
-#define FRAME_ADD_RETRY 5
+#define EMBUI_IFACE_STA_JSON_SIZE EMBUI_SMALL_JSON_SIZE
+#define EMBUI_FRAME_ADD_RETRY 5
 
 class frameSend {
     public:
@@ -103,16 +103,25 @@ class Interface {
     bool frame_add_safe(const JsonObjectConst &jobj);
 
     public:
-        Interface(EmbUI *j, AsyncWebSocket *server, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
+        Interface(EmbUI *j, AsyncWebSocket *server, size_t size = EMBUI_IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             _embui = j;
+            #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+                HeapSelectDram ephemeral; // force DRAM
+            #endif
             send_hndl = new frameSendAll(server);
         }
-        Interface(EmbUI *j, AsyncWebSocketClient *client, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
+        Interface(EmbUI *j, AsyncWebSocketClient *client, size_t size = EMBUI_IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             _embui = j;
+            #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+                HeapSelectDram ephemeral; // force DRAM
+            #endif
             send_hndl = new frameSendClient(client);
         }
-        Interface(EmbUI *j, AsyncWebServerRequest *request, size_t size = IFACE_DYN_JSON_SIZE): json(size), section_stack(){
+        Interface(EmbUI *j, AsyncWebServerRequest *request, size_t size = EMBUI_IFACE_DYN_JSON_SIZE): json(size), section_stack(){
             _embui = j;
+            #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+                HeapSelectDram ephemeral; // force DRAM
+            #endif
             send_hndl = new frameSendHttp(request);
         }
         ~Interface(){

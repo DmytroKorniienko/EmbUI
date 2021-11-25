@@ -3,8 +3,8 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#ifndef config_h
-#define config_h
+#ifndef _EMBUI_CONFIG_H
+#define _EMBUI_CONFIG_H
 
 #ifdef ESP8266
 #include <FS.h>

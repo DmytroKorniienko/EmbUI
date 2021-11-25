@@ -42,14 +42,17 @@ void EmbUI::onSTADisconnected(WiFiEventStationModeDisconnected event_info)
     /*
       esp8266 сильно тормозит в комбинированном режиме AP-STA при постоянных попытках реконнекта, WEB-интерфейс становится
       неотзывчивым, сложно изменять настройки.
-      В качестве решения переключаем контроллер в режим AP-only после WIFI_CONNECT_TIMEOUT таймаута на попытку переподключения.
-      Далее делаем периодические попытки переподключений каждые WIFI_RECONNECT_TIMER секунд
+      В качестве решения переключаем контроллер в режим AP-only после EMBUI_WIFI_CONNECT_TIMEOUT таймаута на попытку переподключения.
+      Далее делаем периодические попытки переподключений каждые EMBUI_WIFI_RECONNECT_TIMER секунд
     */
     if(WiFi.getMode() != WIFI_AP){
         LOG(println, F("UI WiFi: switching to internal AP"));
         wifi_setmode(WIFI_AP);
     }
-    embuischedw = new Task(WIFI_RECONNECT_TIMER * TASK_SECOND, TASK_ONCE,
+    #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+        HeapSelectIram ephemeral;
+    #endif
+    embuischedw = new Task(EMBUI_WIFI_RECONNECT_TIMER * TASK_SECOND, TASK_ONCE,
             [this](){ wifi_setmode(WIFI_AP_STA); WiFi.begin(); TASK_RECYCLE; embuischedw = nullptr; },
             &ts, false
         );
@@ -111,7 +114,7 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         break;
 
     case SYSTEM_EVENT_STA_DISCONNECTED:
-        #ifndef ARDUINO_ESP32_DEV
+        #if ARDUINO > 10805
             LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.wifi_sta_disconnected.reason);
         #else
             LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.disconnected.reason);
@@ -122,7 +125,7 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
             LOG(println, F("UI WiFi: Switch to AP-Station mode"));
         }
 
-        embuischedw = new Task(WIFI_RECONNECT_TIMER * TASK_SECOND, TASK_ONCE,
+        embuischedw = new Task(EMBUI_WIFI_RECONNECT_TIMER * TASK_SECOND, TASK_ONCE,
                 [this](){ wifi_setmode(WIFI_AP_STA); WiFi.begin(); TASK_RECYCLE; embuischedw = nullptr; },
                 &ts, false
             );
@@ -134,7 +137,7 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         break;
     case SYSTEM_EVENT_SCAN_DONE:
         //BasicUI::scan_complete(info.scan_done.number);
-        #ifndef ARDUINO_ESP32_DEV
+        #if ARDUINO > 10805
             EmbUI::GetInstance()->pf_wifiscan(info.wifi_scan_done.number);
         #else
             EmbUI::GetInstance()->pf_wifiscan(info.scan_done.number);
@@ -153,11 +156,11 @@ void EmbUI::wifi_init(){
     String appwd = param(FPSTR(P_APpwd));
     getAPmac();
     if (!hn.length()){
-        hn = String(F(TOSTRING(__IDPREFIX))) + String(mc);
+        hn = String(F(TOSTRING(EMBUI_IDPREFIX))) + String(mc);
         var(FPSTR(P_hostname), hn, true);
     }
 
-    if (appwd.length()<WIFI_PSK_MIN_LENGTH)
+    if (appwd.length()<EMBUI_WIFI_PSK_MIN_LENGTH)
         appwd = "";
 
     LOG(printf_P, PSTR("UI WiFi: set AP params to SSID:%s, pwd:%s\n"), hn.c_str(), appwd.c_str());
@@ -191,7 +194,7 @@ void EmbUI::wifi_init(){
 	    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
         // use internaly stored last known credentials for connection
         if ( WiFi.begin() == WL_CONNECT_FAILED ){
-            embuischedw = new Task(WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE,
+            embuischedw = new Task(EMBUI_WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE,
                     [this](){ wifi_setmode(WIFI_AP_STA); LOG(println, F("UI WiFi: Switch to AP-Station mode")); WiFi.begin(); TASK_RECYCLE; embuischedw = nullptr; },
                     &ts, false
                 );
@@ -208,8 +211,11 @@ void EmbUI::wifi_init(){
 void EmbUI::wifi_connect(const String &ssid, const String &pwd)
 {
     if ((!ssid.isEmpty() && !pwd.isEmpty()) || (!ssid.isEmpty() && WiFi.SSID()!=String(ssid))){
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         String _ssid(ssid); String _pwd(pwd);   // I need objects to pass it to the lambda
-        embuischedw = new Task(WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE, [_ssid, _pwd, this](){
+        embuischedw = new Task(EMBUI_WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE, [_ssid, _pwd, this](){
                     LOG(printf_P, PSTR("UI WiFi: client connecting to SSID:%s, pwd:%s\n"), _ssid.c_str(), _pwd.c_str());
                     #ifdef ESP32
                         //WiFi.disconnect();
@@ -224,7 +230,10 @@ void EmbUI::wifi_connect(const String &ssid, const String &pwd)
                     TASK_RECYCLE; embuischedw = nullptr;
             }, &ts, false);
     } else {
-        embuischedw = new Task(WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE,
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
+        embuischedw = new Task(EMBUI_WIFI_BEGIN_DELAY * TASK_SECOND, TASK_ONCE,
                 [this](){ WiFi.begin(); TASK_RECYCLE; embuischedw = nullptr; },
                 &ts, false
             );

@@ -3,7 +3,7 @@
 // also many thanks to Vortigont (https://github.com/vortigont), kDn (https://github.com/DmytroKorniienko)
 // and others people
 
-#ifndef mqtt_h
-#define mqtt_h
+#ifndef _EMBUI_MQTT_H
+#define _EMBUI_MQTT_H
 
 #endif

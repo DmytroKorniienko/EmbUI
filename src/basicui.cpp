@@ -34,7 +34,9 @@ void BasicUI::add_sections(bool skipBack){ // is returning to main settings skip
 
     // обработка базовых настроек
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_WIFI), set_settings_wifi);         // обработка настроек WiFi
+#ifdef EMBUI_USE_MQTT
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_MQTT), set_settings_mqtt);         // обработка настроек MQTT
+#endif
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_SCAN), set_scan_wifi);             // обработка сканирования WiFi
     EmbUI::GetInstance()->section_handle_add(FPSTR(T_SET_TIME), set_settings_time);         // установки даты/времени
     EmbUI::GetInstance()->section_handle_add(FPSTR(P_LANGUAGE), set_language);              // смена языка интерфейса
@@ -128,6 +130,7 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
         block_only_wifi(interf, data);
     interf->json_section_end();
 
+#ifdef EMBUI_USE_MQTT
     // форма настроек MQTT
     interf->json_section_hidden(FPSTR(T_SET_MQTT), FPSTR(T_DICT[lang][TD::D_MQTT]));
     interf->text(FPSTR(P_m_host), FPSTR(T_DICT[lang][TD::D_MQTT_HOST]));
@@ -138,6 +141,7 @@ void BasicUI::block_settings_netw(Interface *interf, JsonObject *data){
     interf->number(FPSTR(P_m_tupd), FPSTR(T_DICT[lang][TD::D_MQTT_INTERVAL]));
     interf->button_submit(FPSTR(T_SET_MQTT), FPSTR(T_DICT[lang][TD::D_CONNECT]), FPSTR(P_GRAY));
     interf->json_section_end();
+#endif
 
 #ifdef EMBUI_USE_FTP
     // форма настроек FTP
@@ -253,6 +257,7 @@ void BasicUI::set_settings_wifi(Interface *interf, JsonObject *data){
     if(isBackOn) section_settings_frame(interf, data);            // переходим в раздел "настройки"
 }
 
+#ifdef EMBUI_USE_MQTT
 /**
  * Обработчик настроек MQTT
  */
@@ -271,6 +276,7 @@ void BasicUI::set_settings_mqtt(Interface *interf, JsonObject *data){
 
     if(isBackOn) section_settings_frame(interf, data); 
 }
+#endif
 
 /**
  * Обработчик сканирования WiFi
@@ -286,6 +292,9 @@ void BasicUI::set_scan_wifi(Interface *interf, JsonObject *data){
         interf->json_section_end();
         interf->json_frame_flush();
 
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         Task *t = new Task(300, TASK_ONCE, nullptr, &ts, false, nullptr, [](){
             EmbUI::GetInstance()->sysData.isWiFiScanning = true;
             #ifdef ESP8266
@@ -343,8 +352,22 @@ void BasicUI::embuistatus(Interface *interf){
     interf->json_frame_value();
     interf->value(F("pTime"), EmbUI::GetInstance()->timeProcessor.getFormattedShortTime(), true);
 
-#if !defined(ESP32) || !defined(BOARD_HAS_PSRAM)    
-    interf->value(F("pMem"), String(ESP.getFreeHeap()), true);
+#if !defined(ESP32) || !defined(BOARD_HAS_PSRAM)
+    #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+        uint32_t iram;
+        uint32_t dram;
+        {
+            HeapSelectIram ephemeral;
+            iram = ESP.getFreeHeap();
+        }
+        {
+            HeapSelectDram ephemeral;
+            dram = ESP.getFreeHeap();
+        }
+        interf->value(F("pMem"), String(dram)+" / "+String(iram), true);
+    #else
+        interf->value(F("pMem"), String(ESP.getFreeHeap()), true);
+    #endif
 #else
     if(psramFound()){
         interf->value(F("pMem"), String(ESP.getFreeHeap())+F(" / ")+String(ESP.getFreePsram()), true);
@@ -402,6 +425,9 @@ void BasicUI::set_reboot(Interface *interf, JsonObject *data){
     if (!data) return;
     bool isReboot = !EmbUI::GetInstance()->sysData.isWSConnect;
     if(isReboot){
+        #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+            HeapSelectIram ephemeral;
+        #endif
         Task *t = new Task(TASK_SECOND*5, TASK_ONCE, nullptr, &ts, false, nullptr, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); });
         t->enableDelayed();
     }
@@ -417,6 +443,9 @@ void user_settings_frame(Interface *interf, JsonObject *data){};
 
 // после завершения сканирования обновляем список WiFi
 void BasicUI::scan_complete(int n){
+    #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+        HeapSelectIram ephemeral;
+    #endif
     Interface *interf = EmbUI::GetInstance()->ws.count()? new Interface(EmbUI::GetInstance(), &EmbUI::GetInstance()->ws) : nullptr;
     LOG(printf_P, PSTR("UI WiFi: Scan complete %d networks found\n"), n);
     if(interf){

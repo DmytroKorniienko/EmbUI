@@ -6,7 +6,7 @@
 #include "uistrings.h"   // non-localized text-strings
 
 #ifdef ESP32
-#if defined ARDUINO_ESP32S2_DEV || ARDUINO_ESP32C3_DEV  
+#if defined CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
   #include <driver/temp_sensor.h>
 #endif
   extern "C" int rom_phy_get_vdd33();
@@ -56,7 +56,7 @@ void create_parameters(){
 
     embui.section_handle_add(FPSTR(V_LED), action_blink);               // обработка рычажка светодиода
 
-#if defined ARDUINO_ESP32S2_DEV || ARDUINO_ESP32C3_DEV  
+#if defined CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
     // ESP32-C3 & ESP32-S2
     {
       temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();
@@ -128,14 +128,17 @@ void block_demopage(Interface *interf, JsonObject *data){
 
     // Headline
     // параметр FPSTR(T_SET_DEMO) определяет зарегистрированный обработчик данных для секции
-#if defined ARDUINO_ESP32_DEV  
-    LOG(println, F("ARDUINO_ESP32_DEV"));  
+#if defined CONFIG_IDF_TARGET_ESP32  
+    LOG(println, F("CONFIG_IDF_TARGET_ESP32"));  
     interf->json_section_main(FPSTR(T_DEMO), F("Some ESP32 demo controls"));
-#elif defined ARDUINO_ESP32S2_DEV  
-    LOG(println, F("ARDUINO_ESP32S2_DEV"));
+#elif defined CONFIG_IDF_TARGET_ESP32S3
+    LOG(println, F("CONFIG_IDF_TARGET_ESP32S3"));
+    interf->json_section_main(FPSTR(T_DEMO), F("Some ESP32-S3 demo controls"));
+#elif defined CONFIG_IDF_TARGET_ESP32S2  
+    LOG(println, F("CONFIG_IDF_TARGET_ESP32S2"));
     interf->json_section_main(FPSTR(T_DEMO), F("Some ESP32-S2 demo controls"));
-#elif defined ARDUINO_ESP32C3_DEV  
-    LOG(println, F("ARDUINO_ESP32C3_DEV"));
+#elif defined CONFIG_IDF_TARGET_ESP32C3  
+    LOG(println, F("CONFIG_IDF_TARGET_ESP32C3"));
     interf->json_section_main(FPSTR(T_DEMO), F("Some ESP32-C3 demo controls"));
 #else
     LOG(println, F("ESP8266"));
@@ -154,7 +157,7 @@ void block_demopage(Interface *interf, JsonObject *data){
         *  первый параметр FPSTR(T_DEMO) определяет какая секция откроется
         *  после обработки отправленных данных
         */ 
-        interf->button_submit(FPSTR(T_SET_DEMO), FPSTR(T_DICT[BasicUI::lang][TD::D_Send]), FPSTR(P_GRAY));
+        interf->button_submit(FPSTR(T_SET_DEMO), FPSTR(T_DICT[BasicUI::lang][TD::D_SEND]), FPSTR(P_GRAY));
       interf->json_section_end();
     interf->json_section_end();
     interf->json_frame_flush();

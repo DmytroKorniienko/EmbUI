@@ -1,5 +1,5 @@
-#ifndef __CUSTOMTASK_H
-#define __CUSTOMTASK_H
+#ifndef _EMBUI_CUSTOMTASK_H
+#define _EMBUI_CUSTOMTASK_H
 
 #ifdef ESP32
 

@@ -18,9 +18,9 @@ void EmbUI::led_handle(){
 }
 */
 
+#ifdef EMBUI_USE_SYS_BUTTON
 void EmbUI::btn(){
-#ifdef __BUTTON
-    if (digitalRead(__BUTTON))
+    if (digitalRead(EMBUI_USE_SYS_BUTTON))
         return;
 
     //uint8_t old_wifi_mode = wifi_mode;
@@ -28,7 +28,7 @@ void EmbUI::btn(){
     led_inv();
     unsigned long t = millis();
     bool i = false;
-    while (!digitalRead(__BUTTON))
+    while (!digitalRead(EMBUI_USE_SYS_BUTTON))
     {
         delay(1);
         if (t + 5000 < millis()) // Нажатие 5 секунд
@@ -66,8 +66,8 @@ void EmbUI::btn(){
         //ESP.restart();
     }
 */
-#endif
 }
+#endif
 
 void EmbUI::led_on(){
     if (sysData.LED_PIN == 31) return;

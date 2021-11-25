@@ -10,8 +10,8 @@
 */
 
 
-#ifndef LList_h
-#define LList_h
+#ifndef _EMBUI_LLIST_H
+#define _EMBUI_LLIST_H
 
 #include <stddef.h>
 

@@ -14,7 +14,7 @@
  * @param direct - if true, element value in send via ws on-change 
  */
 void Interface::html_input(const String &id, const String &type, const String &value, const String &label, bool direct, bool step){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = type;
     obj[FPSTR(P_id)] = id;
@@ -46,7 +46,7 @@ void Interface::number(const String &id, const String &label, const String &step
 }
 
 void Interface::number(const String &id, const String &value, const String &label, const String &step, const String &min, const String &max){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = FPSTR(P_number);
     obj[FPSTR(P_id)] = id;
@@ -68,7 +68,7 @@ void Interface::range(const String &id, const String &min, const String &max, co
 }
 
 void Interface::range(const String &id, const String &value, const String &min, const String &max, const String &step, const String &label, bool directly){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_input);
     obj[FPSTR(P_type)] = F("range");
     obj[FPSTR(P_id)] = id;
@@ -84,7 +84,7 @@ void Interface::range(const String &id, const String &value, const String &min, 
 }
 
 void Interface::select(const String &id, const String &value, const String &label, bool directly, bool skiplabel, const String &exturl, bool editable){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("select");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -131,7 +131,7 @@ void Interface::display(const String &id, const String &value, const String &css
  * @param value - element value (source destination, example - "/image/myimage.svg" or "https://example.com/image/myimage.jpg")
  */
 void Interface::image(const String &id, const String &value){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("img");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -143,7 +143,7 @@ void Interface::image(const String &id, const String &value){
  * used to create user-defined interface elements with custom css/js handlers
  */
 void Interface::custom(const String &id, const String &type, const String &value, const String &label, const JsonObject &param){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE*2> obj; // по этот контрол выделяем IFACE_STA_JSON_SIZE*2 т.к. он может быть большой...
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE*2> obj; // по этот контрол выделяем EMBUI_IFACE_STA_JSON_SIZE*2 т.к. он может быть большой...
     obj[FPSTR(P_html)] = F("custom");;
     obj[FPSTR(P_type)] = type;
     obj[FPSTR(P_id)] = id;
@@ -155,7 +155,7 @@ void Interface::custom(const String &id, const String &type, const String &value
 }
 
 void Interface::raw_html(const String &id, const String &value){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("raw_html");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -163,7 +163,7 @@ void Interface::raw_html(const String &id, const String &value){
 }
 
 void Interface::iframe(const String &id, const String &value){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("iframe");;
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -171,7 +171,7 @@ void Interface::iframe(const String &id, const String &value){
 }
 
 void Interface::hidden(const String &id, const String &value){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_hidden);
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -183,7 +183,7 @@ void Interface::hidden(const String &id){
 }
 
 void Interface::constant(const String &id, const String &value, const String &label, bool loading, const String &color, uint8_t top_margine){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("const");
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = value;
@@ -247,7 +247,7 @@ void Interface::password(const String &id, const String &label){
 }
 
 void Interface::option(const String &value, const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_label)] = label;
     obj[FPSTR(P_value)] = value;
     frame_add_safe(obj.as<JsonObject>());
@@ -288,7 +288,7 @@ void Interface::color(const String &id, const String &label){
 }
 
 void Interface::file(const String &name, const String &action, const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_file);
     obj[F("name")] = name;
     obj[F("action")] = action;
@@ -297,7 +297,7 @@ void Interface::file(const String &name, const String &action, const String &lab
 }
 
 void Interface::button(const String &id, const String &label, const String &color, uint8_t top_margine, const String &message){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_button);
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_color)] = color;
@@ -314,7 +314,7 @@ void Interface::button_confirm(const String &id, const String &label, const Stri
 }
 
 void Interface::button_submit(const String &section, const String &label, const String &color, uint8_t top_margine, const String &message){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_button);
     obj[FPSTR(P_submit)] = section;
     obj[FPSTR(P_color)] = color;
@@ -332,7 +332,7 @@ void Interface::button_submit_confirm(const String &section, const String &label
 }
 
 void Interface::button_submit_value(const String &section, const String &value, const String &label, const String &color, uint8_t top_margine, const String &message){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = FPSTR(P_button);
     obj[FPSTR(P_submit)] = section;
     obj[FPSTR(P_color)] = color;
@@ -351,14 +351,14 @@ void Interface::button_submit_value_confirm(const String &section, const String 
 }
 
 void Interface::spacer(const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_html)] = F("spacer");
     if (label != "") obj[FPSTR(P_label)] = label;
     frame_add_safe(obj.as<JsonObject>());
 }
 
 void Interface::comment(const String &label){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE * 2> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE * 2> obj;
     obj[FPSTR(P_html)] = F("comment");
     if (label != "") obj[FPSTR(P_label)] = label;
     frame_add_safe(obj.as<JsonObject>());
@@ -381,7 +381,7 @@ void Interface::textarea(const String &id, const String &label){
  * Template accepts types suitable to be added to the ArduinoJson document used as a dictionary
  */
 void Interface::value(const String &id, const String &val, bool html){
-    StaticJsonDocument<IFACE_STA_JSON_SIZE> obj;
+    StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE> obj;
     obj[FPSTR(P_id)] = id;
     obj[FPSTR(P_value)] = val;
     if (html) obj[FPSTR(P_html)] = true;
@@ -410,7 +410,7 @@ void Interface::json_frame_interface(const String &name){
     if (name != "") {
         json[F("app")] = name;
         json[F("mc")] = EmbUI::GetInstance()->mc;
-        json[F("ver")] = F(TOSTRING(EMBUIVER));
+        json[F("ver")] = FPSTR(PGversion);
     }
     json[FPSTR(P_final)] = false;
 
@@ -516,6 +516,9 @@ void Interface::json_section_begin(const String &name, const String &label, bool
     if (hidden) obj[FPSTR(P_hidden)] = true;
     if (line) obj[F("line")] = true;
 
+#if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
+    HeapSelectIram ephemeral;
+#endif
     section_stack_t *section = new section_stack_t;
     section->name = name;
     section->block = obj.createNestedArray(FPSTR(P_block));
@@ -559,7 +562,7 @@ void frameSendClient::send(const JsonObject& data){
  * @brief - add object to frame with mem overflow protection 
  */
 bool Interface::frame_add_safe(const JsonObjectConst &jobj){
-    size_t _cnt = FRAME_ADD_RETRY;
+    size_t _cnt = EMBUI_FRAME_ADD_RETRY;
 
     do {
         --_cnt;

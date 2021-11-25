@@ -1,6 +1,11 @@
 # EmbUI
 Embedded WebUI Interface
 
+[![arduino-library-badge](https://www.ardu-badge.com/badge/EmbUI.svg?)](https://www.ardu-badge.com/EmbUI)
+[![PlatformIO CI](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build.yml/badge.svg)](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build.yml)
+
+__[CHANGELOG](/CHANGELOG.md)__
+
 Фреймворк построения web-интерфейса и элементов управления для проектов под Arduino 
 ## Поддерживаемые платформы
  - ESP8266 Arduino Core
@@ -44,5 +49,7 @@ ArduinoJson        |  https://github.com/bblanchon/ArduinoJson.git              
 AsyncWebServer-mod |  https://github.com/DmytroKorniienko/ESPAsyncWebServer/tree/ESPAsyncWebServerMod | manual install, fork
 AsyncMqttClient    |  https://github.com/marvinroger/async-mqtt-client.git                            | manual install
 TaskScheduler      |  https://github.com/arkhipenko/TaskScheduler.git                                 |
-FtpClientServer    |  https://github.com/charno/FTPClientServer.git                                   | manual install, fork, esp32
+FtpClientServer    |  https://github.com/charno/FTPClientServer.git                                   | manual install, fork
 ESP32SSDP          |  https://github.com/luc-github/ESP32SSDP.git                                     | manual install, esp32
+AsyncTCP           |  https://github.com/me-no-dev/AsyncTCP.git                                       | manual install, esp32
+LittleFS_esp32     |  https://github.com/lorol/LITTLEFS.git                                           | manual install, esp32
