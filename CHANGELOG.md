@@ -3,12 +3,14 @@
 ### v2.5.0  Release
 Added:
   - ESP32-C3 & ESP32-S2 support
+
 Fixes:
   - stabilty and bug fixes
 
 ### v2.4.7  Release
 Added:
   - Image Control
+
 Fixes:
   - SDK3.0.0 WiFi fix
   - WiFi list fix
@@ -18,6 +20,7 @@ Fixes:
 Added:
   - RTC time for AP mode
   - Custom CSS display mode (Vortigont)
+
 Fixes:
   - NTP ring for (no features mode)
   - cpp templates for html elements removed due issues
@@ -37,6 +40,7 @@ Added:
   - custom named section mapped to <div> template
   - websocket rawdata packet type
   - Time Zones list loading via ajax
+
 Fixes:
   - ws post dangling pointer fix
   - mqtt
