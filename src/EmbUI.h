@@ -224,9 +224,6 @@ bool __attribute__((weak)) ws_action_handle(AsyncWebSocket *server, AsyncWebSock
     #else
         static const char PGurlManuf[] PROGMEM = TOSTRING(EMBUI_SSDP_URLMANUF);
     #endif
-
-    static const char PGversion[] PROGMEM = TOSTRING(EMBUI_VER);
-
 #endif
 
 // Callback enums

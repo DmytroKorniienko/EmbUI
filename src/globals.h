@@ -22,6 +22,13 @@
 #define __I(x) x
 #define TOSTRING(x) __STRINGIFY(x)
 
+static const char PGversion[] PROGMEM = TOSTRING(EMBUI_VER);
+#ifdef GIT_SRC_REV
+static const char PGGITversion[] PROGMEM = GIT_SRC_REV;
+#else
+static const char PGGITversion[] PROGMEM = "";
+#endif
+
 // LOG macro's
 #if defined(EMBUI_DEBUG)
   #ifndef EMBUI_DEBUG_PORT

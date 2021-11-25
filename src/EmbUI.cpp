@@ -225,7 +225,12 @@ void EmbUI::begin(){
 */
 
     server.on(PSTR("/version"), HTTP_ANY, [this](AsyncWebServerRequest *request) {
-        request->send(200, FPSTR(PGmimetxt), F("EmbUI ver: " TOSTRING(EMBUI_VER)));
+        String version;
+        version.concat(F("EmbUI ver: "));
+        version.concat(FPSTR(PGversion));
+        version.concat('\n');
+        version.concat(FPSTR(PGGITversion));
+        request->send(200, FPSTR(PGmimetxt), version);
     });
 
     server.on(PSTR("/cmd"), HTTP_ANY, [this](AsyncWebServerRequest *request) {

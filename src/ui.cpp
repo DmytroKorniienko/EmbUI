@@ -410,7 +410,7 @@ void Interface::json_frame_interface(const String &name){
     if (name != "") {
         json[F("app")] = name;
         json[F("mc")] = EmbUI::GetInstance()->mc;
-        json[F("ver")] = F(TOSTRING(EMBUI_VER));
+        json[F("ver")] = FPSTR(PGversion);
     }
     json[FPSTR(P_final)] = false;
 
