@@ -16,7 +16,7 @@
 #else
  #include <AsyncTCP.h>
  #include <LITTLEFS.h>
- #ifdef ARDUINO_ESP32_DEV
+ #ifdef CONFIG_IDF_TARGET_ESP32
   #define LittleFS LITTLEFS
  #endif
  #define U_FS   U_SPIFFS

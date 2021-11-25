@@ -3,11 +3,13 @@
 // Set of flash-strings that might be reused multiple times within the code
 
 // General
-#if defined ARDUINO_ESP32_DEV  
+#if defined CONFIG_IDF_TARGET_ESP32  
   static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32 Demo";    // имя проекта
-#elif defined ARDUINO_ESP32S2_DEV  
+#elif defined CONFIG_IDF_TARGET_ESP32S3
+  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32-S3 Demo";    // имя проекта
+#elif defined CONFIG_IDF_TARGET_ESP32S2  
   static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32S2 Demo";    // имя проекта
-#elif defined ARDUINO_ESP32C3_DEV  
+#elif defined CONFIG_IDF_TARGET_ESP32C3  
   static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32C3 Demo";    // имя проекта
 #else
   static const char T_HEADLINE[] PROGMEM = "EmbUI Demo";    // имя проекта
