@@ -46,4 +46,4 @@ jobs:
       env: 
         PLATFORMIO_CI_SRC: ${{ matrix.example }}
       run: |
-        pio ci -c ${{ matrix.example }}./../test.ini
+        pio ci -c ${{ matrix.example }}/../test.ini
