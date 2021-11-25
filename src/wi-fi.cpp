@@ -114,7 +114,7 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         break;
 
     case SYSTEM_EVENT_STA_DISCONNECTED:
-        #ifndef CONFIG_IDF_TARGET_ESP32
+        #if ARDUINO > 10805
             LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.wifi_sta_disconnected.reason);
         #else
             LOG(printf_P, PSTR("UI WiFi: Disconnected, reason: %d\n"), info.disconnected.reason);
@@ -137,7 +137,7 @@ void EmbUI::WiFiEvent(WiFiEvent_t event, WiFiEventInfo_t info)
         break;
     case SYSTEM_EVENT_SCAN_DONE:
         //BasicUI::scan_complete(info.scan_done.number);
-        #ifndef CONFIG_IDF_TARGET_ESP32
+        #if ARDUINO > 10805
             EmbUI::GetInstance()->pf_wifiscan(info.wifi_scan_done.number);
         #else
             EmbUI::GetInstance()->pf_wifiscan(info.scan_done.number);
