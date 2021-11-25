@@ -6,9 +6,9 @@ name: PlatformIO CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ dev ]
   pull_request:
-    branches: [ main, dev ]
+    branches: [ dev ]
 
 jobs:
   build:
@@ -46,4 +46,4 @@ jobs:
       env: 
         PLATFORMIO_CI_SRC: ${{ matrix.example }}
       run: |
-        pio ci -c ${{ matrix.example }}/../test.ini
+        pio ci -c ${{ matrix.example }}/../test_dev.ini
