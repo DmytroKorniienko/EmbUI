@@ -15,8 +15,8 @@ jobs:
 
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        example:
+      embui:
+        examples:
           - "examples/01_ex_generic"
           - "examples/02_sensors"
 
@@ -44,6 +44,6 @@ jobs:
         pio update
     - name: Run PlatformIO
       env: 
-        PLATFORMIO_CI_SRC: ${{ matrix.example }}
+        PLATFORMIO_CI_SRC: ${{ embui.examples }}
       run: |
-        pio ci -c ${{ matrix.example }}/platformio.ini
+        pio ci -c ${{ embui.examples }}./../test.ini
