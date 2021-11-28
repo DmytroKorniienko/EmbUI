@@ -52,7 +52,7 @@
 #include "ts.h"
 #include "timeProcessor.h"
 
-#define EMBUI_UDP_PORT            4243    // UDP server port
+#include "udpecho.h"
 
 #ifndef EMBUI_PUB_PERIOD
 #define EMBUI_PUB_PERIOD 10            // Values Publication period, s
@@ -518,6 +518,8 @@ class EmbUI
     void led_inv();
 
 #ifdef EMBUI_USE_UDP
+    AsyncUDP Udp;
+    bool udpApply = false;
     unsigned int localUdpPort = EMBUI_UDP_PORT;
     //char udpRemoteIP[16];
     String incomingPacket;

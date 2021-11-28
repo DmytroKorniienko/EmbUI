@@ -32,12 +32,12 @@ void Interface::html_input(const String &id, const String &type, const String &v
  */
 void Interface::number(const String &id, const String &label)
 {
-    number(id, EmbUI::GetInstance()->param(id), label, String(0), String(0), String(0));
+    number(id, EmbUI::GetInstance()->param(id), label, String(1), String(0), String(255));
 }
 
 void Interface::number(const String &id, const String &value, const String &label)
 {
-    number(id, value, label, String(0), String(0), String(0));
+    number(id, value, label, String(1), String(0), String(255));
 }
 
 void Interface::number(const String &id, const String &label, const String &step, const String &min, const String &max)

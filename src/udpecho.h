@@ -7,7 +7,17 @@
 #define _EMBUI_UDPECHO_H
 
 #ifdef EMBUI_USE_UDP
-  //
+
+#ifdef ESP32
+#include <AsyncUDP.h>
+#else
+#include <ESPAsyncUDP.h>
+#endif
+
+#ifndef EMBUI_UDP_PORT
+#define EMBUI_UDP_PORT            5568    // UDP server port
+#endif
+
 #endif
 
 #endif
