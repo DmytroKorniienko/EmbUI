@@ -44,6 +44,7 @@ void create_parameters(){
      */
     embui.var_create(FPSTR(V_LED), "1");    // LED default status is on
     embui.var_create(FPSTR(V_VAR1), "");    // заводим пустую переменную по умолчанию
+    embui.var_create(FPSTR(V_VAR3), "0");
 
     /**
      * добавляем свои обрабочки на вывод UI-секций
@@ -151,8 +152,9 @@ void block_demopage(Interface *interf, JsonObject *data){
         interf->checkbox(FPSTR(V_LED), F("Onboard LED"), true);
       interf->json_section_end();
       interf->json_section_begin(FPSTR(T_SET_DEMO), "");
-        interf->text(FPSTR(V_VAR1), F("текстовое поле"));                                 // текстовое поле со значением переменной из конфигурации
+        interf->text(FPSTR(V_VAR1), F("Текстовое поле"));                                 // текстовое поле со значением переменной из конфигурации
         interf->text(FPSTR(V_VAR2), String(F("some default val")), F("Второе текстовое поле"), false);   // текстовое поле со значением "по-умолчанию"
+        interf->checkbox(FPSTR(V_VAR3), F("Зависимый переключатель, введите on или off во второе поле ввода"));
         /*  кнопка отправки данных секции на обработку
         *  первый параметр FPSTR(T_DEMO) определяет какая секция откроется
         *  после обработки отправленных данных
@@ -162,6 +164,9 @@ void block_demopage(Interface *interf, JsonObject *data){
     interf->json_section_end();
     interf->json_frame_flush();
 }
+
+// просто как заглушка, когда не нужно доп. действий (не вызываются никакие сеттеры)
+void dummy_function(Interface *interf, JsonObject *data){}
 
 void action_demopage(Interface *interf, JsonObject *data){
     if (!data) return;
@@ -182,8 +187,17 @@ void action_demopage(Interface *interf, JsonObject *data){
     // выводим значение 2-й переменной в serial
     Serial.printf_P(PSTR("Varialble_2 value:%s\n"), text);
 
-}
+    Serial.printf_P(PSTR("Checkbox state:%s\n"), (*data)[FPSTR(V_VAR2)]=="1"?PSTR("true"):PSTR("false"));
 
+    // для примера реализуем здесь зависимое поведение, если в строке записано "on" - включим чекбокс, если "off" - выключим, иначе ничего не делаем
+    DynamicJsonDocument doc(512);
+    JsonObject obj = doc.to<JsonObject>();
+    if(String(text)=="on"){
+      CALL_INTF(FPSTR(V_VAR3),"1",dummy_function);
+    } else if(String(text)=="off"){
+      CALL_INTF(FPSTR(V_VAR3),"0",dummy_function);
+    }
+}
 
 void action_blink(Interface *interf, JsonObject *data){
   if (!data) return;  // здесь обрабатывает только данные

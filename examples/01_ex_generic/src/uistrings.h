@@ -19,6 +19,7 @@
 static const char V_LED[] PROGMEM = "vLED";
 static const char V_VAR1[] PROGMEM = "v1";
 static const char V_VAR2[] PROGMEM = "v2";
+static const char V_VAR3[] PROGMEM = "v3";
 
 // UI blocks
 static const char T_DEMO[] PROGMEM = "demo";     // генерация UI-секции "демо"
