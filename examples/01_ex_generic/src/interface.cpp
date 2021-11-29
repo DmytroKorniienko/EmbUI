@@ -165,8 +165,11 @@ void block_demopage(Interface *interf, JsonObject *data){
     interf->json_frame_flush();
 }
 
-// просто как заглушка, когда не нужно доп. действий (не вызываются никакие сеттеры)
-void dummy_function(Interface *interf, JsonObject *data){}
+// сеттер для веб-контрола
+void set_checkbox3(Interface *interf, JsonObject *data){
+  Serial.printf_P(PSTR("Varialble_3 checkbox state after var2 check:%s\n"), (*data)[FPSTR(V_VAR3)]=="1"?PSTR("true"):PSTR("false"));
+  SETPARAM(FPSTR(V_VAR3)); // записать значение в конфиг
+}
 
 void action_demopage(Interface *interf, JsonObject *data){
     if (!data) return;
@@ -187,15 +190,15 @@ void action_demopage(Interface *interf, JsonObject *data){
     // выводим значение 2-й переменной в serial
     Serial.printf_P(PSTR("Varialble_2 value:%s\n"), text);
 
-    Serial.printf_P(PSTR("Checkbox state:%s\n"), (*data)[FPSTR(V_VAR2)]=="1"?PSTR("true"):PSTR("false"));
+    Serial.printf_P(PSTR("Varialble_3 checkbox state after send:%s\n"), (*data)[FPSTR(V_VAR3)]=="1"?PSTR("true"):PSTR("false"));
 
     // для примера реализуем здесь зависимое поведение, если в строке записано "on" - включим чекбокс, если "off" - выключим, иначе ничего не делаем
     DynamicJsonDocument doc(512);
     JsonObject obj = doc.to<JsonObject>();
     if(String(text)=="on"){
-      CALL_INTF(FPSTR(V_VAR3),"1",dummy_function);
+      CALL_INTF(FPSTR(V_VAR3),"1",set_checkbox3);
     } else if(String(text)=="off"){
-      CALL_INTF(FPSTR(V_VAR3),"0",dummy_function);
+      CALL_INTF(FPSTR(V_VAR3),"0",set_checkbox3);
     }
 }
 
