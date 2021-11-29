@@ -31,12 +31,12 @@ void EmbUI::udpBegin(){
 
 void EmbUI::udpLoop(){
     static bool st = false;
-
+    if(!udpApply) return;
     if(!st){
         st = true;
         udpBegin();
     }
-    if(!udpApply) return;
+    
 }
 
 #endif

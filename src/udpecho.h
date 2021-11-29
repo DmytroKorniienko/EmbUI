@@ -15,7 +15,7 @@
 #endif
 
 #ifndef EMBUI_UDP_PORT
-#define EMBUI_UDP_PORT            5568    // UDP server port
+#define EMBUI_UDP_PORT            5560    // UDP server port
 #endif
 
 #endif
