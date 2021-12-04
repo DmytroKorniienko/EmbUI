@@ -343,6 +343,9 @@ class EmbUI
         return pInstance;
     }
 
+    static const String getEmbUIver();
+    static const String getGITver();
+
     BITFIELDS sysData;
     EMBUICFG cfgData;
     AsyncWebServer server;

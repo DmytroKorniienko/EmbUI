@@ -624,3 +624,6 @@ void EmbUI::autosave(bool force){
         tAutoSave.restartDelayed();
     }
 };
+
+const String EmbUI::getEmbUIver(){ return FPSTR(PGversion); }
+const String EmbUI::getGITver(){ return FPSTR(PGGITversion); }
