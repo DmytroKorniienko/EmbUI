@@ -44,7 +44,7 @@ protected:
 public:
 	LList();
 	LList(int sizeIndex, T _t); //initiate list size and default value
-	~LList();
+	virtual ~LList();
 
 	/*
 		Returns current size of LList
