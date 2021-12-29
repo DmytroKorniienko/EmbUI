@@ -4,6 +4,7 @@ CONFIG_IDF_TARGET_ESP32S3
 CONFIG_IDF_TARGET_ESP32S2
 CONFIG_IDF_TARGET_ESP32C3
 
+NO_GLOBAL_EMBUI - если задано, то не будет использоваться глобальный объект embui и экземпляр нужно создавать самостоятельно
 
 EMBUI_USE_SECHEAP  - работает в паре с PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED, нужен для расширение оперативной памяти
 
