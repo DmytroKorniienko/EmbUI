@@ -105,7 +105,7 @@ go.merge = function(base, data, idx) {
 		if (typeof data[i] == 'object') {
 			if (typeof base[id] != 'object') base[id] = (data[i] instanceof Array)? [] : {};
 			this.merge(base[id], data[i], (i == "block")? data.idx : undefined);
-		} else base[id] = data[i];
+		} else base[id] = i18next.t(data[i]);			// вытаскиваем локализацию по ключам, если ключа нет - выводится названия ключа
 	}
 	return base;
 }

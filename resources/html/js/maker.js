@@ -29,7 +29,7 @@ var render = function(){
 			}
 			var data = {}; data[id] = (value !== undefined)? value : null;
 			if (this.className.includes("confirm")){
-				if (confirm(this.nextElementSibling.textContent))
+				if (confirm(this.dataset.confirm))
 					ws.send_post(data);
 				}
 				else
@@ -42,7 +42,7 @@ var render = function(){
 			var form = go("#"+id), data = go.formdata(go("input, textarea, select", form));
 			data[id] = val || null;
 			if (this.className.includes("confirm")){
-				if (confirm(this.nextElementSibling.textContent))
+				if (confirm(this.dataset.confirm))
 					ws.send_post(data);
 				}
 				else
@@ -67,6 +67,7 @@ var render = function(){
 		},
 		menu: function(){
 			go("#menu").clear().append(tmpl_menu.parse(global));
+			setSelectedLang();					// Обновляем список языков после перерисовки меню
 		},
 		section: function(obj){
 			if (obj.main) {
@@ -303,4 +304,24 @@ window.addEventListener("popstate", function(e){
 		var data = {}; data[e] = null;
 		ws.send_post(data);
 	}
+});
+
+function refreshPage(){
+	let currnt = window.location.href;
+	console.log("Curretn location", currnt);
+	let currntPage = {};
+	let idx = currnt.indexOf('?');
+	if (idx) {
+		console.log("CHECK", currnt.slice(idx+1));
+		currntPage[currnt.slice(idx+1)] = null;
+	}
+	ws.send_post({main:null});
+	ws.send_post(currntPage);
+}
+
+document.addEventListener('change', (e)=>{
+	if(e.target!=document.getElementById('lang')) return;
+	i18next.changeLanguage(document.getElementById('lang').value);
+	refreshPage();
+	setSelectedLang();
 });

@@ -61,7 +61,6 @@ static const char P_APpwd[] PROGMEM = "APpwd";          // AccessPoint password
 static const char P_TZSET[] PROGMEM = "TZSET";          // TimeZone rule variable
 static const char P_userntp[] PROGMEM = "userntp";      // user-defined NTP server
 static const char P_DTIME[] PROGMEM = "datetime";
-static const char P_LANGUAGE[] PROGMEM = "lang";        // UI language
 static const char P_DEVICEDATETIME[] PROGMEM = "devicedatetime"; // hidden field for browser's date
 
 // WiFi vars
