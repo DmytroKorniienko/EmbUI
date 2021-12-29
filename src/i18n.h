@@ -66,11 +66,10 @@ static const char TD_WIFIAPOPTS[] PROGMEM =     "TD_053";   // en: "WiFi & AP se
 static const char TD_WIFIAP[] PROGMEM =         "TD_054";   // en: "WiFi AP";  
 static const char TD_WIFICLIENTOPTS[] PROGMEM = "TD_055";   // en: "WiFi-client setup";  ru: "Настройки WiFi-клиента";
 static const char TD_WIFICLIENT[] PROGMEM =     "TD_056";   // en: "WiFi Client"; ru: "WiFi-клиент";
-#ifdef EMBUI_USE_FTP
-static const char TD_WIFI_MQTT[] PROGMEM =      "TD_057";   // en: "WiFi, MQTT & FTP";
-#else
-static const char TD_WIFI_MQTT[] PROGMEM =      "TD_058";   // en: "WiFi & MQTT";
-#endif
+
+static const char TD_NOTSET057[] PROGMEM =      "TD_057";   // en: "not set";
+static const char TD_NOTSET058[] PROGMEM =      "TD_058";   // en: "not set";
+
 static const char TD_FTP[] PROGMEM =            "TD_059";   // en: "FTP";
 static const char TD_WIFI[] PROGMEM =           "TD_060";   // en: "WiFi";
 static const char TD_WIFISSID[] PROGMEM =       "TD_061";   // en: "WiFi SSID";
@@ -87,6 +86,14 @@ static const char TD_WIFI_AP[] PROGMEM =        "TD_071";   // en: "Access point
 static const char TD_WIFI_APSTA[] PROGMEM =     "TD_072";   // en: "Mixed (AP+STA)";  ru: "Смешанный (AP+STA)";
 static const char TD_MSG_CONF[] PROGMEM =       "TD_073";   // en: "Sure?";  ru: "Уверены?";    
 
-
+#if defined(EMBUI_USE_FTP) && defined(EMBUI_USE_MQTT)
+static const char TD_WIFI_MQTT[] PROGMEM =      "TD_074";   // en: "WiFi, MQTT & FTP";
+#elif defined(EMBUI_USE_MQTT)
+static const char TD_WIFI_MQTT[] PROGMEM =      "TD_075";   // en: "WiFi & MQTT";
+#elif defined(EMBUI_USE_FTP)
+static const char TD_WIFI_MQTT[] PROGMEM =      "TD_076";   // en: "WiFi & FTP";
+#else
+static const char TD_WIFI_MQTT[] PROGMEM =      "TD_077";   // en: "WiFi";
+#endif
 
 #endif
