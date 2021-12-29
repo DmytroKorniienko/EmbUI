@@ -21,7 +21,7 @@ static const char TD_CONF[] PROGMEM =           "TD_008";   // en: "Configuratio
 static const char TD_CONFS[] PROGMEM =          "TD_009";   // en: "Configurations";  ru: "Конфигурации";
 static const char TD_CONNECT[] PROGMEM =        "TD_010";   // en: "Connect";  ru: "Подключиться";
 static const char TD_CREATE[] PROGMEM =         "TD_011";   // en: "Create";  ru: "Создать";
-static const char TD_DATETIME[] PROGMEM =       "TD_012";   // en: "Date // Time // Time Zone";  ru: "Дата // Время // Часовая зона";
+static const char TD_DATETIME[] PROGMEM =       "TD_012";   // en: "Date / Time / Time Zone";  ru: "Дата / Время / Часовая зона";
 static const char TD_DEBUG[] PROGMEM =          "TD_013";   // en: "Debug";  ru: "Отладка";
 static const char TD_EDIT[] PROGMEM =           "TD_014";   // en: "Edit";  ru: "Редактировать";
 static const char TD_EVENT[] PROGMEM =          "TD_015";   // en: "Event";  ru: "Событие";
@@ -37,7 +37,7 @@ static const char TD_MQTT_INTERVAL[] PROGMEM =  "TD_024";   // en: "MQTT update 
 static const char TD_MQTT_PORT[] PROGMEM =      "TD_025";   // en: "MQTT port"; 
 static const char TD_MQTT_PREFIX[] PROGMEM =    "TD_026";   // en: "MQTT prefix"; 
 static const char TD_MQTT[] PROGMEM =           "TD_027";   // en: "MQTT"; 
-static const char TD_MSG_WIFIMODE[] PROGMEM =   "TD_028";   // en: "In AP-only EmbUI always works as an Access Point and never attempt any WiFi-client connections, STA - client mode, STA+AP - mixed";  ru: "В режиме AP лампа всегда работает как точка доступа и не будет подключаться к другим WiFi-сетям, STA - режим клиента, AP+STA - смешанный";
+static const char TD_MSG_WIFIMODE[] PROGMEM =   "TD_028";   // en: "In AP-only mode EmbUI always works as an Access Point and never attempt any WiFi-client connections, STA - client mode, STA+AP - mixed";  ru: "В режиме AP EmbUI всегда работает как точка доступа и не будет подключаться к другим WiFi-сетям, STA - режим клиента, AP+STA - смешанный";
 static const char TD_MSG_APPROTECT[] PROGMEM =  "TD_029";   // en: "Protect AP with a password";  ru: "Защитить AP паролем";
 static const char TD_MSG_DATETIME[] PROGMEM =   "TD_030";   // en: "Date/Time, YYYY-MM-DDThh:mm:ss (without internet connection, if empty - from device)";  ru: "Дата/время в формате YYYY-MM-DDThh:mm:ss (без интернета, если пусто - время с устройства)";
 static const char TD_MSG_TZONE[] PROGMEM =      "TD_031";   // en: "Time zone";  ru: "Часовая зона";
@@ -66,7 +66,7 @@ static const char TD_WIFIAPOPTS[] PROGMEM =     "TD_053";   // en: "WiFi & AP se
 static const char TD_WIFIAP[] PROGMEM =         "TD_054";   // en: "WiFi AP";  
 static const char TD_WIFICLIENTOPTS[] PROGMEM = "TD_055";   // en: "WiFi-client setup";  ru: "Настройки WiFi-клиента";
 static const char TD_WIFICLIENT[] PROGMEM =     "TD_056";   // en: "WiFi Client"; ru: "WiFi-клиент";
-#ifdef EMBUI_USE_FTP0
+#ifdef EMBUI_USE_FTP
 static const char TD_WIFI_MQTT[] PROGMEM =      "TD_057";   // en: "WiFi, MQTT & FTP";
 #else
 static const char TD_WIFI_MQTT[] PROGMEM =      "TD_058";   // en: "WiFi & MQTT";
