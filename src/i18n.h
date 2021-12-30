@@ -3,7 +3,7 @@
 
 #ifndef _EMBUI_I18N_H
 #define _EMBUI_I18N_H
-
+#include <Arduino.h>
 /**
  * the order of enums must match with elements in dictionary
  *

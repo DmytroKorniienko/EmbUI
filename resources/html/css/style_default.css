@@ -6,7 +6,7 @@ label {white-space: nowrap;}
 .switch-block {margin: 16px 0px 11px 0px;}
 .header-block {color: #777;}
 .nested {padding: 5px 10px 5px 10px; border: 1px solid #777;}
-.mr {margin: 10px 0px 10px 0px !important;}
+.mr {margin: 7px 0px 7px 0px !important;}
 .spacer {text-align: center; font-weight: 300; color: #777; padding-bottom: 10px; margin: 15px 0px 15px 0px; border-bottom: 1px solid #777;}
 .comment {margin: 1em 0;}
 
@@ -191,3 +191,42 @@ example of additional styles for display divs
       transform: rotate(1turn);
   }
 }
+
+/* Button shade style - эффекты для кнопки, отключено, кому нужно - включает */
+/*
+button{
+	position:relative;
+	transition:500ms ease all;
+	outline:none;
+  }
+button:hover{
+	background:#eee!important;
+	color:rgb(0, 120, 230)!important;
+	box-shadow: 3px 3px 5px 2px #97B1BF;
+}
+button:focus{
+	opacity: 0.7;
+	box-shadow: unset;
+	background: rgb(0, 140, 250);
+	color:rgb(50, 50, 50)!important;
+}
+button:before,button:after{
+	content:'';
+	position:absolute;
+	top:0;
+	right:0;
+	height:2px;
+	width:0;
+	background: rgb(0, 120, 230);
+}
+button:after{
+	right:inherit;
+	top:inherit;
+	left:0;
+	bottom:0;
+}
+button:hover:before,button:hover:after{
+	width:100%;
+	transition:1000ms ease all;
+}
+*/

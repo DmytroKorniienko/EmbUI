@@ -8,14 +8,6 @@
 #include "i18n.h"        // localized GUI text-strings
 #include "constants.h" 
 
-/**
- * List of UI languages in predefined i18n resources
- */
-enum LANG : uint8_t {
-    RU = (0U),
-    EN = (1U),
-};
-
 /*
     перенакрываемая функция для добавления пользовательских пунктов в меню "Настройки"
     вызывается в конце section_settings_frame()
@@ -33,7 +25,6 @@ class BasicUI {
     static Task *_WIFIScan;
 #endif
   public:
-    static uint8_t lang;            // default language for text resources
   /**
    * Define configuration variables and controls handlers
    * 
