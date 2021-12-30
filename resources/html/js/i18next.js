@@ -28,24 +28,27 @@ function getLang(){
 getLang();
 
 function setSelectedLang(){
-  let lang = document.getElementById('lang');
+  let lang = document.querySelector('.lang_selector')
   if (lang){
-    for (let k of langsList){
-      if (!Array.from(lang.options).map(el => el.value === k).find( el => el == true)) {
+  	lang.innerHTML = '';
+      select = document.createElement('select');
+      select.className = 'lang';
+      langsList.forEach(el => {
+      	console.log(el);
         let opt = document.createElement('option');
-        opt.value = k;
-        opt.innerHTML = k.toUpperCase();
-        lang.appendChild(opt);
-      }
-    }
-    let selectedLng = i18next.language;
-    let idx = i18next.language.search('-');
-    lang.value = selectedLng.substring(0, (idx > 0 ? idx : selectedLng.length));
-    let leftBlock = document.getElementsByClassName('menu-title');
-    for (each of leftBlock){
-      let key = each.dataset.i18n;
-      if (key)
-          each.innerHTML = i18next.t(key);
+        opt.value = el;
+        opt.textContent = el.toUpperCase();
+        select.appendChild(opt);
+      });
+      lang.appendChild(select);
+	let selectedLng = i18next.language;
+	let idx = i18next.language.search('-');
+	select.value = selectedLng.substring(0, (idx > 0 ? idx : selectedLng.length));
+	let leftBlock = document.getElementsByClassName('menu-title');
+	for (each of leftBlock){
+	  let key = each.dataset.i18n;
+	  if (key)
+		  each.textContent = i18next.t(key);
     }
   }
   else

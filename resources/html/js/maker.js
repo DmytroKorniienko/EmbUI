@@ -320,8 +320,8 @@ function refreshPage(){
 }
 
 document.addEventListener('change', (e)=>{
-	if(e.target!=document.getElementById('lang')) return;
-	i18next.changeLanguage(document.getElementById('lang').value);
+	if(e.target!=document.querySelector('.lang')) return;
+	i18next.changeLanguage(document.querySelector('.lang').value);
 	refreshPage();
 	setSelectedLang();
 });
