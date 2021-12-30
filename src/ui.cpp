@@ -357,10 +357,26 @@ void Interface::spacer(const String &label){
     frame_add_safe(obj.as<JsonObject>());
 }
 
-void Interface::comment(const String &label){
+void Interface::comment(const String &id, const String &label){
     StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE * 2> obj;
     obj[FPSTR(P_html)] = F("comment");
-    if (label != "") obj[FPSTR(P_label)] = label;
+    if (id != "") {
+        if (label != "") {
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_label)] = label;
+        } else {
+            obj[FPSTR(P_id)] = "";
+            obj[FPSTR(P_label)] = id;
+        }
+    } else {
+        if (label != "") {
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_label)] = label;
+        } else {
+            obj[FPSTR(P_id)] = "";
+            obj[FPSTR(P_label)] = "";
+        }
+    }
     frame_add_safe(obj.as<JsonObject>());
 }
 

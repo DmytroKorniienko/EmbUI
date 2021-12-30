@@ -1,5 +1,11 @@
 ## Changelog
 
+### v2.6.0  Release
+Added:
+  - Multi languages support
+  - Resources fix
+  - Refactoring & optimization
+
 ### v2.5.0  Release
 Added:
   - ESP32-C3 & ESP32-S2 support

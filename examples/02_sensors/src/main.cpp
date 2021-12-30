@@ -9,10 +9,6 @@
  *
  */
 
-#ifdef USE_FTP
- #include "ftpSrv.h"
-#endif
-
 // MAIN Setup
 void setup() {
   Serial.begin(BAUD_RATE);
@@ -31,18 +27,10 @@ void setup() {
 
   // restore LED state from configuration
   digitalWrite( LED_BUILTIN, !embui.param(FPSTR(V_LED)).toInt() );
-
-  #ifdef USE_FTP
-      ftp_setup(); // запуск ftp-сервера
-  #endif
 }
 
 
 // MAIN loop
 void loop() {
   embui.handle();
-
-#ifdef USE_FTP
-  ftp_loop(); // цикл обработки событий фтп-сервера
-#endif
 }
