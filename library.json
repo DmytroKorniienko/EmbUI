@@ -26,7 +26,7 @@
         "url": "https://github.com/DmytroKorniienko/EmbUI.git"
     },
     "platforms": ["espressif8266", "espressif32"],
-    "version": "2.6.0",
+    "version": "2.7.0",
     "dependencies":
     [
         {"owner": "bblanchon",
@@ -55,7 +55,7 @@
     ],
     "build": {
         "flags": [
-            "-DEMBUI_VER=2.6.0"
+            "-DEMBUI_VER=2.7.0"
         ],
         "srcDir": "src",
         "libCompatMode": "strict"

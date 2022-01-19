@@ -1,5 +1,9 @@
 ## Changelog
 
+### v2.7.0  Release
+Added:
+
+
 ### v2.6.0  Release
 Added:
   - Multi languages support
