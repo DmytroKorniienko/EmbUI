@@ -52,7 +52,7 @@
 #include "ts.h"
 #include "timeProcessor.h"
 
-#define EMBUI_UDP_PORT            4243    // UDP server port
+#include "udpecho.h"
 
 #ifndef EMBUI_PUB_PERIOD
 #define EMBUI_PUB_PERIOD 10            // Values Publication period, s
@@ -87,7 +87,10 @@
 #define EMBUI_MAX_WS_CLIENTS 4
 #endif
 
-// #define EMBUI_USE_EXTERNAL_WS_BUFFER 4096
+#if defined(EMBUI_USE_EXTERNAL_WS_BUFFER) && EMBUI_USE_EXTERNAL_WS_BUFFER<2048
+#undef EMBUI_USE_EXTERNAL_WS_BUFFER
+#define EMBUI_USE_EXTERNAL_WS_BUFFER 2048
+#endif
 
 // TaskScheduler - Let the runner object be a global, single instance shared between object files.
 extern Scheduler ts;
@@ -340,6 +343,9 @@ class EmbUI
         return pInstance;
     }
 
+    static const String getEmbUIver();
+    static const String getGITver();
+
     BITFIELDS sysData;
     EMBUICFG cfgData;
     AsyncWebServer server;
@@ -515,6 +521,8 @@ class EmbUI
     void led_inv();
 
 #ifdef EMBUI_USE_UDP
+    AsyncUDP Udp;
+    bool udpApply = false;
     unsigned int localUdpPort = EMBUI_UDP_PORT;
     //char udpRemoteIP[16];
     String incomingPacket;

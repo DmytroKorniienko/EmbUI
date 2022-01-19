@@ -32,12 +32,12 @@ void Interface::html_input(const String &id, const String &type, const String &v
  */
 void Interface::number(const String &id, const String &label)
 {
-    number(id, EmbUI::GetInstance()->param(id), label, String(0), String(0), String(0));
+    number(id, EmbUI::GetInstance()->param(id), label, String(1), String(0), String(255));
 }
 
 void Interface::number(const String &id, const String &value, const String &label)
 {
-    number(id, value, label, String(0), String(0), String(0));
+    number(id, value, label, String(1), String(0), String(255));
 }
 
 void Interface::number(const String &id, const String &label, const String &step, const String &min, const String &max)
@@ -357,10 +357,26 @@ void Interface::spacer(const String &label){
     frame_add_safe(obj.as<JsonObject>());
 }
 
-void Interface::comment(const String &label){
+void Interface::comment(const String &id, const String &label){
     StaticJsonDocument<EMBUI_IFACE_STA_JSON_SIZE * 2> obj;
     obj[FPSTR(P_html)] = F("comment");
-    if (label != "") obj[FPSTR(P_label)] = label;
+    if (id != "") {
+        if (label != "") {
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_label)] = label;
+        } else {
+            obj[FPSTR(P_id)] = "";
+            obj[FPSTR(P_label)] = id;
+        }
+    } else {
+        if (label != "") {
+            obj[FPSTR(P_id)] = id;
+            obj[FPSTR(P_label)] = label;
+        } else {
+            obj[FPSTR(P_id)] = "";
+            obj[FPSTR(P_label)] = "";
+        }
+    }
     frame_add_safe(obj.as<JsonObject>());
 }
 

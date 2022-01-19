@@ -383,11 +383,11 @@ void EmbUI::begin(){
     server.onNotFound(notFound);
 
     tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
+#ifdef ESP8266
+        MDNS.announce();
+#endif
         embui_uptime++;
         ws.cleanupClients(EMBUI_MAX_WS_CLIENTS);
-        #ifdef ESP8266
-            MDNS.update();
-        #endif
         taskGC();
     } );
     ts.addTask(tHouseKeeper);
@@ -527,13 +527,16 @@ void EmbUI::handle(){
 #ifdef EMBUI_USE_UDP
     udpLoop();
 #endif
-    ts.execute();           // run task scheduler
+#ifdef ESP8266
+    MDNS.update();
+#endif
 #ifdef EMBUI_USE_FTP
     if(EmbUI::GetInstance()->cfgData.isftp)
         ftpSrv.handleFTP();     //make sure in loop you call handleFTP()!!  
 #endif
     //btn();
     //led_handle();
+    ts.execute();           // run task scheduler
 }
 
 /**
@@ -624,3 +627,6 @@ void EmbUI::autosave(bool force){
         tAutoSave.restartDelayed();
     }
 };
+
+const String EmbUI::getEmbUIver(){ return FPSTR(PGversion); }
+const String EmbUI::getGITver(){ return FPSTR(PGGITversion); }

@@ -1,0 +1,76 @@
+Дефаны разных моделей ESP32
+CONFIG_IDF_TARGET_ESP32
+CONFIG_IDF_TARGET_ESP32S3
+CONFIG_IDF_TARGET_ESP32S2
+CONFIG_IDF_TARGET_ESP32C3
+
+NO_GLOBAL_EMBUI - если задано, то не будет использоваться глобальный объект embui и экземпляр нужно создавать самостоятельно
+
+EMBUI_USE_SECHEAP  - работает в паре с PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED, нужен для расширение оперативной памяти
+
+EMBUI_IFACE_DYN_JSON_SIZE= - по умолчанию для ESP8266 = 2048кб, для ESP32 = 8192кб, максимальный динамического JSON документа, используется для передачи готового фрейма интерфейса
+EMBUI_SMALL_JSON_SIZE= - по умолчанию для ESP8266 = 2048кб, для ESP32 = 8192кб, максимальный размер статического JSON документа, используется для синхронизации положений элементов интерфейса (интпуты, комменты, и тд и тп), публикации "время/память"
+EMBUI_CFGSIZE=  - по умолчанию 2048кб, максимальный размер конфига
+EMBUI_TZONE=TZ_Etc_GMT  - задать конкретную часовую зону, посмотреть список можно  в .\src\TZ32.h
+EMBUI_IDPREFIX='EmbUI_Device-'  - имя устройства (отображается в точке доступа\веб интерфейсе\SSDP)
+EMBUI_APPASSWORD=''     - пароль для точки доступа (минимум 8 символов, если меньше или не определено - точка будет без пароля)
+EMBUI_USE_EXTERNAL_WS_BUFFER=4096 - максимальный размер расширенного буфера для пакетов WebSocket'a, если не определено, то максимальный размер будет равен размеру TCP пакета (536 байт), доступной оперативной памяти должно быть минимум в 2 раза больше буфера, иначе пакет потеряется.
+
+
+EMBUI_USE_FTP - дает возможность включить FTP настройках "WiFi, MQTT & FTP", логин\пароль по умолчанию "ftp"
+EMBUI_USE_UDP - использование UDP
+EMBUI_UDP_PORT=5568 - задать UDP порт 
+EMBUI_USE_MQTT - использование MQTT, настраивать нужно в "WiFi, MQTT & FTP"
+EMBUI_MQTT_PUB_PERIOD - период публикации в MQTT (по умолчанию 30 сек)
+
+EMBUI_USE_SSDP - использование сетевого обнаружения
+EMBUI_SSDP_NAME='EmbUITest'
+EMBUI_SSDP_URLMODEL='https:__I(/)__I(/)github.com/DmytroKorniienko/EmbUI'
+EMBUI_SSDP_MODEL='EmbUI'
+EMBUI_SSDP_URLMANUF='https:__I(/)__I(/)github.com/DmytroKorniienko/EmbUI'
+EMBUI_SSDP_MANUF='kDn'
+
+
+EMBUI_PUB_PERIOD= - публикация значений время/память веб клиенту (по умолчанию 10 сек)
+
+
+EMBUI_IFACE_STA_JSON_SIZE EMBUI_SMALL_JSON_SIZE  - задается через EMBUI_SMALL_JSON_SIZE, отвечает за максимальный размер элементов интерфейса (интпуты, комменты, и тд и тп)
+EMBUI_FRAME_ADD_RETRY 5 - максимальное количество неудачных попыток отправки фрейма
+
+Магические байты для определения образов прошивки и образов FS
+EMBUI_ESP_IMAGE_HEADER_MAGIC 0xE91
+EMBUI_GZ_HEADER 0x1F
+
+EMBUI_AUTOSAVE_MULTIPLIER - множитиль таймера автосохранения (по умолчанию 10)
+EMBUI_AUTOSAVE_TIMEOUT    2    - таймер автосохранения конфига, по умолчанию 2*EMBUI_AUTOSAVE_MULTIPLIER сек, максимальное значение - 15
+EMBUI_MAX_WS_CLIENTS 4 - максимальное количество одновременных веб клиентов
+
+EMBUI_DEBUG -   включить отладку (лог)
+EMBUI_USE_SYS_BUTTON    -   включить кнопку для сброса по умолчанию (только на NodeMCU)
+
+EMBUI_NTP_POOL_REGION - выбор региона для europe.pool.ntp.org (пример с ='europe' будет europe.pool.ntp.org)
+
+EMBUI_DEF_TZONE определяется через EMBUI_TZONE
+EMBUI_NTP1ADDRESS - если определен EMBUI_NTP_POOL_REGION, то РЕГИОН.pool.ntp.org, если не определен EMBUI_NTP_POOL_REGION, то ntp3.vniiftri.ru
+EMBUI_NTP2ADDRESS - если определен EMBUI_NTP_POOL_REGION, то pool.ntp.org, если не определен EMBUI_NTP_POOL_REGION, то pool.ntp.org
+EMBUI_DATETIME_STRLEN
+EMBUI_TIMEAPI_BUFSIZE
+EMBUI_HTTP_REFRESH_HRS
+EMBUI_HTTP_REFRESH_MIN
+EMBUI_DAYSECONDS
+EMBUI_HTTPSYNC_DELAY
+EMBUI_CUSTOM_NTP_INDEX
+
+EMBUI_TIMEAPI_BUFSIZE     600
+EMBUI_TM_BASE_YEAR        1900
+EMBUI_DAYSECONDS          (86400U)
+EMBUI_DATETIME_STRLEN     (19U)   // buffer for data/time string "YYYY-MM-DDThh:mm:ss"
+EMBUI_HTTPSYNC_DELAY      5
+EMBUI_HTTP_REFRESH_HRS    3     // время суток для обновления часовой зоны
+EMBUI_HTTP_REFRESH_MIN    3
+
+
+EMBUI_WIFI_CONNECT_TIMEOUT    7       // timer for esp8266 STA connection attempt (depricated)
+EMBUI_WIFI_RECONNECT_TIMER    30      // timer for esp8266, STA connect retry
+EMBUI_WIFI_BEGIN_DELAY        3       // scheduled delay for STA begin() connection
+EMBUI_WIFI_PSK_MIN_LENGTH     8 

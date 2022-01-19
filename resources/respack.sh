@@ -1,12 +1,34 @@
 #!/bin/sh
 
-echo "Preparing resources for EmbUI FS image" 
 
 # etag file
 tags=etags.txt
 
 refresh_rq=0
 tzcsv=https://raw.githubusercontent.com/nayarsystems/posix_tz_db/master/zones.csv
+
+
+USAGE="Usage: `basename $0` [-h] [-f]"
+
+# parse cmd options
+while getopts hf OPT; do
+    case "$OPT" in
+        h)
+            echo $USAGE
+            exit 0
+            ;;
+        f)
+            echo "Force refresh"
+            rm -f $tags
+            refresh_rq=1
+            ;;
+        \?)
+            # getopts issues an error message
+            echo $USAGE >&2
+            exit 1
+            ;;
+    esac
+done
 
 [ -f $tags ] || touch $tags
 
@@ -23,15 +45,18 @@ freshtag(){
     return 1
 }
 
+echo "Preparing resources for EmbUI FS image"
 
-mkdir -p ./data/css ./data/js
-cat html/css/pure-min.css html/css/grids.css | gzip -9 > ./data/css/pure.css.gz
+python3 parce_locale.py
+mkdir -p ./data/css ./data/js ./data/locale
+cat html/css/pure*.css html/css/grids*.css | gzip -9 > ./data/css/pure.css.gz
 cat html/css/*_default.css | gzip -9 > ./data/css/style.css.gz
 cat html/css/*_light.css | gzip -9 > ./data/css/style_light.css.gz
 cat html/css/*_dark.css | gzip -9 > ./data/css/style_dark.css.gz
 cat html/css/embui_light.svg | gzip -9 > ./data/css/embui_light.svg.gz
 cat html/css/embui_dark.svg | gzip -9 > ./data/css/embui_dark.svg.gz
 cat html/css/custom.css | gzip -9 > ./data/css/custom.css.gz
+cat html/locale/emb.json | gzip -9 > ./data/locale/emb.json.gz
 
 #cp html/css/*.jpg ./data/css/
 cp html/css/*.webp ./data/css/
@@ -43,7 +68,7 @@ cat html/favicon.ico | gzip -9 > ./data/favicon.ico.gz
 cp html/.exclude.files ./data/
 
 # update TZ info
-if freshtag ${tzcsv} ; then
+if freshtag ${tzcsv} || [ $refresh_rq -eq 1 ] ; then
     echo "Updating TZ info"
     echo '"label","value"' > ./data/zones.csv
     curl -sL $tzcsv >> ./data/zones.csv

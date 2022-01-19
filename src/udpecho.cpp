@@ -4,17 +4,9 @@
 // and others people
 
 #include "EmbUI.h"
+#include "udpecho.h"
 
 #ifdef EMBUI_USE_UDP
-
-#ifdef ESP32
-#include <AsyncUDP.h>
-#else
-#include <ESPAsyncUDP.h>
-#endif
-
-AsyncUDP Udp;
-bool udpApply = false;
 
 void EmbUI::udp(){
     getAPmac();
@@ -26,7 +18,7 @@ void EmbUI::udp(const String &message){
 }
 
 void EmbUI::udpBegin(){
-    if(Udp.listen(5568)){
+    if(Udp.listen(EMBUI_UDP_PORT)){
         Udp.onPacket([](AsyncUDPPacket packet){
             LOG(printf, PSTR("Received %d bytes from %s, port %d\n"), packet.length(), packet.remoteIP().toString().c_str(), packet.remotePort());
             LOG(print, PSTR("UDP packet contents: "));
@@ -39,12 +31,12 @@ void EmbUI::udpBegin(){
 
 void EmbUI::udpLoop(){
     static bool st = false;
-
+    if(!udpApply) return;
     if(!st){
         st = true;
         udpBegin();
     }
-    if(!udpApply) return;
+    
 }
 
 #endif

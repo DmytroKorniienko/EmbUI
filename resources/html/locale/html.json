@@ -1,0 +1,4 @@
+{
+"en": {"locale_time": "Time:", "locale_memory": "Memory:", "locale_uptime": "Uptime:", "locale_version": "Version:", "locale_theme": "Theme:", "locale_lang": "Lang:", "locale_fs": "FS:", "locale_temp": "Temp:"},
+"ru": {"locale_time": "Время:", "locale_memory": "Память:", "locale_uptime": "Время работы:", "locale_version": "Версия:", "locale_theme": "Тема:", "locale_lang": "Язык:", "locale_fs": "ФС:", "locale_temp": "Темп:"}
+}

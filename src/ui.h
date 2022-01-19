@@ -245,7 +245,7 @@ class Interface {
         void button_submit_value(const String &section, const String &value, const String &label, const String &color = "", uint8_t top_margine=10, const String &message = "");
         void button_submit_value_confirm(const String &section, const String &value, const String &label, const String &message = "", const String &color = "", uint8_t top_margine=10);
         void spacer(const String &label = "");
-        void comment(const String &label = "");
+        void comment(const String &id ="", const String &label = "");
 
         /**
          * @brief - create generic html input element

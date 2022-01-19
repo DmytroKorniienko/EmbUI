@@ -8,9 +8,9 @@
 #elif defined CONFIG_IDF_TARGET_ESP32S3
   static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32-S3 Demo";    // имя проекта
 #elif defined CONFIG_IDF_TARGET_ESP32S2  
-  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32S2 Demo";    // имя проекта
+  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32-S2 Demo";    // имя проекта
 #elif defined CONFIG_IDF_TARGET_ESP32C3  
-  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32C3 Demo";    // имя проекта
+  static const char T_HEADLINE[] PROGMEM = "EmbUI ESP32-C3 Demo";    // имя проекта
 #else
   static const char T_HEADLINE[] PROGMEM = "EmbUI Demo";    // имя проекта
 #endif  
@@ -19,6 +19,7 @@
 static const char V_LED[] PROGMEM = "vLED";
 static const char V_VAR1[] PROGMEM = "v1";
 static const char V_VAR2[] PROGMEM = "v2";
+static const char V_VAR3[] PROGMEM = "v3";
 
 // UI blocks
 static const char T_DEMO[] PROGMEM = "demo";     // генерация UI-секции "демо"

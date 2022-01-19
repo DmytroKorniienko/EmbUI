@@ -30,11 +30,13 @@ static const char PGGITversion[] PROGMEM = "";
 #endif
 
 // LOG macro's
+#if defined(LOG)
+  #undef LOG
+#endif
 #if defined(EMBUI_DEBUG)
   #ifndef EMBUI_DEBUG_PORT
     #define EMBUI_DEBUG_PORT Serial
   #endif
-
   #define LOG(func, ...) EMBUI_DEBUG_PORT.func(__VA_ARGS__)
 #else
   #define LOG(func, ...) ;
