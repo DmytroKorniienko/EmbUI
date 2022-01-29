@@ -385,6 +385,11 @@ void EmbUI::begin(){
     tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
 #ifdef ESP8266
         MDNS.announce();
+// #else
+//         // https://github.com/espressif/arduino-esp32/issues/4406#issuecomment-829894157
+        // struct ip4_addr addr;
+        // addr.addr = 0;
+        // mdns_query_a(param(FPSTR(P_hostname)).c_str(), 2000,  &addr);
 #endif
         embui_uptime++;
         ws.cleanupClients(EMBUI_MAX_WS_CLIENTS);
