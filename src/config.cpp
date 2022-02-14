@@ -23,8 +23,8 @@ void EmbUI::save(const char *_cfg, bool force){
         LOG(printf_P, PSTR("UI: Save %s main config file\n"), _cfg);
         configFile = LittleFS.open(_cfg, "w"); // PSTR("w") использовать нельзя, будет исключение!
     }
-
     serializeJson(cfg, configFile);
+    configFile.close();
 #ifdef ESP8266
     ESP.wdtEnable(WDTO_8S);
 #endif

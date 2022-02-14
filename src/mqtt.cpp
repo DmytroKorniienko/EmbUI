@@ -136,13 +136,13 @@ void EmbUI::mqtt(const String &host, int port, const String &user, const String 
 
 void EmbUI::mqtt(void (*mqttFunction) (const String &topic, const String &payload), bool remotecontrol){
     mqt = mqttFunction;
-    if (remotecontrol) sysData.mqtt_remotecontrol = true;
+    sysData.mqtt_remotecontrol = remotecontrol;
 }
 
 void EmbUI::mqtt(void (*mqttFunction) (const String &topic, const String &payload), void (*mqttConnect) (), bool remotecontrol){
     onConnect = mqttConnect;
     mqt = mqttFunction;
-    if (remotecontrol) sysData.mqtt_remotecontrol = true;
+    sysData.mqtt_remotecontrol = remotecontrol;
 }
 
 void EmbUI::mqtt_handle(){
@@ -173,6 +173,8 @@ void EmbUI::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
 
 void EmbUI::_onMqttConnect(bool sessionPresent) {
     EmbUI::GetInstance()->sysData.mqtt_connect = true;
+    if(EmbUI::GetInstance()->onConnect)
+        EmbUI::GetInstance()->onConnect();
 }
 
 void EmbUI::onMqttConnect(){
