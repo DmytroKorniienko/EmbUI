@@ -17,7 +17,8 @@ void EmbUI::save(const char *_cfg, bool force){
     File configFile;
     if (_cfg == nullptr) {
         LOG(println, F("UI: Save default main config file"));
-        LittleFS.rename(FPSTR(P_cfgfile),FPSTR(P_cfgfile_bkp));
+        if(millis()>(sysData.asave * EMBUI_AUTOSAVE_MULTIPLIER * TASK_SECOND)+1000)
+            LittleFS.rename(FPSTR(P_cfgfile),FPSTR(P_cfgfile_bkp)); // unstable currently... sad, skip first rename prob
         configFile = LittleFS.open(FPSTR(P_cfgfile), "w"); // PSTR("w") использовать нельзя, будет исключение!
     } else {
         LOG(printf_P, PSTR("UI: Save %s main config file\n"), _cfg);
