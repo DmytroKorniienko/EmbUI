@@ -23,7 +23,7 @@ EmbUI embui;
 #endif
 
 void section_main_frame(Interface *interf, JsonObject *data) {}
-void pubCallback(Interface *interf){}
+void pubCallback(Interface *interf){ LOG(println, F("weak pubCallback call"));}
 String httpCallback(const String &param, const String &value, bool isSet) { return String(); }
 
 //custom WS action handler, weak function
@@ -47,7 +47,8 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
         Interface *interf = new Interface(EmbUI::GetInstance(), client);
         section_main_frame(interf, nullptr);
-        EmbUI::GetInstance()->send_pub();
+        Task *_t1 = new Task(TASK_SECOND, TASK_ONCE, nullptr, &ts, false, nullptr, [](){EmbUI::GetInstance()->send_pub(); TASK_RECYCLE;});
+        _t1->enableDelayed();
         delete interf;
 
     } else

@@ -52,7 +52,7 @@ class TimeProcessor
 {
 private:
     // оптимизация расхода памяти, все битовые флаги и другие потенциально "сжимаемые" переменные скидываем сюда
-    #pragma pack(push,1)
+    #pragma pack(push,4)
     typedef union _BITFIELDS {
     struct {
         uint8_t ntpcnt:2;
