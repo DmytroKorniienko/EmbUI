@@ -360,7 +360,7 @@ class EmbUI
     void clear_ext_ws_buff();
 #endif
 
-    char mc[7]; // id из последних 3 байт mac-адреса "ffffff"
+    char mc[13]; // id (hex) из mac-адреса "ffffffffffff"
 
     void section_handle_add(const String &btn, buttonCallback response);
     void section_handle_remove(const String &name);
