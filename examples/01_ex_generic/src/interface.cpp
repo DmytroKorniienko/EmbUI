@@ -57,7 +57,7 @@ void create_parameters(){
 
     embui.section_handle_add(FPSTR(V_LED), action_blink);               // обработка рычажка светодиода
 
-#if defined CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
+#if defined CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3 // || CONFIG_IDF_TARGET_ESP32S3
     // ESP32-C3 & ESP32-S2
     {
       temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();

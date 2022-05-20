@@ -6,40 +6,40 @@ Embedded WebUI Interface
 
 __[CHANGELOG](/CHANGELOG.md)__
 
-Фреймворк построения web-интерфейса и элементов управления для проектов под Arduino 
-## Поддерживаемые платформы
+Framework for building a web-interface and controls for projects under Arduino ESP
+## Supported controllers/platforms
  - ESP8266 Arduino Core
- - ESP32/ESP32-S2/ESP32-C3 Arduino Core
+ - ESP32/ESP32-S2/ESP32-C3/ESP32-S3 Arduino Core
 
-## Возможности
- - автопубликация контроллера в локальной сети через [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS)/[ZeroConf](https://en.wikipedia.org/wiki/Zero-configuration_networking)
- - возможность обнаружения устройства:
+## Capabilities
+ - automatic publication of the controller in the local network via [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS)/[ZeroConf](https://en.wikipedia.org/wiki/Zero-configuration_networking)
+ - device discovery capability:
     - [Service Browser](https://play.google.com/store/apps/details?id=com.druk.servicebrowser) Android
     - [SSDP](https://en.wikipedia.org/wiki/Simple_Service_Discovery_Protocol) for Windows
     - [Bonjour](https://en.wikipedia.org/wiki/Bonjour_(software)) iOS/MacOS
- - обмен данными с браузером через WebSocket
- - поддержка нескольких параллельных подключений, интерфейс обновляется одновременно на всех устройствах
- - self-hosted - нет зависимостей от внешних ресурсов/CDN/Cloud сервисов
- - встроенный WiFi менеджер, автопереключение в режим AP при потере клиентского соединения
- - полная поддержка всех существующих Временных Зон, автоматический переход на летнее/зимнее время, корректная калькуляция дат/временных интервалов
- - OTA, обновление прошивки/образа ФС через браузер
- - возможность подгружать данные/элементы интерфейса через AJAX
+ - communication with the browser via WebSocket
+ - support for multiple parallel connections, the interface is updated simultaneously on all devices
+ - self-hosted - no dependencies on external resources/CDN/Cloud services
+ - built-in WiFi manager, auto-switch to AP mode when client connection is lost
+ - full support for all existing Time Zones, automatic changeover to summer/winter time, correct calculation of dates/time intervals
+ - OTA, FS firmware/image update via browser
+ - the ability to load data / interface elements via AJAX
 
 ## Проекты на EmbUI
- - [FireLamp_JeeUI](https://github.com/DmytroKorniienko/FireLamp_JeeUI/tree/dev) - огненная лампа на светодиодной матрице ws2812
- - [ESPEM](https://github.com/vortigont/espem) - энергометр на основе измерителя PZEM-004
+ - [FireLamp_EmbUI](https://github.com/DmytroKorniienko/FireLamp_EmbUI/tree/dev) - ws2812 led matrix fire lamp
+ - [ESPEM](https://github.com/vortigont/espem) - energy meter based on the PZEM-004 module
 
 
-## Примеры построения интерфейсов
+## Examples of building interfaces
 ![EmbUI](https://user-images.githubusercontent.com/26786760/140750180-65de2694-3ed8-41de-87eb-6f7e94ac12b2.png)
 
 <details><summary>Other pictures</summary><img src="https://raw.githubusercontent.com/vortigont/espem/master/examples/espemembui.png" alt="espem ui" width="30%"/><img src="https://raw.githubusercontent.com/vortigont/espem/master/examples/espemembui_setup.png" alt="espem opts" width="30%"/></details>
 
 
-## Использование
-Для работы WebUI необходимо залить в контроллер образ файловой системы LittleFS с web-ресурсами.
-Подготовленные ресурсы для создания образа можно развернуть [из архива](https://github.com/DmytroKorniienko/EmbUI/raw/main/resources/data.zip).
-В [Platformio](https://platformio.org/) это, обычно, каталог *data* в корне проекта.
+## Usage
+For WebUI to work, it is necessary to upload an image of the LittleFS file system with web resources to the controller.
+Prepared resources for creating an image can be deployed [from the archive](https://github.com/DmytroKorniienko/EmbUI/raw/main/resources/data.zip).
+In [Platformio](https://platformio.org/) this is usually the *data* directory at the root of the project.
 
 ## Depends
 
@@ -52,4 +52,4 @@ TaskScheduler      |  https://github.com/arkhipenko/TaskScheduler.git           
 FtpClientServer    |  https://github.com/charno/FTPClientServer.git                                   | manual install, fork
 ESP32SSDP          |  https://github.com/luc-github/ESP32SSDP.git                                     | manual install, esp32
 AsyncTCP           |  https://github.com/me-no-dev/AsyncTCP.git                                       | manual install, esp32
-LittleFS_esp32     |  https://github.com/lorol/LITTLEFS.git                                           | manual install, esp32
+

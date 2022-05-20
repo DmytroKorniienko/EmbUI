@@ -1,5 +1,3 @@
-https://community.alexgyver.ru/threads/wifi-lampa-budilnik-proshivka-firelamp_jeeui-gpl.2739/post-43780
-
 Реализация времени в есп-коре по своей сути совместима с libc'шными tzset, tzname, timezone, daylight описанными в TZSET(3).
 Постараюсь объяснить на пальцах раз уж я в это влез...
 сперва определимся с терминами:

@@ -2,7 +2,9 @@
 
 ### v2.7.0  Release
 Added:
-
+  - ESP32-S3 support
+  - Resources fix
+  - Some other improvements
 
 ### v2.6.0  Release
 Added:
