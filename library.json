@@ -2,7 +2,7 @@
     "name": "EmbUI",
     "frameworks": "arduino",
     "keywords": "embui, arduino, framework, esp8266, esp32",
-    "description": "Embeded Web UI framework for esp8266/esp32/esp32-c3/esp32-s2 IoT prototyping",
+    "description": "Embeded Web UI framework for esp8266/esp32/esp32-c3/esp32-s2/esp32-s3 IoT prototyping",
     "url": "https://github.com/DmytroKorniienko/EmbUI",
     "authors": [
         {
@@ -26,7 +26,7 @@
         "url": "https://github.com/DmytroKorniienko/EmbUI.git"
     },
     "platforms": ["espressif8266", "espressif32"],
-    "version": "2.6.0",
+    "version": "2.7.0",
     "dependencies":
     [
         {"owner": "bblanchon",
@@ -55,7 +55,7 @@
     ],
     "build": {
         "flags": [
-            "-DEMBUI_VER=2.6.0"
+            "-DEMBUI_VER=2.7.0"
         ],
         "srcDir": "src",
         "libCompatMode": "strict"

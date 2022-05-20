@@ -59,13 +59,16 @@ cat html/css/custom.css | gzip -9 > ./data/css/custom.css.gz
 cat html/locale/emb.json | gzip -9 > ./data/locale/emb.json.gz
 
 #cp html/css/*.jpg ./data/css/
-cp html/css/*.webp ./data/css/
 #cp html/css/*.svg ./data/css/
+cp html/css/*.webp ./data/css/
+cp html/css/*.png ./data/css/
 
 cat html/js/*.js | gzip -9 > ./data/js/embui.js.gz
 cat html/index.html | gzip -9 > ./data/index.html.gz
 cat html/favicon.ico | gzip -9 > ./data/favicon.ico.gz
 cp html/.exclude.files ./data/
+cp html/manifest.webmanifest ./data/
+#cp html/js/android-chrome-*.png ./data/js/
 
 # update TZ info
 if freshtag ${tzcsv} || [ $refresh_rq -eq 1 ] ; then

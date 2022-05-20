@@ -261,3 +261,7 @@ Round controls
 	font-weight: bold;
 	font-style: italic;
 }
+.pure-u-sm-1-3, .pure-u-sm-8-24 {
+    width: 33.3333%;
+    vertical-align: bottom;
+}

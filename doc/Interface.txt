@@ -1,5 +1,3 @@
-https://community.alexgyver.ru/threads/wifi-lampa-budilnik-proshivka-firelamp_jeeui-gpl.2739/post-43370
-
 Формирование пакета
 
 Браузер (далее клиент) формирует интерфейс, на основании JSON пакетов, формируемых лампой (далее сервер).

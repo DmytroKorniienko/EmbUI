@@ -23,7 +23,7 @@ EmbUI embui;
 #endif
 
 void section_main_frame(Interface *interf, JsonObject *data) {}
-void pubCallback(Interface *interf){}
+void pubCallback(Interface *interf){ LOG(println, F("weak pubCallback call"));}
 String httpCallback(const String &param, const String &value, bool isSet) { return String(); }
 
 //custom WS action handler, weak function
@@ -47,7 +47,8 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
         Interface *interf = new Interface(EmbUI::GetInstance(), client);
         section_main_frame(interf, nullptr);
-        EmbUI::GetInstance()->send_pub();
+        Task *_t1 = new Task(TASK_SECOND, TASK_ONCE, nullptr, &ts, false, nullptr, [](){EmbUI::GetInstance()->send_pub(); TASK_RECYCLE;});
+        _t1->enableDelayed();
         delete interf;
 
     } else
@@ -385,6 +386,11 @@ void EmbUI::begin(){
     tHouseKeeper.set(TASK_SECOND, TASK_FOREVER, [this](){
 #ifdef ESP8266
         MDNS.announce();
+// #else
+//         // https://github.com/espressif/arduino-esp32/issues/4406#issuecomment-829894157
+        // struct ip4_addr addr;
+        // addr.addr = 0;
+        // mdns_query_a(param(FPSTR(P_hostname)).c_str(), 2000,  &addr);
 #endif
         embui_uptime++;
         ws.cleanupClients(EMBUI_MAX_WS_CLIENTS);

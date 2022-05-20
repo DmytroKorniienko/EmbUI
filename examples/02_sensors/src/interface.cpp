@@ -62,7 +62,7 @@ void create_parameters(){
     embui.section_handle_add(FPSTR(V_LED), action_blink);               // обработка рычажка светодиода
     embui.section_handle_add(FPSTR(V_UPDRATE), setRate);                 // sensor data publisher rate change
 
-#if defined CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
+#if defined CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3 // || CONFIG_IDF_TARGET_ESP32S3
     // ESP32-C3 & ESP32-S2
     {
       temp_sensor_config_t cfg = TSENS_CONFIG_DEFAULT();
@@ -151,7 +151,7 @@ void block_demopage(Interface *interf, JsonObject *data){
     // переключатель, связанный со светодиодом. Изменяется синхронно
     interf->checkbox(FPSTR(V_LED), F("Onboard LED"), true);
 
-    interf->comment(F("Комментарий: набор сенсоров для демонстрации"));     // комментарий-описание секции
+    interf->comment(F("Comment: some demo sensors"));     // комментарий-описание секции
 
     interf->json_section_line();             // "Live displays"
 
@@ -215,7 +215,7 @@ void sensorPublisher() {
     // Voltage sensor
     //  id, value, html=true
 
-#if defined CONFIG_IDF_TARGET_ESP32  
+#if defined CONFIG_IDF_TARGET_ESP32
     interf->value(F("vcc"), String((float)rom_phy_get_vdd33()/1000.0)); // extern "C" int rom_phy_get_vdd33();
     interf->value(F("temp"), String(24 + random(-30,30)/10), true);                // add some random spikes to the temperature :)
 #elif defined CONFIG_IDF_TARGET_ESP32S2  
@@ -230,6 +230,9 @@ void sensorPublisher() {
     if(temp_sensor_read_celsius(&t)==ESP_OK){
       interf->value(F("temp"), String(t,1), true);
     }
+#elif defined CONFIG_IDF_TARGET_ESP32S3
+    interf->value(F("vcc"), String("3.3"), true); // html must be set 'true' so this value could be handeled properly for div elements
+    interf->value(F("temp"), String(24 + random(-30,30)/10), true);                // add some random spikes to the temperature :)
 #else
     interf->value(F("vcc"), String((ESP.getVcc() + random(-100,100))/1000.0), true); // html must be set 'true' so this value could be handeled properly for div elements
     interf->value(F("temp"), String(24 + random(-30,30)/10), true);                // add some random spikes to the temperature :)

@@ -463,7 +463,8 @@ void BasicUI::show_progress(Interface *interf, JsonObject *data){
 
     interf->json_frame_interface();
     interf->json_section_begin(FPSTR(T_DO_OTAUPD));
-    interf->constant("U", String(FPSTR(TD_UPDATE)) + String(F(" : ")) + (*data)[FPSTR(T_UPROGRESS)].as<String>()+ String("%"), true);
+    interf->constant("U1", String(FPSTR(TD_UPDATE)));
+    interf->constant("U2", (*data)[FPSTR(T_UPROGRESS)].as<String>() + String("%"), true);
     interf->json_section_end();
     interf->json_frame_flush();
 }

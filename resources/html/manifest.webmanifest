@@ -1,0 +1,22 @@
+{
+  "name": "EmbUI device",
+  "short_name": "EmbUI device",
+  "description": "Framework for building a web-interface and controls for projects under Arduino ESP",
+  "categories": ["IoT","ESP","Espressif"],
+  "lang": "en-US",
+  "start_url": "/",
+  "display": "fullscreen",
+  "theme_color": "#1a5ca9",
+  "icons": [
+        {
+            "src": "/css/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/css/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+  ]
+}

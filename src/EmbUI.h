@@ -251,7 +251,7 @@ class EmbUI
 
     friend void mqtt_dummy_connect();
     // оптимизация расхода памяти, все битовые флаги и другие потенциально "сжимаемые" переменные скидываем сюда
-    #pragma pack(push,1)
+    #pragma pack(push,4)
     typedef union _BITFIELDS {
     struct {
         bool wifi_sta:1;        // флаг успешного подключения к внешней WiFi-AP, (TODO: переделать на события с коллбеками)
@@ -283,7 +283,7 @@ class EmbUI
     } BITFIELDS;
     #pragma pack(pop)
 
-    #pragma pack(push,1)
+    #pragma pack(push,4)
     typedef union _EMBUICFG {
     struct {
         bool isftp:1;       // флаг использования FTP
@@ -360,7 +360,7 @@ class EmbUI
     void clear_ext_ws_buff();
 #endif
 
-    char mc[7]; // id из последних 3 байт mac-адреса "ffffff"
+    char mc[13]; // id (hex) из mac-адреса "ffffffffffff"
 
     void section_handle_add(const String &btn, buttonCallback response);
     void section_handle_remove(const String &name);

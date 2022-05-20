@@ -269,7 +269,7 @@ void EmbUI::setup_mDns(){
 }
 
 /**
- * формирует chipid из MAC-адреса вида 'ddeeff'
+ * формирует chipid из MAC-адреса вида 'aabbccddeeff'
  */
 void EmbUI::getAPmac(){
     if(*mc) return;
@@ -282,6 +282,6 @@ void EmbUI::getAPmac(){
     #endif
     WiFi.softAPmacAddress(_mac);
 
-    LOG(printf_P,PSTR("UI MAC ID:%02X%02X%02X\n"), _mac[3], _mac[4], _mac[5]);
-    sprintf_P(mc, PSTR("%02X%02X%02X"), _mac[3], _mac[4], _mac[5]);
+    sprintf_P(mc, PSTR("%02X%02X%02X%02X%02X%02X"), _mac[0], _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
+    LOG(printf_P,PSTR("UI MAC ID: %s\n"), mc);
 }
