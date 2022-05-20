@@ -25,7 +25,7 @@ Framework for building a web-interface and controls for projects under Arduino E
  - OTA, FS firmware/image update via browser
  - the ability to load data / interface elements via AJAX
 
-## Проекты на EmbUI
+## Projects based at EmbUI
  - [FireLamp_EmbUI](https://github.com/DmytroKorniienko/FireLamp_EmbUI/tree/dev) - ws2812 led matrix fire lamp
  - [ESPEM](https://github.com/vortigont/espem) - energy meter based on the PZEM-004 module
 
