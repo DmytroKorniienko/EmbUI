@@ -230,3 +230,8 @@ button:hover:before,button:hover:after{
 	transition:1000ms ease all;
 }
 */
+
+.pure-u-sm-1-3, .pure-u-sm-8-24 {
+    width: 33.3333%;
+    vertical-align: bottom;
+}
