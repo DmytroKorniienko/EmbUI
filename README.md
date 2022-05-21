@@ -2,7 +2,9 @@
 Embedded WebUI Interface
 
 [![arduino-library-badge](https://www.ardu-badge.com/badge/EmbUI.svg?)](https://www.ardu-badge.com/EmbUI)
-[![PlatformIO CI](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build.yml/badge.svg)](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build.yml)
+[![PlatformIO Registry](https://badges.registry.platformio.org/packages/dmytro%20korniienko/library/EmbUI.svg)](https://registry.platformio.org/libraries/dmytro%20korniienko/EmbUI)
+[![PlatformIO CI](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build_dev.yml/badge.svg)](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build_dev.yml)
+[![PlatformIO CI](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build_main.yml/badge.svg)](https://github.com/DmytroKorniienko/EmbUI/actions/workflows/pio_build_main.yml)
 
 __[CHANGELOG](/CHANGELOG.md)__
 
