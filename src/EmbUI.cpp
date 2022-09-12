@@ -423,9 +423,10 @@ void EmbUI::post(JsonObject &data){
         for (int i = 0; !section && i < section_handle.size(); i++) {
             const char *sname = section_handle[i]->name.c_str();
             const char *mall = strchr(sname, '*');
-            unsigned len = mall? mall - sname - 1 : strlen(kname);
+            unsigned len = mall? mall - sname : strlen(kname);
             if (strncmp(sname, kname, len) == 0) {
                 section = section_handle[i];
+                //LOG(printf,"%s | %s, %d\n",kname,sname,len);
             }
         };
     }
