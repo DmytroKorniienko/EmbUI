@@ -39,7 +39,7 @@
          "version": "*"},
         {"owner": "arkhipenko",
          "name": "TaskScheduler",
-         "version": "*"},
+         "version": "https://github.com/arkhipenko/TaskScheduler/#v3.6.0"},
         {"name": "ESP32SSDP",
          "version": "*",
          "platforms": "espressif32"},
