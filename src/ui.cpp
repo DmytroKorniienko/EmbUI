@@ -100,11 +100,11 @@ void Interface::select(const String &id, const String &value, const String &labe
     section_stack.end()->idx--;
     uint8_t idx = section_stack.end()->idx;
     // после того как было дробление фрейма, индекс может не соответствовать!!!
-    while (!section_stack.end()->block.getElement(idx) && idx){
+    while (idx && !section_stack.end()->block[idx]){
         idx--;
     }
 
-    json_section_begin(FPSTR(P_options), "", false, false, false, section_stack.end()->block.getElement(idx));
+    json_section_begin(FPSTR(P_options), "", false, false, false, section_stack.end()->block[idx]);
 }
 
 /**
