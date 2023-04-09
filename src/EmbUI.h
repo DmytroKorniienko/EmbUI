@@ -263,6 +263,7 @@ class EmbUI
         bool LED_INVERT:1;
         bool fsDirty:1;         // флаг поврежденной FS (ошибка монтирования)
         bool isWiFiScanning:1;  // флаг процесса сканирования WiFi
+        bool isUpdate:1;        // чи зараз йде процесс оновлення?
         uint8_t LED_PIN:5;      // [0...30]
         uint8_t asave:4;        // 4 бита значения таймера автосохранения конфига (домножается на EMBUI_AUTOSAVE_MULTIPLIER)
     };
@@ -277,6 +278,7 @@ class EmbUI
         isWSConnect = false;
         fsDirty = false;
         isWiFiScanning = false;
+        isUpdate = false;
         LED_PIN = 31; // [0...30]
         asave = EMBUI_AUTOSAVE_TIMEOUT; // defaul timeout 2*10 sec
     }

@@ -302,16 +302,19 @@ void EmbUI::begin(){
             response->addHeader(F("Connection"), F("close"));
             request->send(response);
             setPubInterval(EMBUI_PUB_PERIOD);
+            sysData.isUpdate = false;
         } else {
             #if defined(PIO_FRAMEWORK_ARDUINO_MMU_CACHE16_IRAM48_SECHEAP_SHARED) && defined(EMBUI_USE_SECHEAP)
                 HeapSelectIram ephemeral;
             #endif
+            sysData.isUpdate = false;
             Task *t = new Task(TASK_SECOND, TASK_ONCE, [](){ LOG(println, F("Rebooting...")); delay(100); ESP.restart(); }, &ts, false);
             t->enableDelayed();
             request->redirect(F("/"));
         }
     },[this](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
         setPubInterval(0); // отключить публикацию на время обновления
+        sysData.isUpdate = true;
         if (!index) {
             #ifdef ESP8266
         	int type = (data[0] == EMBUI_ESP_IMAGE_HEADER_MAGIC || data[0] == EMBUI_GZ_HEADER)? U_FLASH : U_FS;
@@ -528,21 +531,23 @@ void EmbUI::led(uint8_t pin, bool invert){
 }
 
 void EmbUI::handle(){
+    if(!sysData.isUpdate){
 #ifdef EMBUI_USE_MQTT
-    mqtt_handle();
+        mqtt_handle();
 #endif
 #ifdef EMBUI_USE_UDP
-    udpLoop();
+        udpLoop();
 #endif
 #ifdef ESP8266
-    MDNS.update();
+        MDNS.update();
 #endif
 #ifdef EMBUI_USE_FTP
-    if(EmbUI::GetInstance()->cfgData.isftp)
-        ftpSrv.handleFTP();     //make sure in loop you call handleFTP()!!  
+        if(EmbUI::GetInstance()->cfgData.isftp)
+            ftpSrv.handleFTP();     //make sure in loop you call handleFTP()!!  
 #endif
     //btn();
     //led_handle();
+    }
     ts.execute();           // run task scheduler
 }
 

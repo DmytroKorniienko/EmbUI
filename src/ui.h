@@ -125,6 +125,7 @@ class Interface {
             send_hndl = new frameSendHttp(request);
         }
         ~Interface(){
+            json_frame_clear();
             delete send_hndl;
             send_hndl = nullptr;
             _embui = nullptr;
